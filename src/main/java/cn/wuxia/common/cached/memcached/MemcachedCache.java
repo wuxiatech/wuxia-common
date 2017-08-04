@@ -56,9 +56,9 @@ public class MemcachedCache implements Cache {
         if (MemcachedUtils.hasControlChar((String) key)) {
             key = key.toString().replaceAll("\\s*", "");
         }
-        logger.info("get:" + key);
+        logger.debug("get:" + key);
 
-        Object object = this.memcachedClient.get((String) key);
+        Object object = this.memcachedClient.get((String) key, this.cacheName);
         return (object != null ? new SimpleValueWrapper(object) : null);
     }
 
@@ -69,8 +69,8 @@ public class MemcachedCache implements Cache {
         if (MemcachedUtils.hasControlChar((String) key)) {
             key = key.toString().replaceAll("\\s*", "");
         }
-        logger.info("set:" + key);
-        this.memcachedClient.set((String) key, value, this.expiredTime);
+        logger.debug("set:" + key);
+        this.memcachedClient.set((String) key, value, this.expiredTime, this.cacheName);
     }
 
     @Override
@@ -78,13 +78,13 @@ public class MemcachedCache implements Cache {
         if (MemcachedUtils.hasControlChar((String) key)) {
             key = key.toString().replaceAll("\\s*", "");
         }
-        logger.info("delete:" + key);
-        this.memcachedClient.delete((String) key);
+        logger.debug("delete:" + key);
+        this.memcachedClient.delete((String) key, this.cacheName);
     }
 
     @Override
     public void clear() {
-        this.memcachedClient.flushAll();
+        this.memcachedClient.flush(this.cacheName);
     }
 
     public String getCacheName() {
@@ -105,7 +105,7 @@ public class MemcachedCache implements Cache {
 
     @Override
     public <T> T get(Object key, Class<T> type) {
-        return null;
+        return (T) get((String) key);
     }
 
     @Override
@@ -119,9 +119,8 @@ public class MemcachedCache implements Cache {
     }
 
     @Override
-    public <T> T get(Object arg0, Callable<T> arg1) {
-        // TODO Auto-generated method stub
-        return null;
+    public <T> T get(Object key, Callable<T> arg1) {
+        return (T) get((String) key);
     }
 
 }

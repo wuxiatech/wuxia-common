@@ -2,7 +2,7 @@ package cn.wuxia.common.util;
 
 import java.util.Date;
 
-import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.text.RandomStringGenerator;
 
 public abstract class NoGenerateUtil {
 
@@ -37,18 +37,23 @@ public abstract class NoGenerateUtil {
         StringBuilder orderNo = new StringBuilder();
         orderNo.append(prefix);
         if (length <= 6) {
-            orderNo.append(RandomStringUtils.randomNumeric(length));
+            orderNo.append(generate(length));
         } else if (6 < length && length <= 10) {
             orderNo.append(DateUtil.dateToString(new Date(), "yyMMdd"));
-            orderNo.append(RandomStringUtils.randomNumeric(length - 6));
+            orderNo.append(generate(length - 6));
         } else if (10 < length && length <= 15) {
             orderNo.append(DateUtil.dateToString(new Date(), "yyMMddHHmm"));
-            orderNo.append(RandomStringUtils.randomNumeric(length - 10));
+            orderNo.append(generate(length - 10));
         } else if (15 < length) {
             orderNo.append(DateUtil.dateToString(new Date(), "yyMMddHHmmssSSS"));
-            orderNo.append(RandomStringUtils.randomNumeric(length - 15));
+            orderNo.append(generate(length - 15));
         }
         return orderNo.toString();
+    }
+
+    private static String generate(int length) {
+        RandomStringGenerator generator = new RandomStringGenerator.Builder().withinRange('0', '9').build();
+        return generator.generate(20);
     }
 
     public static void main(String[] args) {

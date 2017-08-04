@@ -34,6 +34,8 @@ public class XMemcachedClient implements CacheClient {
 
     private int expiredTime = 0;
 
+    private String namespace;
+
     /**
      * 从缓存中获取值
      */
@@ -41,6 +43,9 @@ public class XMemcachedClient implements CacheClient {
     public <T> T get(String key) {
         try {
             MemcachedUtils.validateKey(key);
+            if (StringUtil.isNotBlank(namespace)) {
+                memcachedClient.beginWithNamespace(namespace);
+            }
             return (T) memcachedClient.get(key);
         } catch (RuntimeException e) {
             logger.warn("Get from memcached server fail,key is " + key, e);
@@ -72,6 +77,9 @@ public class XMemcachedClient implements CacheClient {
         boolean isadd = false;
         try {
             MemcachedUtils.validateKey(key);
+            if (StringUtil.isNotBlank(namespace)) {
+                memcachedClient.beginWithNamespace(namespace);
+            }
             isadd = memcachedClient.add(key, expiredTime, value);
         } catch (TimeoutException e) {
             logger.warn("add from memcached server fail,key is " + key, e);
@@ -108,6 +116,9 @@ public class XMemcachedClient implements CacheClient {
         boolean isset = false;
         try {
             MemcachedUtils.validateKey(key);
+            if (StringUtil.isNotBlank(namespace)) {
+                memcachedClient.beginWithNamespace(namespace);
+            }
             isset = memcachedClient.set(key, expiredTime, value);
         } catch (TimeoutException e) {
             logger.warn("Set from memcached server fail,key is " + key, e);
@@ -142,6 +153,9 @@ public class XMemcachedClient implements CacheClient {
         boolean isreplace = false;
         try {
             MemcachedUtils.validateKey(key);
+            if (StringUtil.isNotBlank(namespace)) {
+                memcachedClient.beginWithNamespace(namespace);
+            }
             isreplace = memcachedClient.replace(key, expiredTime, value);
         } catch (TimeoutException e) {
             logger.warn("replace from memcached server fail,key is " + key, e);
@@ -171,6 +185,9 @@ public class XMemcachedClient implements CacheClient {
         boolean isdelete = false;
         try {
             MemcachedUtils.validateKey(key);
+            if (StringUtil.isNotBlank(namespace)) {
+                memcachedClient.beginWithNamespace(namespace);
+            }
             isdelete = memcachedClient.delete(key);
         } catch (TimeoutException e) {
             logger.warn("Delete from memcached server fail,key is " + key, e);
@@ -275,7 +292,10 @@ public class XMemcachedClient implements CacheClient {
 
     public void flushAll() {
         try {
-            memcachedClient.flushAll();
+            if (StringUtil.isNotBlank(namespace)) {
+                memcachedClient.invalidateNamespace(namespace);
+            } else
+                memcachedClient.flushAll();
         } catch (TimeoutException e) {
             logger.warn(e.getMessage(), e);
         } catch (InterruptedException e) {
@@ -368,65 +388,6 @@ public class XMemcachedClient implements CacheClient {
         }
     }
 
-    public static void main(String[] args) {
-        String key = "access_token";
-        key += "wx8c625ac17367e886";
-        System.out.println(key);
-        System.out.println(MemcachedUtils.shaKey(key));
-
-        XMemcachedClient mc = new XMemcachedClient();
-        TestMemcachedServer ms = new TestMemcachedServer();
-        ms.start("127.0.0.1", 11211);
-        mc.init("127.0.0.1:11211");
-        // String key = "hello_" + 1;
-        //        mc.set("abc", "1323", 60 * 60 * 1);
-        //        String result = mc.get("abc");
-        //        logger.debug("1:" + result);
-        //        mc.delete("abcd");
-        //        result = mc.get("abc");
-        //        logger.debug("2:" + result);
-        mc.delete(MemcachedUtils.shaKey("access_token"));
-        System.out.println("======" + mc.get(MemcachedUtils.shaKey("access_token")));
-        // mc.set(key, "999999999999999999999");
-        // System.out.println("dm ********************hello_" + mc.get(key));
-        // XMemcachedClient mc1 = new XMemcachedClient();
-        // mc1.init(ad1);
-        // XMemcachedClient mc2 = new XMemcachedClient();
-        // mc2.init(ad2);
-        // XMemcachedClient mc3 = new XMemcachedClient(ad3);
-        // System.out.println(ad1+" ********************hello_" + mc1.get(key));
-        // System.out.println(ad2+" ********************hello_" + mc2.get(key));
-        // System.out.println(ad3+" ********************hello_" + mc3.get(key));
-        // String addrs = ad3 + "," + ad2;
-        // int[] a = new int[2];
-        // a[0] = 1;
-        // a[1] = 2;
-        // MemcachedClientBuilder builder = new XMemcachedClientBuilder(
-        // AddrUtil.getAddressMap(StringUtil.join(addrs, " ")), a);
-        try {
-            // MemcachedClient memcachedClient = builder.build();
-            // System.out.println(builder.isFailureMode());
-            // builder.setFailureMode(true);
-
-            // memcachedClient.set("key1", 0, "123");
-            // memcachedClient.set("key2", 0, "456");
-            // System.out.println(memcachedClient.getStateListeners());
-            // System.out.println(memcachedClient.getStats());
-            // System.out.println(memcachedClient.getServersDescription());
-            // close memcached client
-            // System.out.println("======================"+memcachedClient.get("key1"));
-            // System.out.println("======================"+memcachedClient.get("key2"));
-            // memcachedClient.shutdown();
-            mc.memcachedClient.shutdown();
-            // mc2.memcachedClient.shutdown();
-            // mc3.memcachedClient.shutdown();
-        } catch (Exception e) {
-            System.err.println("Shutdown MemcachedClient fail");
-            e.printStackTrace();
-        }
-
-    }
-
     @Override
     public void shutdown() {
         try {
@@ -435,5 +396,52 @@ public class XMemcachedClient implements CacheClient {
             e.printStackTrace();
         }
 
+    }
+
+    @Override
+    public void add(String key, Object value, int expiredTime, String namespace) {
+        memcachedClient.beginWithNamespace(namespace);
+        add(key, value, expiredTime);
+        memcachedClient.endWithNamespace();
+    }
+
+    @Override
+    public void set(String key, Object value, int expiredTime, String namespace) {
+        memcachedClient.beginWithNamespace(namespace);
+        set(key, value, expiredTime);
+        memcachedClient.endWithNamespace();
+
+    }
+
+    @Override
+    public void replace(String key, Object value, int expiredTime, String namespace) {
+        memcachedClient.beginWithNamespace(namespace);
+        replace(key, value, expiredTime);
+        memcachedClient.endWithNamespace();
+
+    }
+
+    @Override
+    public <T> T get(String key, String namespace) {
+        memcachedClient.beginWithNamespace(namespace);
+        T obj = get(key);
+        memcachedClient.endWithNamespace();
+        return obj;
+    }
+
+    @Override
+    public void delete(String key, String namespace) {
+        memcachedClient.beginWithNamespace(namespace);
+        delete(key);
+        memcachedClient.endWithNamespace();
+    }
+
+    @Override
+    public void flush(String namespace) {
+        try {
+            memcachedClient.invalidateNamespace(namespace);
+        } catch (net.rubyeye.xmemcached.exception.MemcachedException | InterruptedException | TimeoutException e) {
+            logger.warn("清除空间【" + namespace + "】失败", e);
+        }
     }
 }

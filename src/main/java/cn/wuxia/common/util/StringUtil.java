@@ -21,6 +21,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.RandomStringGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,8 +43,11 @@ public class StringUtil extends StringUtils {
     /**
      * @return Random character
      * @author songlin.li
+     * @see RandomStringGenerator
      */
     public static String random(int count) {
+        //        RandomStringGenerator generator = new RandomStringGenerator.Builder().withinRange('0', 'z').build();
+        //        return generator.generate(count);
         return RandomStringUtils.randomAlphanumeric(count);
     }
 
@@ -768,8 +772,6 @@ public class StringUtil extends StringUtils {
         sql = StringUtil.insert(sql, i, s);
         System.out.println(sql + "   " + sql.length());
 
-        
-        
         System.out.println(Hex.encodeHexString(sql.getBytes()));
     }
 
