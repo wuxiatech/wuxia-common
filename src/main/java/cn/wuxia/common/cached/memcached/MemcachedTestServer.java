@@ -22,8 +22,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * @author songlin
  *
  */
-public class TestMemcachedServer {
-	private static Logger logger = LoggerFactory.getLogger(TestMemcachedServer.class);
+public class MemcachedTestServer {
+	private static Logger logger = LoggerFactory.getLogger(MemcachedTestServer.class);
 
 	public static final long DEFAULT_STARTUP_TIMEOUT = 10000;
 	private static final int DEFAULT_STORAGE_CAPACITY = 1000;

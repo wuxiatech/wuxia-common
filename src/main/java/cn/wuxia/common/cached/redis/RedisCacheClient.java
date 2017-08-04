@@ -137,4 +137,40 @@ public class RedisCacheClient implements CacheClient {
 
     }
 
+    @Override
+    public void add(String key, Object value, int expiredTime, String namespace) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void set(String key, Object value, int expiredTime, String namespace) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void replace(String key, Object value, int expiredTime, String namespace) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public <T> T get(String key, String namespace) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void delete(String key, String namespace) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void flush(String namespace) {
+        // TODO Auto-generated method stub
+
+    }
+
 }
