@@ -69,6 +69,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import cn.wuxia.common.util.FileUtil;
+import cn.wuxia.common.util.MapUtil;
 import cn.wuxia.common.util.StringUtil;
 import cn.wuxia.common.web.MediaTypes;
 import cn.wuxia.common.web.MessageDigestUtil;
@@ -412,8 +413,10 @@ public class HttpClientUtil {
         HttpClientResponse result = new HttpClientResponse();
         try {
             long start = System.currentTimeMillis();
-            // 创建httppost 
+
+            // 创建httppost
             HttpPost httppost = new HttpPost(param.getUrl() + (StringUtil.indexOf(param.getUrl(), "?") > 0 ? "" : "?") + param.getQueryString());
+           
             // 创建参数队列  
             httppost.setEntity(entity);
             addHeader(httppost, param);
