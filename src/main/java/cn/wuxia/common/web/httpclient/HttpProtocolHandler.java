@@ -117,7 +117,7 @@ public class HttpProtocolHandler {
         CloseableHttpResponse response = null;
         HttpPost httpPost;
         // get模式且不带上传文件
-        if (request.getMethod().equals(HttpClientRequest.METHOD_GET)) {
+        if (request.getMethod().compareTo(HttpClientMethod.GET) == 0) {
             HttpGet httpGet = new HttpGet(request.getUrl() + (StringUtil.indexOf(request.getUrl(), "?") > 0 ? "" : "?") + request.getQueryString());
             httpGet.setConfig(requestConfig);
             logger.debug("request====" + httpGet.getRequestLine());

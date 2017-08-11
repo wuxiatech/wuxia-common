@@ -79,8 +79,8 @@ public class Base64UuidGenerator implements IdentifierGenerator {
         }
 
         public static void main(String[] args) {
-            System.out.println(UuidUtils.uuid());
-            System.out.println(UuidUtils.compressedUuid());
+            System.out.println(UuidUtils.uuid().length());
+            System.out.println(UuidUtils.compressedUuid().length());
         }
     }
 

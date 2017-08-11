@@ -7,8 +7,6 @@ import java.util.Map;
 
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.content.ByteArrayBody;
@@ -17,6 +15,8 @@ import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.message.BasicNameValuePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -28,22 +28,18 @@ import com.google.common.collect.Maps;
  */
 
 public class HttpClientRequest {
-
-    /** HTTP GET method */
-    public static final String METHOD_GET = HttpGet.METHOD_NAME;
-
-    /** HTTP POST method */
-    public static final String METHOD_POST = HttpPost.METHOD_NAME;
+    public Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * 待请求的url
      */
-    private String url = null;
+    private String url;
 
     /**
      * 默认的请求方式
      */
-    private String method = METHOD_GET;
+
+    private HttpClientMethod method = HttpClientMethod.GET;
 
     /** 回应超时时间, 由bean factory设置，缺省为30秒钟 */
     private int socketTimeout = 30000;
@@ -105,40 +101,50 @@ public class HttpClientRequest {
     /**
      * @param clientIp The clientIp to set.
      */
-    public void setClientIp(String clientIp) {
+    public HttpClientRequest setClientIp(String clientIp) {
         this.clientIp = clientIp;
+        return this;
     }
 
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
+    public HttpClientRequest setUrl(String url) {
         this.url = url;
+        return this;
     }
 
-    public String getMethod() {
+    public HttpClientMethod getMethod() {
         return method;
     }
 
-    public void setMethod(String method) {
+    public HttpClientRequest setMethod(HttpClientMethod method) {
         this.method = method;
+        return this;
+    }
+
+    public HttpClientRequest setMethod(String method) {
+        this.method = HttpClientMethod.valueOf(method);
+        return this;
     }
 
     public int getConnectionTimeout() {
         return connectionTimeout;
     }
 
-    public void setConnectionTimeout(int connectionTimeout) {
+    public HttpClientRequest setConnectionTimeout(int connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
+        return this;
     }
 
     public int getSocketTimeout() {
         return socketTimeout;
     }
 
-    public void setSocketTimeout(int socketTimeout) {
+    public HttpClientRequest setSocketTimeout(int socketTimeout) {
         this.socketTimeout = socketTimeout;
+        return this;
     }
 
     /**
@@ -151,16 +157,18 @@ public class HttpClientRequest {
     /**
      * @param charset The charset to set.
      */
-    public void setCharset(String charset) {
+    public HttpClientRequest setCharset(String charset) {
         this.charset = charset;
+        return this;
     }
 
     public HttpResultType getResultType() {
         return resultType;
     }
 
-    public void setResultType(HttpResultType resultType) {
+    public HttpClientRequest setResultType(HttpResultType resultType) {
         this.resultType = resultType;
+        return this;
     }
 
     /**
@@ -168,10 +176,11 @@ public class HttpClientRequest {
      * @author songlin
      * @param map
      */
-    public void addParam(Map<String, Object> map) {
+    public HttpClientRequest addParam(Map<String, Object> map) {
         for (Map.Entry<String, Object> s : map.entrySet()) {
             addParam(s.getKey(), s.getValue());
         }
+        return this;
     }
 
     /**
@@ -180,7 +189,7 @@ public class HttpClientRequest {
      * @param property
      * @param value
      */
-    public void addParam(String property, Object value) {
+    public HttpClientRequest addParam(String property, Object value) {
         ContentBody body = null;
         if (value instanceof File) {
             body = new FileBody((File) value);
@@ -193,10 +202,12 @@ public class HttpClientRequest {
             params.add(new BasicNameValuePair(property, value.toString()));
         }
         this.content.put(property, body);
+        return this;
     }
 
-    public void setHeader(Map<String, String> header) {
+    public HttpClientRequest setHeader(Map<String, String> header) {
         this.header = header;
+        return this;
     }
 
     public Map<String, String> getHeader() {
@@ -209,13 +220,14 @@ public class HttpClientRequest {
      * @param name
      * @param value
      */
-    public void addHeader(String name, String value) {
+    public HttpClientRequest addHeader(String name, String value) {
         if (null == header) {
             header = new CaseInsensitiveMap<>();
         }
         if (header.get(name) == null) {
             header.put(name, value);
         }
+        return this;
     }
 
     /**
@@ -257,5 +269,54 @@ public class HttpClientRequest {
             }
         }
         return false;
+    }
+
+    public static HttpClientRequest create() {
+        return new HttpClientRequest();
+    }
+
+    public static HttpClientRequest create(String url) {
+        return create().setUrl(url);
+    }
+
+    public static HttpClientRequest get() {
+        return create().setMethod(HttpClientMethod.GET);
+    }
+
+    public static HttpClientRequest post() {
+        return create().setMethod(HttpClientMethod.POST);
+    }
+
+    public static HttpClientRequest delete() {
+        return create().setMethod(HttpClientMethod.DELETE);
+    }
+
+    public static HttpClientRequest put() {
+        return create().setMethod(HttpClientMethod.PUT);
+    }
+
+    public static HttpClientRequest get(String url) {
+        return create(url).setMethod(HttpClientMethod.GET);
+    }
+
+    public static HttpClientRequest post(String url) {
+        return create(url).setMethod(HttpClientMethod.POST);
+    }
+
+    public static HttpClientRequest delete(String url) {
+        return create(url).setMethod(HttpClientMethod.DELETE);
+    }
+
+    public static HttpClientRequest put(String url) {
+        return create(url).setMethod(HttpClientMethod.PUT);
+    }
+
+    /**
+     * build
+     * @author songlin
+     * @throws HttpClientException 
+     */
+    public HttpClientResponse execute() throws HttpClientException {
+        return HttpClientUtil.execute(this);
     }
 }

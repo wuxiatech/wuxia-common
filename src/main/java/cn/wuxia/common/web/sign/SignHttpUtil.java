@@ -101,7 +101,8 @@ public class SignHttpUtil {
         if (headers == null) {
             headers = new HashMap<String, String>();
         }
-        return HttpAsyncClientUtil.posts();
+//        return HttpAsyncClientUtil.posts();
+        return null;
     }
 
     /**

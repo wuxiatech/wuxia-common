@@ -38,13 +38,19 @@ import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.GzipDecompressingEntity;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.config.ConnectionConfig;
 import org.apache.http.config.MessageConstraints;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.FileEntity;
+import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -60,9 +66,9 @@ import org.apache.http.ssl.TrustStrategy;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
 import cn.wuxia.common.util.FileUtil;
-import cn.wuxia.common.util.MapUtil;
 import cn.wuxia.common.util.StringUtil;
 import cn.wuxia.common.web.MediaTypes;
 import cn.wuxia.common.web.MessageDigestUtil;
@@ -70,23 +76,23 @@ import cn.wuxia.common.web.MessageDigestUtil;
 public class HttpClientUtil {
     public static Logger logger = LoggerFactory.getLogger("httpclient");
 
-    public static final String HEADER_ACCEPT_ENCODING = "Accept-Encoding";
-
-    //请求Header Content-Type
-    public static final String HEADER_CONTENT_TYPE = "Content-Type";
-
-    public static final String ENCODING_GZIP = "gzip";
-
     /** 连接超时时间，由bean factory设置，缺省为无限制 */
     private static int defaultConnectionTimeout = -1;
 
     /** 回应超时时间, 由bean factory设置，缺省为无限制 */
     private static int defaultSocketTimeout = -1;
 
+    public static final String HEADER_ACCEPT_ENCODING = "Accept-Encoding";
+
+    public static final String ENCODING_GZIP = "gzip";
+
+    //请求Header Content-Type
+    private static final String HEADER_CONTENT_TYPE = "Content-Type";
+
     /**
      * HttpClient连接SSL
      */
-    private static HttpClientBuilder ssl() throws HttpClientException {
+    public static HttpClientBuilder ssl() throws HttpClientException {
         try {
             SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy() {
                 //信任所有
@@ -110,15 +116,24 @@ public class HttpClientUtil {
      * @param param
      * @return
      */
-    private static CloseableHttpClient getHttpClient(HttpClientRequest param, String method) throws HttpClientException {
+    public static CloseableHttpClient getHttpClient(HttpClientRequest param) throws HttpClientException {
         boolean needssl = StringUtil.indexOf(param.getUrl().toLowerCase(), "https:") == 0;
+
         HttpClientBuilder builder = HttpClientBuilder.create();
         if (needssl) {
             builder = ssl();
         }
         // 设定自己需要的重定向策略
-        if (HttpPost.METHOD_NAME.equalsIgnoreCase(method)) {
-            builder.setRedirectStrategy(new LaxRedirectStrategy());
+        switch (param.getMethod()) {
+            case POST:
+            case PUT:
+                builder.setRedirectStrategy(new LaxRedirectStrategy());
+                break;
+            case DELETE:
+            case GET:
+                break;
+            default:
+                break;
         }
 
         PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
@@ -157,45 +172,15 @@ public class HttpClientUtil {
 
     /**
      * 简单的get方法，传参使用默认的UTF-8编码, 返回使用ISO-8859-1编码转为字符串
-     * 如果返回有中文乱码，请调用 HttpClientUtil.post(HttpRequest param)方法，该方法默认使用UTF8转字符串
-     * @see HttpClientUtil.post(HttpRequest param)
-     * @see HttpResponse.getStringResult()
-     * @author songlin
-     * @param url
-     * @return
-     */
-    public static String get() throws HttpClientException {
-        HttpClientRequest param = new HttpClientRequest(HttpResultType.STRING);
-        return get(param).getStringResult();
-    }
-
-    /**
-     * 简单的get方法，传参使用默认的UTF-8编码, 返回使用ISO-8859-1编码转为字符串
-     * 如果返回有中文乱码，请调用 HttpClientUtil.post(HttpRequest param)方法，该方法默认使用UTF8转字符串
-     * @see HttpClientUtil.post(HttpRequest param)
+     * 如果返回有中文乱码，请调用 HttpClientUtil.get(HttpClientRequest param)方法，该方法默认使用UTF8转字符串
+     * @see {@link #get(HttpClientRequest)}
      * @see HttpResponse.getStringResult()
      * @author songlin
      * @param url
      * @return
      */
     public static String get(String url) throws HttpClientException {
-        HttpClientRequest param = new HttpClientRequest(HttpResultType.STRING);
-        param.setUrl(url);
-        return get(param).getStringResult();
-    }
-
-    /**
-     * 简单的post方法，传参使用默认的UTF-8编码, 返回使用ISO-8859-1编码转为字符串
-     * 如果返回有中文乱码，请调用 HttpClientUtil.post(HttpRequest param)方法，该方法默认使用UTF8转字符串
-     * @see HttpClientUtil.post(HttpRequest param)
-     * @see HttpResponse.getStringResult()
-     * @author songlin
-     * @param url
-     * @return
-     */
-    public static String post() throws HttpClientException {
-        HttpClientRequest param = new HttpClientRequest(HttpResultType.STRING);
-        return post(param).getStringResult();
+        return HttpClientRequest.get(url).setResultType(HttpResultType.STRING).execute().getStringResult();
     }
 
     /**
@@ -208,244 +193,114 @@ public class HttpClientUtil {
      * @return
      */
     public static String post(String url) throws HttpClientException {
-        HttpClientRequest param = new HttpClientRequest(HttpResultType.STRING);
-        param.setUrl(url);
-        return post(param).getStringResult();
-    }
-
-    /**
-     * 简单的post方法，传参使用默认的UTF-8编码, 返回使用返回的编码转译如没有返回编码默认使用ISO-8859-1编码转为字符串
-     * 如果返回有中文乱码，请调用 HttpClientUtil.postText(HttpRequest param)方法，该方法默认使用UTF8转字符串
-     * @see HttpClientUtil.postText(HttpRequest param)
-     * @see HttpResponse.getStringResult()
-     * @author songlin
-     * @param url
-     * @return
-     */
-    public static String post(String url, String text) throws HttpClientException {
-        HttpClientRequest param = new HttpClientRequest(HttpResultType.STRING);
-        param.setUrl(url);
-        return postText(param, text).getStringResult();
+        return HttpClientRequest.post(url).setResultType(HttpResultType.STRING).addHeader(HEADER_CONTENT_TYPE, MediaTypes.FORM_UTF_8).execute()
+                .getStringResult();
     }
 
     /**
      * post方式提交表单
      */
     public static HttpClientResponse post(HttpClientRequest param) throws HttpClientException {
-        // 创建默认的httpClient实例.  
-        CloseableHttpClient httpclient = getHttpClient(param, HttpPost.METHOD_NAME);
-        HttpClientResponse result = new HttpClientResponse();
-        try {
-            long start = System.currentTimeMillis();
-
-            // 创建httppost 
-            HttpPost httppost = new HttpPost(param.getUrl());
-            /**
-             * 使用param.addHeader防止重复
-             */
-            param.addHeader(HEADER_CONTENT_TYPE, ContentType.create(MediaTypes.FORM, param.getCharset()).toString());
-            /**
-             * 自定义的头
-             */
-            addHeader(httppost, param);
-            // 创建参数队列  
-            UrlEncodedFormEntity uefEntity = new UrlEncodedFormEntity(param.getParams(), param.getCharset());
-            httppost.setEntity(uefEntity);
-            logger.info("executing request " + httppost.getRequestLine().toString());
-            logger.debug("post parameter:", param.getParams());
-            result = httpclient.execute(httppost, responseHandler);
-            long interval = System.currentTimeMillis() - start;
-            logger.info("{} 请求耗时：{}ms ", param.getUrl(), interval);
-        } catch (Exception e) {
-            throw new HttpClientException(e);
-        } finally {
-            // 关闭连接,释放资源  
-            HttpClientUtils.closeQuietly(httpclient);
+        if (param.isMultipart()) {
+            // 设置Http Header中的User-Agent属性
+            return execute(param.setMethod(HttpClientMethod.POST).addHeader("User-Agent", "Mozilla/5.0").addHeader(HEADER_CONTENT_TYPE,
+                    ContentType.create(MediaTypes.MULTIPART_FORM_DATA, param.getCharset()).toString()));
+        } else {
+            return execute(param.setMethod(HttpClientMethod.POST).addHeader(HEADER_CONTENT_TYPE,
+                    ContentType.create(MediaTypes.FORM, param.getCharset()).toString()));
         }
-        return result;
+    }
+
+    /**
+     * pub方式提交表单
+     */
+    public static HttpClientResponse put(HttpClientRequest param) throws HttpClientException {
+        return execute(param.setMethod(HttpClientMethod.PUT).addHeader(HEADER_CONTENT_TYPE,
+                ContentType.create(MediaTypes.FORM, param.getCharset()).toString()));
     }
 
     /**
      * 发送 get请求
      */
     public static HttpClientResponse get(HttpClientRequest param) throws HttpClientException {
-        CloseableHttpClient httpclient = getHttpClient(param, HttpGet.METHOD_NAME);
-        HttpClientResponse result = new HttpClientResponse();
-        try {
-            long start = System.currentTimeMillis();
-            // 创建httpget.  
-            HttpGet httpget = new HttpGet(param.getUrl() + (StringUtil.indexOf(param.getUrl(), "?") > 0 ? "" : "?") + param.getQueryString());
-            /**
-             * 使用param.addHeader防止重复
-             */
-            param.addHeader(HEADER_CONTENT_TYPE, ContentType.create(MediaTypes.FORM, param.getCharset()).toString());
-            /**
-             * 自定义的头
-             */
-            addHeader(httpget, param);
-            // 执行get请求.  
-            logger.info("executing request " + httpget.getRequestLine().toString());
-            result = httpclient.execute(httpget, responseHandler);
-            long interval = System.currentTimeMillis() - start;
-            logger.info("{} 请求耗时：{}ms ", param.getUrl(), interval);
-        } catch (Exception e) {
-            throw new HttpClientException(e);
-        } finally {
-            // 关闭连接,释放资源  
-            HttpClientUtils.closeQuietly(httpclient);
-        }
-        return result;
+        return execute(param.setMethod(HttpGet.METHOD_NAME).addHeader(HEADER_CONTENT_TYPE,
+                ContentType.create(MediaTypes.FORM, param.getCharset()).toString()));
+    }
+
+    /**
+     * 发送 delete请求
+     */
+    public static HttpClientResponse delete(HttpClientRequest param) throws HttpClientException {
+        return execute(param.setMethod(HttpDelete.METHOD_NAME).addHeader(HEADER_CONTENT_TYPE,
+                ContentType.create(MediaTypes.FORM, param.getCharset()).toString()));
     }
 
     /**
      * 上传文件
-     * 如服务端为springmvc，需要使用MultipartHttpServletRequest获取数据，MultipartFile 的名字为media
+     * 如服务端为springmvc，需要使用MultipartHttpServletRequest获取数据
      */
     public static HttpClientResponse post(String url, byte[] bytes) throws HttpClientException {
-        HttpClientRequest param = new HttpClientRequest(url);
-        param.addParam("media", bytes);
-        return upload(param);
+        return execute(HttpClientRequest.post(url), new ByteArrayEntity(bytes, ContentType.DEFAULT_BINARY));
     }
 
     /**
      * post inputStream
-     * 如服务端为springmvc，需要使用MultipartHttpServletRequest获取数据，MultipartFile 的名字为media
+     * 如服务端为springmvc，需要使用MultipartHttpServletRequest获取数据
      */
     public static HttpClientResponse post(String url, InputStream inputStream) throws HttpClientException {
-        HttpClientRequest param = new HttpClientRequest(url);
-        param.addParam("media", inputStream);
-        return upload(param);
+        return execute(HttpClientRequest.post(url), new InputStreamEntity(inputStream, ContentType.DEFAULT_BINARY));
     }
 
     /**
      * 上传文件
-     * 如服务端为springmvc，需要使用MultipartHttpServletRequest获取数据，MultipartFile 的名字为media
+     * 如服务端为springmvc，需要使用MultipartHttpServletRequest获取数据
      */
     public static HttpClientResponse post(String url, File file) throws HttpClientException {
-        HttpClientRequest param = new HttpClientRequest(url);
-        param.addParam("media", file);
-        return upload(param);
-    }
-
-    /**
-     * 上传文件 <br>
-     * 1.      request.getParameter("");//获取客户端通过addTextBody方法添加的String类型的数据。<br>
-     *
-     * 2.      request.getPart("");//获取客户端通过addBinaryBody、addPart、addTextBody方法添加的指定数据，返回Part类型的对象。<br>
-     *
-     * 3.      request.getParts();//获取客户端通过addBinaryBody、addPart、addTextBody方法添加的所有数据，返回Collection<Part>类型的对象。
-     */
-    public static HttpClientResponse upload(HttpClientRequest param) throws HttpClientException {
-        // 创建默认的httpClient实例.  
-        CloseableHttpClient httpclient = getHttpClient(param, HttpPost.METHOD_NAME);
-        HttpClientResponse result = new HttpClientResponse();
-        try {
-            long start = System.currentTimeMillis();
-            // post模式且带上传文件
-            HttpPost httppost = new HttpPost(param.getUrl());
-
-            // 设置请求体
-            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-            builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
-            for (Map.Entry<String, ContentBody> parm : param.getContent().entrySet()) {
-                builder.addPart(parm.getKey(), parm.getValue());
-            }
-            HttpEntity reqEntity = builder.build();
-            httppost.setEntity(reqEntity);
-            // 设置Http Header中的User-Agent属性
-            /**
-             * 使用param.addHeader防止重复
-             */
-            param.addHeader(HEADER_CONTENT_TYPE, ContentType.create(MediaTypes.MULTIPART_FORM_DATA, param.getCharset()).toString());
-            // 设置Http Header中的User-Agent属性
-            param.addHeader("User-Agent", "Mozilla/4.0");
-            /**
-             * 自定义的头
-             */
-            addHeader(httppost, param);
-            logger.info("executing request " + httppost.getRequestLine().toString());
-            result = httpclient.execute(httppost, responseHandler);
-            long interval = System.currentTimeMillis() - start;
-            logger.debug("{} 请求耗时：{}ms ", param.getUrl(), interval);
-        } catch (Exception e) {
-            throw new HttpClientException(e);
-        } finally {
-            // 关闭连接,释放资源  
-            HttpClientUtils.closeQuietly(httpclient);
-        }
-        return result;
+        return execute(HttpClientRequest.post(url), new FileEntity(file, ContentType.DEFAULT_BINARY));
     }
 
     /**
      * "application/json;charset=UTF_8"
      * @author songlin
-     * @param param
-     * @param jsonString
+     * @param url
+     * @param json
      * @return
      */
-    public static HttpClientResponse postJSON(HttpClientRequest param, String jsonString) throws HttpClientException {
-        // 创建默认的httpClient实例.  
-        CloseableHttpClient httpclient = getHttpClient(param, HttpPost.METHOD_NAME);
-        HttpClientResponse result = new HttpClientResponse();
-        try {
-            long start = System.currentTimeMillis();
-            // 创建httppost 
-            HttpPost httppost = new HttpPost(param.getUrl() + (StringUtil.indexOf(param.getUrl(), "?") > 0 ? "" : "?") + param.getQueryString());
-            /**
-             * 使用param.addHeader防止重复
-             */
-            param.addHeader(HEADER_CONTENT_TYPE, ContentType.create(MediaTypes.JSON, param.getCharset()).toString());
-            addHeader(httppost, param);
-            // 创建参数队列  
-            StringEntity e = new StringEntity(jsonString, ContentType.create(MediaTypes.JSON, param.getCharset()));
-            httppost.setEntity(e);
-            logger.info("executing request " + httppost.getRequestLine().toString());
-            result = httpclient.execute(httppost, responseHandler);
-            long interval = System.currentTimeMillis() - start;
-            logger.debug("{} 请求耗时：{}ms ", param.getUrl(), interval);
-        } catch (Exception e) {
-            throw new HttpClientException(e);
-        } finally {
-            // 关闭连接,释放资源 
-            HttpClientUtils.closeQuietly(httpclient);
-        }
-        return result;
+    public static HttpClientResponse postJson(String url, String json) throws HttpClientException {
+        return postJson(HttpClientRequest.post(url), json);
     }
 
     /**
-     * "text/plain"
+     * "application/json;charset=UTF_8"
      * @author songlin
-     * @param param
-     * @param text
+     * @param url
+     * @param json
+     * @return
+     */
+    public static HttpClientResponse postJson(HttpClientRequest param, String json) throws HttpClientException {
+        return execute(param.setMethod(HttpPost.METHOD_NAME), new StringEntity(json, ContentType.create(MediaTypes.JSON, param.getCharset())));
+    }
+
+    /**
+     * "application/json;charset=UTF_8"
+     * @author songlin
+     * @param url
+     * @param json
+     * @return
+     */
+    public static HttpClientResponse postText(String url, String text) throws HttpClientException {
+        return postText(HttpClientRequest.post(url), text);
+    }
+
+    /**
+     * "application/json;charset=UTF_8"
+     * @author songlin
+     * @param url
+     * @param json
      * @return
      */
     public static HttpClientResponse postText(HttpClientRequest param, String text) throws HttpClientException {
-        // 创建默认的httpClient实例.  
-        CloseableHttpClient httpclient = getHttpClient(param, HttpPost.METHOD_NAME);
-        HttpClientResponse result = new HttpClientResponse();
-        try {
-            long start = System.currentTimeMillis();
-            // 创建httppost 
-            HttpPost httppost = new HttpPost(param.getUrl() + (StringUtil.indexOf(param.getUrl(), "?") > 0 ? "" : "?") + param.getQueryString());
-            /**
-             * 使用param.addHeader防止重复
-             */
-            param.addHeader(HEADER_CONTENT_TYPE, ContentType.create(MediaTypes.TEXT_PLAIN, param.getCharset()).toString());
-            addHeader(httppost, param);
-            // 创建参数队列  
-            StringEntity e = new StringEntity(text, ContentType.create(MediaTypes.TEXT_PLAIN, param.getCharset()));
-            httppost.setEntity(e);
-            logger.info("executing request " + httppost.getRequestLine().toString());
-            result = httpclient.execute(httppost, responseHandler);
-            long interval = System.currentTimeMillis() - start;
-            logger.debug("{} 请求耗时：{}ms ", param.getUrl(), interval);
-        } catch (Exception e) {
-            throw new HttpClientException(e);
-        } finally {
-            // 关闭连接,释放资源 
-            HttpClientUtils.closeQuietly(httpclient);
-        }
-        return result;
+        return execute(param.setMethod(HttpPost.METHOD_NAME), new StringEntity(text, ContentType.create(MediaTypes.TEXT_PLAIN, param.getCharset())));
     }
 
     /**
@@ -455,22 +310,113 @@ public class HttpClientUtil {
      * @param xmlString
      * @return
      */
-    public static HttpClientResponse postXML(HttpClientRequest param, String xmlString) throws HttpClientException {
-        // 创建默认的httpClient实例.  
-        CloseableHttpClient httpclient = getHttpClient(param, HttpPost.METHOD_NAME);
+    public static HttpClientResponse postXml(String url, String xml) throws HttpClientException {
+        return postXml(HttpClientRequest.post(url), xml);
+    }
+
+    /**
+     * 发送xml "application/xml"
+     * @author songlin
+     * @param param
+     * @param xmlString
+     * @return
+     */
+    public static HttpClientResponse postXml(HttpClientRequest param, String xml) throws HttpClientException {
+        return execute(param.setMethod(HttpPost.METHOD_NAME),
+                new StringEntity(xml, ContentType.create(MediaTypes.APPLICATION_XML, param.getCharset())));
+    }
+
+    /**
+     * 执行请求，不建议直接使用，参考使用明确的请求
+     * @see 
+     * {@link #post(HttpClientRequest)} 
+     * <br>{@link #get(HttpClientRequest)} 
+     * <br>{@link #put(HttpClientRequest)}  
+     * <br>{@link #delete(HttpClientRequest)}
+     * @author songlin
+     * @param param
+     * @return HttpClientResponse
+     * @throws HttpClientException
+     */
+    public static HttpClientResponse execute(HttpClientRequest param) throws HttpClientException {
+        Assert.notNull(param.getUrl(), "request url can not be null");
+
         HttpClientResponse result = new HttpClientResponse();
+        CloseableHttpClient httpclient = getHttpClient(param);
         try {
             long start = System.currentTimeMillis();
-            // 创建httppost
-            HttpPost httppost = new HttpPost(param.getUrl() + (StringUtil.indexOf(param.getUrl(), "?") > 0 ? "" : "?") + param.getQueryString());
+            HttpUriRequest httpRequest = null;
+            switch (param.getMethod()) {
+                case GET:
+                    // 创建httpget.  
+                    httpRequest = new HttpGet(param.getUrl() + (StringUtil.indexOf(param.getUrl(), "?") > 0 ? "" : "?") + param.getQueryString());
+                    break;
+                case DELETE:
+                    // 创建httpget.  
+                    httpRequest = new HttpDelete(param.getUrl() + (StringUtil.indexOf(param.getUrl(), "?") > 0 ? "" : "?") + param.getQueryString());
+                    break;
+                case POST:
+                    // 创建httppost 
+                    HttpPost httppost = new HttpPost(param.getUrl());
+
+                    if (param.isMultipart()) {
+                        // 设置请求体
+                        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+                        builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+                        for (Map.Entry<String, ContentBody> parm : param.getContent().entrySet()) {
+                            builder.addPart(parm.getKey(), parm.getValue());
+                        }
+                        HttpEntity reqEntity = builder.build();
+                        httppost.setEntity(reqEntity);
+
+                    } else {
+                        // 创建参数队列  
+                        UrlEncodedFormEntity uefEntity = new UrlEncodedFormEntity(param.getParams(), param.getCharset());
+                        httppost.setEntity(uefEntity);
+                    }
+                    httpRequest = httppost;
+                    break;
+                case PUT:
+                    // 创建httppost 
+                    HttpPut httpput = new HttpPut(param.getUrl());
+                    // 创建参数队列  
+                    UrlEncodedFormEntity uefEntity = new UrlEncodedFormEntity(param.getParams(), param.getCharset());
+                    httpput.setEntity(uefEntity);
+                    httpRequest = httpput;
+                    break;
+            }
+            httpRequest.addHeader(HttpClientUtil.HEADER_ACCEPT_ENCODING, HttpClientUtil.ENCODING_GZIP);
             /**
              * 使用param.addHeader防止重复
              */
-            param.addHeader(HEADER_CONTENT_TYPE, ContentType.create(MediaTypes.APPLICATION_XML, param.getCharset()).toString());
-            addHeader(httppost, param);
+            for (Map.Entry<String, String> head : param.getHeader().entrySet()) {
+                httpRequest.addHeader(head.getKey(), MessageDigestUtil.utf8ToIso88591(head.getValue()));
+            }
+            logger.info("executing request " + httpRequest.getRequestLine().toString());
+            result = httpclient.execute(httpRequest, HttpClientUtil.responseHandler);
+            long interval = System.currentTimeMillis() - start;
+            logger.info("{} 请求耗时：{}ms ", param.getUrl(), interval);
+        } catch (Exception e) {
+            throw new HttpClientException(e);
+        } finally {
+            // 关闭连接,释放资源  
+            HttpClientUtils.closeQuietly(httpclient);
+        }
+        return result;
+    }
+
+    public static HttpClientResponse execute(HttpClientRequest param, HttpEntity entity) throws HttpClientException {
+
+        // 创建默认的httpClient实例.  
+        CloseableHttpClient httpclient = getHttpClient(param);
+        HttpClientResponse result = new HttpClientResponse();
+        try {
+            long start = System.currentTimeMillis();
+            // 创建httppost 
+            HttpPost httppost = new HttpPost(param.getUrl() + (StringUtil.indexOf(param.getUrl(), "?") > 0 ? "" : "?") + param.getQueryString());
             // 创建参数队列  
-            StringEntity e = new StringEntity(xmlString, ContentType.create(MediaTypes.APPLICATION_XML, param.getCharset()));
-            httppost.setEntity(e);
+            httppost.setEntity(entity);
+            addHeader(httppost, param);
             logger.info("executing request " + httppost.getRequestLine().toString());
             result = httpclient.execute(httppost, responseHandler);
             long interval = System.currentTimeMillis() - start;
@@ -482,6 +428,25 @@ public class HttpClientUtil {
             HttpClientUtils.closeQuietly(httpclient);
         }
         return result;
+    }
+
+    /**
+     * 上传文件 <br>
+     * 1.      request.getParameter("");//获取客户端通过addTextBody方法添加的String类型的数据。<br>
+     *
+     * 2.      request.getPart("");//获取客户端通过addBinaryBody、addPart、addTextBody方法添加的指定数据，返回Part类型的对象。<br>
+     *
+     * 3.      request.getParts();//获取客户端通过addBinaryBody、addPart、addTextBody方法添加的所有数据，返回Collection<Part>类型的对象。
+     * <br>
+     * 请使用
+     * @see {@link HttpClientUtil#post(String, byte[])}
+     * <br> {@link HttpClientUtil#post(String, File)}
+     * <br> {@link HttpClientUtil#post(String, InputStream)}
+     * <br> {@link HttpClientUtil#post(HttpClientRequest)}
+     */
+    @Deprecated
+    public static HttpClientResponse upload(HttpClientRequest param) throws HttpClientException {
+        return post(param);
     }
 
     /**
@@ -513,17 +478,7 @@ public class HttpClientUtil {
      * @throws IOException
      */
     public static File download(HttpClientRequest param, String filePath) throws IOException, HttpClientException {
-        HttpClientResponse response = null;
-        switch (param.getMethod()) {
-            case HttpGet.METHOD_NAME: {
-                response = get(param);
-                break;
-            }
-            case HttpPost.METHOD_NAME: {
-                response = post(param);
-                break;
-            }
-        }
+        HttpClientResponse response = execute(param);
         //        Header[] headers = response.getResponseHeaders();
         //        for (Header h : headers) {
         //            if (h.getName().equalsIgnoreCase("Content-Type")) {
@@ -535,7 +490,7 @@ public class HttpClientUtil {
             tempFile = new File(filePath);
         } else {
             //FIXME TODO 文件名
-            tempFile = new File(System.getProperty("java.io.tmpdir") + File.separator + StringUtil.random(5));
+            tempFile = new File(System.getProperty("java.io.tmpdir") + File.separator + StringUtil.random(6));
         }
         FileOutputStream output = FileUtils.openOutputStream(tempFile);
         try {
@@ -634,16 +589,13 @@ public class HttpClientUtil {
 
     };
 
-    /**
-     * set header
-     * @author songlin
-     * @param message
-     * @param request
-     */
-    private static void addHeader(HttpMessage message, HttpClientRequest request) {
-        message.addHeader(HEADER_ACCEPT_ENCODING, ENCODING_GZIP);
+    private static void addHeader(HttpMessage httpRequest, HttpClientRequest request) {
+        httpRequest.addHeader(HEADER_ACCEPT_ENCODING, ENCODING_GZIP);
+        /**
+         * 使用param.addHeader防止重复
+         */
         for (Map.Entry<String, String> head : request.getHeader().entrySet()) {
-            message.addHeader(head.getKey(), MessageDigestUtil.utf8ToIso88591(head.getValue()));
+            httpRequest.addHeader(head.getKey(), MessageDigestUtil.utf8ToIso88591(head.getValue()));
         }
     }
 }

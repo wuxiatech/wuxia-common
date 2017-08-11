@@ -34,6 +34,9 @@ import org.apache.http.client.entity.GzipDecompressingEntity;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.config.ConnectionConfig;
 import org.apache.http.config.MessageConstraints;
@@ -84,7 +87,7 @@ public class HttpAsyncClientUtil {
             //HttpClientUtil.get(request);
             par[i] = request;
         }
-        posts(par);
+        call(par);
         System.out.println("*************" + (System.currentTimeMillis() - start));
     }
 
@@ -114,15 +117,18 @@ public class HttpAsyncClientUtil {
      * @param param
      * @return
      */
-    private static CloseableHttpAsyncClient getHttpClient(HttpClientRequest param, String method) throws HttpClientException {
+    private static CloseableHttpAsyncClient getHttpClient(HttpClientRequest param) throws HttpClientException {
         boolean needssl = StringUtil.indexOf(param.getUrl().toLowerCase(), "https:") == 0;
         HttpAsyncClientBuilder builder = HttpAsyncClientBuilder.create();
         if (needssl) {
             builder = ssl();
         }
         // 设定自己需要的重定向策略
-        if (HttpPost.METHOD_NAME.equalsIgnoreCase(method)) {
-            builder.setRedirectStrategy(new LaxRedirectStrategy());
+        switch (param.getMethod()) {
+            case POST:
+            case PUT:
+                builder.setRedirectStrategy(new LaxRedirectStrategy());
+                break;
         }
 
         //配置io线程  
@@ -171,100 +177,13 @@ public class HttpAsyncClientUtil {
     }
 
     /**
-     * 简单异步请求，没有回复
-     * @author songlin
-     * @param param
-     */
-    public static void call(HttpClientRequest... param) throws HttpClientException {
-        CloseableHttpAsyncClient httpclient = getHttpClient(param[0], HttpGet.METHOD_NAME);
-        try {
-            // Start the client
-            httpclient.start();
-            // Execute request
-            List<Future<org.apache.http.HttpResponse>> lists = Lists.newArrayList();
-            for (HttpClientRequest req : param) {
-                final HttpGet httpget = new HttpGet(req.getUrl() + (StringUtil.indexOf(req.getUrl(), "?") > 0 ? "" : "?") + req.getQueryString());
-                logger.info("async executing request " + httpget.getRequestLine().toString());
-                Future<org.apache.http.HttpResponse> future = httpclient.execute(httpget, null);
-                lists.add(future);
-            }
-            for (Future<org.apache.http.HttpResponse> future : lists) {
-                // and wait until a response is received
-                org.apache.http.HttpResponse response1 = null;
-                try {
-                    response1 = future.get();
-                    logger.info("" + response1.getStatusLine());
-                } catch (InterruptedException | ExecutionException e) {
-                    logger.error("", e);
-                }
-            }
-        } catch (Exception e) {
-            throw new HttpClientException(e);
-        } finally {
-            System.out.println("完成");
-            HttpAsyncClientUtils.closeQuietly(httpclient);
-        }
-    }
-
-    /**
-     * 异步调用多个请求
-     * @author songlin
-     * @param param
-     * @return
-     */
-    public static List<HttpClientResponse> gets(HttpClientRequest... param) throws HttpClientException {
-        CloseableHttpAsyncClient httpclient = getHttpClient(param[0], HttpGet.METHOD_NAME);
-        List<HttpClientResponse> resps = Lists.newArrayList();
-        try {
-            // Start the client
-            httpclient.start();
-
-            // One most likely would want to use a callback for operation result
-            final CountDownLatch latch = new CountDownLatch(param.length);
-            List<Future<org.apache.http.HttpResponse>> lists = Lists.newArrayList();
-            for (HttpClientRequest req : param) {
-                final HttpGet request = new HttpGet(req.getUrl() + (StringUtil.indexOf(req.getUrl(), "?") > 0 ? "" : "?") + req.getQueryString());
-                logger.info("async executing request " + request.getRequestLine().toString());
-                Future<org.apache.http.HttpResponse> future = httpclient.execute(request, new FutureCallback<org.apache.http.HttpResponse>() {
-                    public void completed(final org.apache.http.HttpResponse response) {
-                        latch.countDown();
-                        logger.info(request.getRequestLine() + "->" + response.getStatusLine());
-                    }
-
-                    public void failed(final Exception ex) {
-                        latch.countDown();
-                        logger.warn(request.getRequestLine().toString(), ex);
-                    }
-
-                    public void cancelled() {
-                        latch.countDown();
-                        logger.warn(request.getRequestLine().toString() + " cancelled");
-                    }
-
-                });
-                lists.add(future);
-            }
-            latch.await();
-            for (Future<org.apache.http.HttpResponse> future : lists) {
-                resps.add(getResponse(future));
-            }
-        } catch (Exception e) {
-            throw new HttpClientException(e);
-        } finally {
-            logger.info("完成异步请求，关闭连接");
-            HttpAsyncClientUtils.closeQuietly(httpclient);
-        }
-        return resps;
-    }
-
-    /**
      * 异步调用多个请求,单个建议使用 {@link HttpClientUtil}
      * @author songlin
      * @param param
      * @return
      */
-    public static List<HttpClientResponse> posts(HttpClientRequest... param) throws HttpClientException {
-        CloseableHttpAsyncClient httpclient = getHttpClient(param[0], HttpPost.METHOD_NAME);
+    public static List<HttpClientResponse> call(HttpClientRequest... param) throws HttpClientException {
+        CloseableHttpAsyncClient httpclient = getHttpClient(param[0]);
         List<HttpClientResponse> resps = Lists.newArrayList();
         try {
             // Start the client
@@ -275,44 +194,66 @@ public class HttpAsyncClientUtil {
             List<Future<org.apache.http.HttpResponse>> lists = Lists.newArrayList();
             for (final HttpClientRequest req : param) {
                 try {
-                    // 创建httppost 
-                    final HttpPost httppost = new HttpPost(req.getUrl());
-                    if (req.isMultipart()) {
-                        // 设置请求体
-                        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-                        for (Map.Entry<String, ContentBody> parm : req.getContent().entrySet()) {
-                            builder.addPart(parm.getKey(), parm.getValue());
-                        }
-                        HttpEntity reqEntity = builder.build();
-                        httppost.setEntity(reqEntity);
-                        // 设置Http Header中的User-Agent属性
-                        BasicHeader agentHeader = new BasicHeader("User-Agent", "Mozilla/4.0");
-                        httppost.addHeader(agentHeader);
-                        httppost.addHeader(HttpClientUtil.HEADER_ACCEPT_ENCODING, HttpClientUtil.ENCODING_GZIP);
-                    } else {
-                        // 创建参数队列  
-                        UrlEncodedFormEntity uefEntity = new UrlEncodedFormEntity(req.getParams(), req.getCharset());
-                        httppost.setEntity(uefEntity);
+                    HttpRequestBase httpRequest = null;
+                    switch (req.getMethod()) {
+                        case GET:
+                            httpRequest = new HttpGet(req.getUrl() + (StringUtil.indexOf(req.getUrl(), "?") > 0 ? "" : "?") + req.getQueryString());
+                            break;
+                        case DELETE:
+                            break;
+                        case POST:
+                            // 创建httppost 
+                            HttpPost httppost = new HttpPost(req.getUrl());
+                            if (req.isMultipart()) {
+                                // 设置请求体
+                                MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+                                for (Map.Entry<String, ContentBody> parm : req.getContent().entrySet()) {
+                                    builder.addPart(parm.getKey(), parm.getValue());
+                                }
+                                HttpEntity reqEntity = builder.build();
+                                httppost.setEntity(reqEntity);
+                                // 设置Http Header中的User-Agent属性
+                                BasicHeader agentHeader = new BasicHeader("User-Agent", "Mozilla/4.0");
+                                httppost.addHeader(agentHeader);
+                                httppost.addHeader(HttpClientUtil.HEADER_ACCEPT_ENCODING, HttpClientUtil.ENCODING_GZIP);
+                            } else {
+                                // 创建参数队列  
+                                UrlEncodedFormEntity uefEntity = new UrlEncodedFormEntity(req.getParams(), req.getCharset());
+                                httppost.setEntity(uefEntity);
+                            }
+                            httpRequest = httppost;
+                            break;
+                        case PUT:
+                            HttpPut httpput = new HttpPut(req.getUrl());
+                            // 创建参数队列  
+                            UrlEncodedFormEntity uefEntity = new UrlEncodedFormEntity(req.getParams(), req.getCharset());
+                            httpput.setEntity(uefEntity);
+                            httpRequest = httpput;
+                            break;
+                        default:
+                            break;
                     }
-                    Future<org.apache.http.HttpResponse> future = httpclient.execute(httppost, new FutureCallback<org.apache.http.HttpResponse>() {
-                        public void completed(final org.apache.http.HttpResponse response) {
-                            latch.countDown();
-                            logger.info(httppost.getRequestLine() + "->" + response.getStatusLine());
-                        }
+                    final HttpUriRequest httpUriRequest = httpRequest;
+                    Future<org.apache.http.HttpResponse> future = httpclient.execute(httpUriRequest,
+                            new FutureCallback<org.apache.http.HttpResponse>() {
+                                public void completed(final org.apache.http.HttpResponse response) {
+                                    latch.countDown();
+                                    logger.info(httpUriRequest.getRequestLine() + "->" + response.getStatusLine());
+                                }
 
-                        public void failed(final Exception ex) {
-                            latch.countDown();
-                            logger.warn(httppost.getRequestLine().toString(), ex);
-                        }
+                                public void failed(final Exception ex) {
+                                    latch.countDown();
+                                    logger.warn(httpUriRequest.getRequestLine().toString(), ex);
+                                }
 
-                        public void cancelled() {
-                            latch.countDown();
-                            logger.warn(httppost.getRequestLine().toString() + " cancelled");
-                        }
+                                public void cancelled() {
+                                    latch.countDown();
+                                    logger.warn(httpUriRequest.getRequestLine().toString() + " cancelled");
+                                }
 
-                    });
+                            });
 
-                    logger.info("async executing request " + httppost.getRequestLine().toString());
+                    logger.info("async executing request " + httpRequest.getRequestLine().toString());
                     lists.add(future);
                 } catch (Exception e) {
                     logger.error("", e);
@@ -342,8 +283,8 @@ public class HttpAsyncClientUtil {
      * @return
      */
     public static List<HttpClientResponse> postTexts(String url, String... text) throws HttpClientException {
-        HttpClientRequest param = new HttpClientRequest(url);
-        CloseableHttpAsyncClient httpclient = getHttpClient(param, HttpPost.METHOD_NAME);
+        HttpClientRequest param = HttpClientRequest.post(url);
+        CloseableHttpAsyncClient httpclient = getHttpClient(param);
         List<HttpClientResponse> resps = Lists.newArrayList();
         try {
             // Start the client

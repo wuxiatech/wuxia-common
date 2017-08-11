@@ -99,8 +99,8 @@ public class Pinyin4jUtil {
      * @throws BadHanyuPinyinOutputFormatCombination
      */
     public static Set<String> makeStringByStringSet(String chinese) {
-        char[] chars = chinese.toCharArray();
         if (StringUtil.isNotBlank(chinese)) {
+            char[] chars = chinese.toCharArray();
             char[] srcChar = chinese.toCharArray();
             String[][] temp = new String[chinese.length()][];
             for (int i = 0; i < srcChar.length; i++) {

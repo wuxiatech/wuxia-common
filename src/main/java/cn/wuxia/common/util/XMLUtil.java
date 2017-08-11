@@ -47,6 +47,7 @@ public class XMLUtil {
         try {
             doc = reader.read(read);
             Element root = doc.getRootElement();
+            root.elements();
             outputString = root.getText();
         } catch (DocumentException e) {
             logger.error(e.getMessage(), e);

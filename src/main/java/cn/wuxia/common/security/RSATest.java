@@ -12,6 +12,10 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.Map;
 
+import org.springframework.util.Base64Utils;
+
+import cn.wuxia.common.util.BytesUtil;
+
 
 public class RSATest {
 
@@ -45,8 +49,15 @@ public class RSATest {
     }
 
     public static void main(String[] args) throws Exception {
-        test2();
+        //test2();
         //testSign();
+        byte[] password = RSAUtils.encryptByPublicKey("123456".getBytes());
+        String pw = Base64Utils.encodeToString(password);
+        System.out.println(pw);
+       password= Base64Utils.decodeFromString(pw);
+       password=  RSAUtils.decryptByPrivateKey(password);
+//        System.out.println(BytesUtil.bytesToObject(password));
+       System.out.println(Base64Utils.encodeToString("123456".getBytes()));
         //System.out.println(DesUtils.createKey().);
         //System.out.println(EncodeUtils.hexEncode("MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAI/PrAcZ1jVpI5GUz5CmJNSSiw/ltUV1G8gZOJGRK/A/QzFURZzVV2CI9k8ddbyPxTeMIb+eq7G1cz6sdrnlk4ECAwEAAQ==".getBytes()));
     }
