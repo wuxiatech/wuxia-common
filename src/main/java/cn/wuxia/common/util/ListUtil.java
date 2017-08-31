@@ -96,6 +96,8 @@ public class ListUtil extends CollectionUtils {
      * @return
      */
     public static <T> List<T> arrayToList(T[] array) {
+        if (array == null)
+            return Lists.newArrayList();
         return Lists.newArrayList(array);
     }
 
