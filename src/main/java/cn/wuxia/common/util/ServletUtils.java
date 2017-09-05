@@ -309,7 +309,7 @@ public class ServletUtils {
         for (String key : params.keySet()) {
             Object values = params.get(key);
             if (values instanceof String[]) {
-                aMap.put(key, StringUtil.join(values, ","));
+                aMap.put(key, StringUtil.join((String[])values, ","));
             } else if (values instanceof String) {
                 aMap.put(key, (String) values);
             }

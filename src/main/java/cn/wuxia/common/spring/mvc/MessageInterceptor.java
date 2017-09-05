@@ -79,10 +79,10 @@ public class MessageInterceptor implements HandlerInterceptor {
         }
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> all = (List<Map<String, Object>>) request.getSession().getAttribute(Msg.ALLMESSAGESKEY);
-        logger.info("message:-------------------------{}", all);
         if (ListUtil.isEmpty(all)) {
             all = new ArrayList<Map<String, Object>>();
         }
+        logger.info("message:-------------------------{}", all);
         if (ListUtil.isNotEmpty(infos)) {
             Map<String, Object> map = new HashMap<String, Object>();
             map.put(TYPEKEY, Msg.INFOMESSAGESKEY);
@@ -114,17 +114,19 @@ public class MessageInterceptor implements HandlerInterceptor {
             all.add(map);
         }
         if (modelAndView != null) {
-            //            modelAndView.addObject(Msg.INFOMESSAGESKEY, infos);
-            //            modelAndView.addObject(Msg.WARNMESSAGESKEY, warns);
-            //            modelAndView.addObject(Msg.ERRORMESSAGESKEY, errors);
-            //            modelAndView.addObject(Msg.SUCCESSMESSAGESKEY, succes);
-            //            modelAndView.addObject(Msg.VALIDMESSAGESKEY, valids);
+            modelAndView.addObject(Msg.INFOMESSAGESKEY, infos);
+            modelAndView.addObject(Msg.WARNMESSAGESKEY, warns);
+            modelAndView.addObject(Msg.ERRORMESSAGESKEY, errors);
+            modelAndView.addObject(Msg.SUCCESSMESSAGESKEY, succes);
+            modelAndView.addObject(Msg.VALIDMESSAGESKEY, valids);
         }
-        request.getSession().setAttribute(Msg.ALLMESSAGESKEY, all);
+
     }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+//        request.getSession().removeAttribute(Msg.ALLMESSAGESKEY);
+        Msg.cleanMessages();
     }
 
     public String translateMessage(String message, Locale locale, String... args) {

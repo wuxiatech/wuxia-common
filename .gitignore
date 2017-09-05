@@ -5,5 +5,7 @@
 *.jar
 *.war
 *.ear
-*.iml
 *.DS_Store
+*.iml
+.settings
+.project

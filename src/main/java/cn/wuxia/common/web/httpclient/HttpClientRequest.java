@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
+import cn.wuxia.common.util.MapUtil;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -177,8 +178,10 @@ public class HttpClientRequest {
      * @param map
      */
     public HttpClientRequest addParam(Map<String, Object> map) {
-        for (Map.Entry<String, Object> s : map.entrySet()) {
-            addParam(s.getKey(), s.getValue());
+        if (MapUtil.isNotEmpty(map)) {
+            for (Map.Entry<String, Object> s : map.entrySet()) {
+                addParam(s.getKey(), s.getValue());
+            }
         }
         return this;
     }
