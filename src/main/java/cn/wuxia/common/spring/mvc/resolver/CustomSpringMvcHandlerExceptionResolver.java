@@ -5,12 +5,15 @@ package cn.wuxia.common.spring.mvc.resolver;
 
 import java.util.Locale;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -25,6 +28,7 @@ import cn.wuxia.common.spring.support.MessageSourceHandler;
  * @author songlin.li
  * @since 2012-4-7
  */
+@Component
 public class CustomSpringMvcHandlerExceptionResolver implements HandlerExceptionResolver, Ordered {
 
     private MessageSourceHandler messageSourceHandler;
@@ -72,6 +76,7 @@ public class CustomSpringMvcHandlerExceptionResolver implements HandlerException
         return messageSourceHandler;
     }
 
+    @Autowired
     public void setMessageSourceHandler(MessageSourceHandler messageSourceHandler) {
         this.messageSourceHandler = messageSourceHandler;
     }

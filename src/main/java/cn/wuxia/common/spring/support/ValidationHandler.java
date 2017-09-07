@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Resource;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -52,6 +53,7 @@ public class ValidationHandler {
         return validator;
     }
 
+    @Resource
     public void setValidator(Validator validator) {
         this.validator = validator;
     }

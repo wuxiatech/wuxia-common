@@ -1,29 +1,24 @@
 package cn.wuxia.common.spring.mvc;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.ModelAndView;
-
 import cn.wuxia.common.bean.CustomMessage;
 import cn.wuxia.common.spring.support.MessageSourceHandler;
 import cn.wuxia.common.spring.support.Msg;
 import cn.wuxia.common.spring.support.Msg.CustomMessageTypeEnum;
 import cn.wuxia.common.util.ListUtil;
 import cn.wuxia.common.util.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.*;
 
 /**
- * 
  * 自定义消息拦截器
+ *
  * @author PL
  */
 public class MessageInterceptor implements HandlerInterceptor {
@@ -141,6 +136,7 @@ public class MessageInterceptor implements HandlerInterceptor {
         return messageSourceHandler;
     }
 
+    @Autowired
     public void setMessageSourceHandler(MessageSourceHandler messageSourceHandler) {
         this.messageSourceHandler = messageSourceHandler;
     }

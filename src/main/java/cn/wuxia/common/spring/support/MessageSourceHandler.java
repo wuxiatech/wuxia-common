@@ -16,12 +16,17 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.MessageSourceResourceBundle;
 
 import cn.wuxia.common.util.StringUtil;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+
+@Component
 public class MessageSourceHandler {
     private final String PATTERN1 = "[{]\\s*(\\w|[.])*\\s*[}]";
 
     private final String PATTERN2 = "([{]|[}])";
 
+    @Resource
     private MessageSource messageSource;
 
     private Locale defaultLocale = LocaleContextHolder.getLocale();

@@ -34,7 +34,7 @@ public class TestCache {
 
         //        mc.set(MemcachedUtils.shaKey("access_token"), "aafsdfsdfsdfsdff");
         //        System.out.println("1111111==="+mc.get(MemcachedUtils.shaKey("access_token")));
-         key = "classcn.daoming.basic.core.open.service.impl.AuthorizerAccountServiceImpl.findAuthorizerByAppidwxdc282971b0b8af0a";
+         key = "classcn.daoming.basic.api.open.service.impl.AuthorizerAccountServiceImpl.findAuthorizerByAppidwxdc282971b0b8af0a";
         System.out.println("======"+(String)mc.get(key, "1DayData"));
         //mc.memcachedClient.endWithNamespace();
 
