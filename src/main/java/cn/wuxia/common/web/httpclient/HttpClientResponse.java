@@ -3,8 +3,12 @@ package cn.wuxia.common.web.httpclient;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Collection;
+import java.util.Map;
 
 import org.apache.http.Header;
+
+import cn.wuxia.common.util.JsonUtil;
 
 /* *
  * 类名：HttpResponse功能：Http返回对象的封装详细：封装Http返回信息版本：3.3日期：2011-08-17说明：
@@ -82,4 +86,15 @@ public class HttpClientResponse {
         this.charset = charset;
     }
 
+    public Map<String, Object> jsonToMap() {
+        return JsonUtil.fromJson(getStringResult());
+    }
+
+    public <T> T jsonToObject(Class<T> t) {
+        return JsonUtil.fromJson(getStringResult(), t);
+    }
+
+    public <T> Collection<T> jsonToList(Class<T> t) {
+        return JsonUtil.fromJsonToCollection(getStringResult(), t);
+    }
 }
