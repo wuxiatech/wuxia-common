@@ -24,15 +24,8 @@ public class MemcachedException extends ServiceException {
         super(message, args);
     }
 
-    public MemcachedException(String message, Boolean flag, String... args) {
-        super(message, flag, args);
-    }
-
     public MemcachedException(String message, Throwable cause, String... args) {
         super(message, cause, args);
     }
 
-    public MemcachedException(String message, Throwable cause, Boolean flag, String... args) {
-        super(message, cause, flag, args);
-    }
 }

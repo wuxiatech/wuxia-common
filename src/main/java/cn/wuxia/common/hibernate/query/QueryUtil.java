@@ -89,13 +89,12 @@ public class QueryUtil implements Serializable {
      * @param endStr
      * @return
      */
-    public Conditions addBetween(String property, Object value, Object anotherValue) {
-        Conditions bean = new Conditions();
-        bean.setProperty(property);
-        bean.setValue(value);
+    public QueryUtil addBetween(String property, Object value, Object anotherValue) {
+        Conditions bean = new Conditions(property, value);
+        bean.setMatchType(MatchType.BW);
         bean.setAnotherValue(anotherValue);
         addBean(bean);
-        return bean;
+        return this;
     }
 
     /**
@@ -104,21 +103,13 @@ public class QueryUtil implements Serializable {
      * @param value
      * @return
      */
-    public Conditions add(String property, Object value) {
-        Conditions bean = new Conditions();
-        bean.setProperty(property);
-        bean.setValue(value);
+    public QueryUtil add(String property, Object value) {
+        Conditions bean = new Conditions(property, value);        
         addBean(bean);
-        return bean;
+        return this;
     }
 
-    public Conditions add(String property, Object value, int pos) {
-        Conditions bean = new Conditions();
-        bean.setProperty(property);
-        bean.setValue(value);
-        addBean(bean);
-        return bean;
-    }
+   
 
     public void addQueryValue(Object value) {
         queryValues.add(value);

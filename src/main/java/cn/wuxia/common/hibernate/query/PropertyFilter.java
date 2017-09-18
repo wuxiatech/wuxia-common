@@ -75,7 +75,7 @@ public class PropertyFilter implements Serializable {
         String propertyTypeCode = StringUtils.substring(firstPart, firstPart.length() - 1, firstPart.length());
 
         try {
-            matchType = Enum.valueOf(MatchType.class, matchTypeCode);
+            matchType = MatchType.valueOf(matchTypeCode);
         } catch (RuntimeException e) {
             throw new IllegalArgumentException("filter name " + filterName
                     + "Written not by the rules, can not get the attribute type of comparison.", e);

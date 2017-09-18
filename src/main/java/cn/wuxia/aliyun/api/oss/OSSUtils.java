@@ -9,54 +9,29 @@
 
 package cn.wuxia.aliyun.api.oss;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import cn.wuxia.common.util.DateUtil;
+import cn.wuxia.common.util.StringUtil;
+import com.aliyun.oss.ClientConfiguration;
+import com.aliyun.oss.OSSClient;
+import com.aliyun.oss.model.*;
+import com.google.common.collect.Maps;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.aliyun.oss.ClientConfiguration;
-import com.aliyun.oss.OSSClient;
-import com.aliyun.oss.model.CompleteMultipartUploadRequest;
-import com.aliyun.oss.model.CompleteMultipartUploadResult;
-import com.aliyun.oss.model.InitiateMultipartUploadRequest;
-import com.aliyun.oss.model.InitiateMultipartUploadResult;
-import com.aliyun.oss.model.ListObjectsRequest;
-import com.aliyun.oss.model.OSSObject;
-import com.aliyun.oss.model.OSSObjectSummary;
-import com.aliyun.oss.model.ObjectListing;
-import com.aliyun.oss.model.ObjectMetadata;
-import com.aliyun.oss.model.PartETag;
-import com.aliyun.oss.model.PutObjectResult;
-import com.aliyun.oss.model.UploadPartCopyRequest;
-import com.aliyun.oss.model.UploadPartCopyResult;
-import com.aliyun.oss.model.UploadPartRequest;
-import com.aliyun.oss.model.UploadPartResult;
-import com.google.common.collect.Maps;
-
-import cn.wuxia.common.util.DateUtil;
-import cn.wuxia.common.util.PropertiesUtils;
-import cn.wuxia.common.util.StringUtil;
 
 public class OSSUtils {
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
-    public final static Properties propertie = PropertiesUtils.loadProperties("classpath:/oss.config.properties");
 
     private String accessKeyId;
 
@@ -108,27 +83,13 @@ public class OSSUtils {
         this.client = client;
     }
 
-    /**
-     * 构造函数，初始化ossclien
-     * @author Wind.Zhao
-     * @date 2015/05/18
-     */
-    public OSSUtils() {
-        this.accessKeyId = propertie.getProperty("accessKeyId");
-        this.accessKeySecret = propertie.getProperty("accessKeySecret");
-        this.endpoint = propertie.getProperty("endpoint");
-        if (StringUtil.isNotBlank(accessKeyId) && StringUtils.isNotBlank(accessKeySecret)) {
-            if (StringUtil.isNotBlank(endpoint)) {
-                client = new OSSClient(endpoint, accessKeyId, accessKeySecret);
-            }
-        }
-    }
 
     /**
      * 构造函数，初始化ossclien
-     * @param endpoint 区域，具体参照阿里云的oss，可为空
-     * @param accessKeyId 阿里云oss访问匙id
-     * @param accessKeySecret 阿里云oss访问匙密钥 
+     *
+     * @param endpoint        区域，具体参照阿里云的oss，可为空
+     * @param accessKeyId     阿里云oss访问匙id
+     * @param accessKeySecret 阿里云oss访问匙密钥
      * @author Wind.Zhao
      * @date 2015/05/18
      */
@@ -145,10 +106,11 @@ public class OSSUtils {
 
     /**
      * 构造函数，初始化ossclient
-     * @param endpoint 区域，具体参照阿里云的oss
-     * @param accessKeyId 阿里云oss访问匙id
+     *
+     * @param endpoint        区域，具体参照阿里云的oss
+     * @param accessKeyId     阿里云oss访问匙id
      * @param accessKeySecret 阿里云oss访问匙密钥
-     * @param conf client的配置信息，具体参照阿里云的oss
+     * @param conf            client的配置信息，具体参照阿里云的oss
      * @author Wind.Zhao
      * @date 2015/05/18
      */
@@ -167,6 +129,7 @@ public class OSSUtils {
 
     /**
      * 检查client是否存在
+     *
      * @return 返回标识，true：存在；false：不存在
      * @author Wind.Zhao
      * @date 2015/05/18
@@ -182,11 +145,12 @@ public class OSSUtils {
 
     /**
      * 创建bucket
+     *
      * @param bucketName bucket名称
      * @return Map对象
-     * 			1）code：00000为成功代码，其他为失败代码；
-     *          2）msg：失败信息，code不为00001的时候存在；
-     *          3）bucket：把创建后的bucket对象返回，当code为00000的时候才有。
+     * 1）code：00000为成功代码，其他为失败代码；
+     * 2）msg：失败信息，code不为00001的时候存在；
+     * 3）bucket：把创建后的bucket对象返回，当code为00000的时候才有。
      * @author Wind.Zhao
      * @date 2015/05/18
      */
@@ -211,10 +175,11 @@ public class OSSUtils {
 
     /**
      * 获取所有bucket
+     *
      * @return Map对象
-     * 			1）code：00000为成功代码，其他为失败代码；
-     *          2）msg：失败信息，code不为00000的时候存在；
-     *          3）buckets：阿里云oss上所有的bucket，当code为00000的时候才有。
+     * 1）code：00000为成功代码，其他为失败代码；
+     * 2）msg：失败信息，code不为00000的时候存在；
+     * 3）buckets：阿里云oss上所有的bucket，当code为00000的时候才有。
      * @author Wind.Zhao
      * @date 2015/05/18
      */
@@ -234,12 +199,13 @@ public class OSSUtils {
     /**
      * 在bucket上创建文件夹，oss没有文件夹的概念，所有元素都是以Object来存储，
      * 但给用户提供了创建模拟文件夹的方式，创建后会有个文件夹下面默认的文件
+     *
      * @param bucketName 文件夹所在的bucket名字
      * @param folderName 文件夹名称
      * @return Map对象
-     * 			1）code：00000为成功代码，其他为失败代码；
-     *          2）msg：失败信息，code不为00000的时候存在；
-     *          3）folder：把创建后的bucket对象返回，当code为00000的时候才有。
+     * 1）code：00000为成功代码，其他为失败代码；
+     * 2）msg：失败信息，code不为00000的时候存在；
+     * 3）folder：把创建后的bucket对象返回，当code为00000的时候才有。
      * @author Wind.Zhao
      * @date 2015/05/18
      */
@@ -282,25 +248,26 @@ public class OSSUtils {
      * 在bucket上创建对象，如果当前路径有相同名字则会进行替换<br>
      * bucketName和filePath一定不能为空<br>
      * 1）key和fileName同时为空，则在bucket下面创建对象，对象名称为<br>
-     *   filePath中的文件名，如bucketName为'testBucket'，filePath<br>
-     *   为'c:/test/a.jpg'则在testBucket下创建a.jpg的对象；
+     * filePath中的文件名，如bucketName为'testBucket'，filePath<br>
+     * 为'c:/test/a.jpg'则在testBucket下创建a.jpg的对象；
      * 2）key不为空，fileName为空，如key为a/b/c，bucketName<br>
-     *   为'test'，filePath为'c:/test/a.jpg'，则在testBucket<br>
-     *   创建'a/b/c/a.jpg'的文件
+     * 为'test'，filePath为'c:/test/a.jpg'，则在testBucket<br>
+     * 创建'a/b/c/a.jpg'的文件
      * 3）key为空，fileName不为空，如fileName为b,bucketName<br>
-     *   为'testBucket'，filePath为'c:/test/a.jpg'，则在<br>
-     *   testBucket下创建b.jpg的对象
+     * 为'testBucket'，filePath为'c:/test/a.jpg'，则在<br>
+     * testBucket下创建b.jpg的对象
+     *
      * @param bucketName 文件夹所在的bucket名字
-     * @param key 所在bucket的路径，最后一个为"/"后面的为上传对象的名字<br>
-     * 		                  如果路径不存在则会自动创建，如果key的第一位为"/"，则去除"/"
-     * @param fileName 文件名，上传到oss的文件名
-     * @param filePath 需要上传文件的路径
+     * @param key        所在bucket的路径，最后一个为"/"后面的为上传对象的名字<br>
+     *                   如果路径不存在则会自动创建，如果key的第一位为"/"，则去除"/"
+     * @param fileName   文件名，上传到oss的文件名
+     * @param filePath   需要上传文件的路径
      * @return Map对象
-     * 			1）code：00000为成功代码，其他为失败代码；
-     *          2）msg：失败信息，code不为00000的时候存在；
-     *          3）object：创建后的对象（PutObjectResult）；
-     *          4）url：文件路径；
-     *           5）key：文件的具体路径，格式如：/app/test。
+     * 1）code：00000为成功代码，其他为失败代码；
+     * 2）msg：失败信息，code不为00000的时候存在；
+     * 3）object：创建后的对象（PutObjectResult）；
+     * 4）url：文件路径；
+     * 5）key：文件的具体路径，格式如：/app/test。
      * @author Wind.Zhao
      * @date 2015/05/18
      */
@@ -312,30 +279,31 @@ public class OSSUtils {
      * 在bucket上创建对象，如果当前路径有相同名字则会进行替换<br>
      * bucketName和filePath一定不能为空<br>
      * 1）key和fileName同时为空，则在bucket下面创建对象，对象名称为<br>
-     *   filePath中的文件名，如bucketName为'testBucket'，filePath<br>
-     *   为'c:/test/a.jpg'则在testBucket下创建a.jpg的对象；
+     * filePath中的文件名，如bucketName为'testBucket'，filePath<br>
+     * 为'c:/test/a.jpg'则在testBucket下创建a.jpg的对象；
      * 2）key不为空，fileName为空，如key为a/b/c，bucketName<br>
-     *   为'test'，filePath为'c:/test/a.jpg'，则在testBucket<br>
-     *   创建'a/b/c/a.jpg'的文件
+     * 为'test'，filePath为'c:/test/a.jpg'，则在testBucket<br>
+     * 创建'a/b/c/a.jpg'的文件
      * 3）key为空，fileName不为空，如fileName为b,bucketName<br>
-     *   为'testBucket'，filePath为'c:/test/a.jpg'，则在<br>
-     *   testBucket下创建b.jpg的对象
+     * 为'testBucket'，filePath为'c:/test/a.jpg'，则在<br>
+     * testBucket下创建b.jpg的对象
+     *
      * @param bucketName 文件夹所在的bucket名字
-     * @param key 所在bucket的路径，如果key的第一位为"/"，则去除"/"<br>
-     *            注意该参数为文件路径，并不包含文件名称
-     * @param meta 用户对该object的描述，由一系列name-value对组成；<br>
-     *             其中ContentLength是必须设置的，以便SDK可以正确识<br>
-     *             别上传Object的大小。支持的Http Header有四种，分<br>
-     *             别为：Cache-Control 、 Content-Disposition 、<br>
-     *             Content-Encoding 、 Expires
-     * @param fileName 文件名，上传到oss的文件名
-     * @param filePath 需要上传文件的路径
+     * @param key        所在bucket的路径，如果key的第一位为"/"，则去除"/"<br>
+     *                   注意该参数为文件路径，并不包含文件名称
+     * @param meta       用户对该object的描述，由一系列name-value对组成；<br>
+     *                   其中ContentLength是必须设置的，以便SDK可以正确识<br>
+     *                   别上传Object的大小。支持的Http Header有四种，分<br>
+     *                   别为：Cache-Control 、 Content-Disposition 、<br>
+     *                   Content-Encoding 、 Expires
+     * @param fileName   文件名，上传到oss的文件名
+     * @param filePath   需要上传文件的路径
      * @return Map对象
-     * 			1）code：00000为成功代码，其他为失败代码；
-     *          2）msg：失败信息，code不为00000的时候存在；
-     *          3）object：创建后的对象（PutObjectResult）；
-     *          4）url：对象对应的服务器地址；
-     *           5）key：文件的具体路径，格式如：/app/test。
+     * 1）code：00000为成功代码，其他为失败代码；
+     * 2）msg：失败信息，code不为00000的时候存在；
+     * 3）object：创建后的对象（PutObjectResult）；
+     * 4）url：对象对应的服务器地址；
+     * 5）key：文件的具体路径，格式如：/app/test。
      * @author Wind.Zhao
      * @date 2015/05/18
      */
@@ -363,25 +331,26 @@ public class OSSUtils {
      * 在bucket上创建对象，如果当前路径有相同名字则会进行替换<br>
      * bucketName和file一定不能为空<br>
      * 1）key和fileName同时为空，则在bucket下面创建对象，对象名称为<br>
-     *   file的文件名，如bucketName为'testBucket'，filePath<br>
-     *   为'c:/test/a.jpg'则在testBucket下创建a.jpg的对象；
+     * file的文件名，如bucketName为'testBucket'，filePath<br>
+     * 为'c:/test/a.jpg'则在testBucket下创建a.jpg的对象；
      * 2）key不为空，fileName为空，如key为a/b/c，bucketName<br>
-     *   为'test'，filePath为'c:/test/a.jpg'，则在testBucket<br>
-     *   创建'a/b/c/a.jpg'的文件
+     * 为'test'，filePath为'c:/test/a.jpg'，则在testBucket<br>
+     * 创建'a/b/c/a.jpg'的文件
      * 3）key为空，fileName不为空，如fileName为b,bucketName<br>
-     *   为'testBucket'，filePath为'c:/test/a.jpg'，则在<br>
-     *   testBucket下创建b.jpg的对象
+     * 为'testBucket'，filePath为'c:/test/a.jpg'，则在<br>
+     * testBucket下创建b.jpg的对象
+     *
      * @param bucketName 文件夹所在的bucket名字
-     * @param key 所在bucket的路径，最后一个为"/"后面的为上传对象的名字<br>
-     * 		                  如果路径不存在则会自动创建，如果key的第一位为"/"，则去除"/"
-     * @param fileName 文件名，上传到oss的文件名，不包括后缀
-     * @param filePath 需要上传文件
+     * @param key        所在bucket的路径，最后一个为"/"后面的为上传对象的名字<br>
+     *                   如果路径不存在则会自动创建，如果key的第一位为"/"，则去除"/"
+     * @param fileName   文件名，上传到oss的文件名，不包括后缀
+     * @param filePath   需要上传文件
      * @return Map对象
-     * 			1）code：00000为成功代码，其他为失败代码；
-     *          2）msg：失败信息，code不为00000的时候存在；
-     *          3）object：创建后的对象（PutObjectResult）；
-     *          4）url：文件路径；
-     *          5）key：文件的具体路径，格式如：/app/test。
+     * 1）code：00000为成功代码，其他为失败代码；
+     * 2）msg：失败信息，code不为00000的时候存在；
+     * 3）object：创建后的对象（PutObjectResult）；
+     * 4）url：文件路径；
+     * 5）key：文件的具体路径，格式如：/app/test。
      * @author Wind.Zhao
      * @date 2015/05/18
      */
@@ -393,30 +362,31 @@ public class OSSUtils {
      * 在bucket上创建对象，如果当前路径有相同名字则会进行替换<br>
      * bucketName和file一定不能为空<br>
      * 1）key和fileName同时为空，则在bucket下面创建对象，对象名称为<br>
-     *   file的文件名，如bucketName为'testBucket'，filePath<br>
-     *   为'c:/test/a.jpg'则在testBucket下创建a.jpg的对象；
+     * file的文件名，如bucketName为'testBucket'，filePath<br>
+     * 为'c:/test/a.jpg'则在testBucket下创建a.jpg的对象；
      * 2）key不为空，fileName为空，如key为a/b/c，bucketName<br>
-     *   为'test'，filePath为'c:/test/a.jpg'，则在testBucket<br>
-     *   创建'a/b/c/a.jpg'的文件
+     * 为'test'，filePath为'c:/test/a.jpg'，则在testBucket<br>
+     * 创建'a/b/c/a.jpg'的文件
      * 3）key为空，fileName不为空，如fileName为b,bucketName<br>
-     *   为'testBucket'，filePath为'c:/test/a.jpg'，则在<br>
-     *   testBucket下创建b.jpg的对象
+     * 为'testBucket'，filePath为'c:/test/a.jpg'，则在<br>
+     * testBucket下创建b.jpg的对象
+     *
      * @param bucketName 文件夹所在的bucket名字
-     * @param key 所在bucket的路径，如果key的第一位为"/"，则去除"/"<br>
-     *            注意该参数为文件路径，并不包含文件名称
-     * @param meta 用户对该object的描述，由一系列name-value对组成；<br>
-     *             其中ContentLength是必须设置的，以便SDK可以正确识<br>
-     *             别上传Object的大小。支持的Http Header有四种，分<br>
-     *             别为：Cache-Control 、 Content-Disposition 、<br>
-     *             Content-Encoding 、 Expires
-     * @param fileName 文件名，上传到oss的文件名
-     * @param file 需要上传文件
+     * @param key        所在bucket的路径，如果key的第一位为"/"，则去除"/"<br>
+     *                   注意该参数为文件路径，并不包含文件名称
+     * @param meta       用户对该object的描述，由一系列name-value对组成；<br>
+     *                   其中ContentLength是必须设置的，以便SDK可以正确识<br>
+     *                   别上传Object的大小。支持的Http Header有四种，分<br>
+     *                   别为：Cache-Control 、 Content-Disposition 、<br>
+     *                   Content-Encoding 、 Expires
+     * @param fileName   文件名，上传到oss的文件名
+     * @param file       需要上传文件
      * @return Map对象
-     * 			1）code：00000为成功代码，其他为失败代码；
-     *          2）msg：失败信息，code不为00000的时候存在；
-     *          3）object：创建后的对象（PutObjectResult）；
-     *          4）url：对象对应的服务器地址；
-     *          5）key：文件的具体路径，格式如：/app/test。
+     * 1）code：00000为成功代码，其他为失败代码；
+     * 2）msg：失败信息，code不为00000的时候存在；
+     * 3）object：创建后的对象（PutObjectResult）；
+     * 4）url：对象对应的服务器地址；
+     * 5）key：文件的具体路径，格式如：/app/test。
      * @author Wind.Zhao
      * @date 2015/05/18
      */
@@ -490,12 +460,13 @@ public class OSSUtils {
     /**
      * 获取当前bucket下的所有object，可遍历返回的对象列表，获取每个对象信息<br>
      * eg：for (OSSObjectSummary objectSummary : listing.getObjectSummaries())
+     *
      * @param bucketName bucket名称
      * @return Map对象
-     * 			1）code：00000为成功代码，其他为失败代码；
-     *          2）msg：失败信息，code不为00000的时候存在；
-     *          3）objectList：当code为00000的时候存在，ObjectListing类型<br>
-     *                        包含N个OSSObjectSummary。
+     * 1）code：00000为成功代码，其他为失败代码；
+     * 2）msg：失败信息，code不为00000的时候存在；
+     * 3）objectList：当code为00000的时候存在，ObjectListing类型<br>
+     * 包含N个OSSObjectSummary。
      * @author Wind.Zhao
      * @date 2015/05/20
      */
@@ -525,20 +496,21 @@ public class OSSUtils {
      * 注意：delimiter此参数可能与oss解释的不一样，1）当该参数为"/"的时候，结果为当前bucket的所<br>
      * 有文件，并不包括文件夹，2）当该参数为非"/"，如"a"则结果为不包含a的文件和文件夹对象，假如a文件夹<br>
      * 下有个b文件夹或者文件，则b不显示；3）当为空或null的情况下则获取当前bucket所有的对象。
-     * @param bucketName bucket名称 
-     * @param delimiter 长度只能为1，中文长度为2，故不行。用于对object名字进行分组的字符。所有名字包含指定的前缀且第一次出现<br>
-     *                  delimiter字符之间的object作为一组元素: commonPrefixes。<br>
-     * @param marker 设定结果从marker之后按字母排序的第一个开始返回。如对象大于1000，则需<br>
-     *               要迭代获取时，则把当前获取最后一个对象的key最为下次迭代开始的标识。
-     * @param maxKeys 限定此次返回object的最大数，如果不设定，默认为100，<br>
-     *                maxKeys取值不能大于1000。
-     * @param prefix 限定返回的object key必须以prefix作为前缀。注意使用<br>
-     *               prefix查询时，返回的key中仍会包含prefix。
+     *
+     * @param bucketName bucket名称
+     * @param delimiter  长度只能为1，中文长度为2，故不行。用于对object名字进行分组的字符。所有名字包含指定的前缀且第一次出现<br>
+     *                   delimiter字符之间的object作为一组元素: commonPrefixes。<br>
+     * @param marker     设定结果从marker之后按字母排序的第一个开始返回。如对象大于1000，则需<br>
+     *                   要迭代获取时，则把当前获取最后一个对象的key最为下次迭代开始的标识。
+     * @param maxKeys    限定此次返回object的最大数，如果不设定，默认为100，<br>
+     *                   maxKeys取值不能大于1000。
+     * @param prefix     限定返回的object key必须以prefix作为前缀。注意使用<br>
+     *                   prefix查询时，返回的key中仍会包含prefix。
      * @return Map对象
-     * 			1）code：00000为成功代码，其他为失败代码；
-     *          2）msg：失败信息，code不为00000的时候存在；
-     *          3）objectList：当code为00000的时候存在，ObjectListing类型<br>
-     *                        包含N个OSSObjectSummary。
+     * 1）code：00000为成功代码，其他为失败代码；
+     * 2）msg：失败信息，code不为00000的时候存在；
+     * 3）objectList：当code为00000的时候存在，ObjectListing类型<br>
+     * 包含N个OSSObjectSummary。
      * @author Wind.Zhao
      * @date 2015/05/20
      */
@@ -589,13 +561,14 @@ public class OSSUtils {
 
     /**
      * 根据bucke名称和对象路径获取对象信息
+     *
      * @param bucketName bucket名称
-     * @param key 对象路径，包括对象名，对于key的首位为"/"则会默认过滤<br>
-     *            eg：/resource/a.jpg最终会转化为resource/a.jpg
+     * @param key        对象路径，包括对象名，对于key的首位为"/"则会默认过滤<br>
+     *                   eg：/resource/a.jpg最终会转化为resource/a.jpg
      * @return Map对象
-     * 			1）code：00000为成功代码，其他为失败代码；
-     *          2）msg：失败信息，code不为00000的时候存在；
-     *          3）object：当code为00000的时候存在，OSSObject类型。
+     * 1）code：00000为成功代码，其他为失败代码；
+     * 2）msg：失败信息，code不为00000的时候存在；
+     * 3）object：当code为00000的时候存在，OSSObject类型。
      * @author Wind.Zhao
      * @date 2015/05/20
      */
@@ -636,11 +609,12 @@ public class OSSUtils {
      * 如bucke下面有一个叫resource的文件夹（在oss上手动创建的除外），创建文件对象<br>
      * a.jpg的时候创建了image的文件夹那么在删除a.jpg（image只有a.jpg一个文件），<br>
      * image文件夹对象也会删除。
+     *
      * @param bucketName bucket名称
-     * @param key 被删除的对象路径
+     * @param key        被删除的对象路径
      * @return Map对象
-     * 			1）code：00000为成功代码，其他为失败代码；
-     *          2）msg：失败信息，code不为00000的时候存在。
+     * 1）code：00000为成功代码，其他为失败代码；
+     * 2）msg：失败信息，code不为00000的时候存在。
      * @author Wind.Zhao
      * @date 2015/05/20
      */
@@ -668,11 +642,12 @@ public class OSSUtils {
 
     /**
      * 删除对象，实现自动删除当前路径的所有对象<br>
+     *
      * @param bucketName bucket名称
-     * @param key 被删除的对象路径
+     * @param key        被删除的对象路径
      * @return Map对象
-     * 			1）code：00000为成功代码，其他为失败代码；
-     *          2）msg：失败信息，code不为00000的时候存在。
+     * 1）code：00000为成功代码，其他为失败代码；
+     * 2）msg：失败信息，code不为00000的时候存在。
      * @author Wind.Zhao
      * @date 2015/05/20
      */
@@ -718,13 +693,14 @@ public class OSSUtils {
     /**
      * 复制对象，如果复制对象下有自对象也会复制到目的地址。使用该方法copy的object大于800M<br>
      * 则内部调用uploadPartCopy。
-     * @param srcBucketName 复制源bucket的名称
-     * @param srcKey 复制源路径
+     *
+     * @param srcBucketName    复制源bucket的名称
+     * @param srcKey           复制源路径
      * @param targetBucketName 目的源bucket的名称
-     * @param targetKey 目的源路径
+     * @param targetKey        目的源路径
      * @return Map对象
-     * 			1）code：00000为成功代码，其他为失败代码；
-     *          2）msg：失败信息，code不为00000的时候存在。
+     * 1）code：00000为成功代码，其他为失败代码；
+     * 2）msg：失败信息，code不为00000的时候存在。
      * @author Wind.Zhao
      * @date 2015/05/20
      */
@@ -839,10 +815,11 @@ public class OSSUtils {
     /**
      * 复制对象，如果复制对象下有自对象也会复制到目的地址。使用该方法copy的object一般<br>
      * 大于1G时候使用。
-     * @param srcBucketName 复制源bucket的名称
-     * @param srcKey 复制源路径
+     *
+     * @param srcBucketName    复制源bucket的名称
+     * @param srcKey           复制源路径
      * @param targetBucketName 目的源bucket的名称
-     * @param targetKey 目的源路径
+     * @param targetKey        目的源路径
      * @return completeMultipartUploadResult
      * @author Wind.Zhao
      * @date 2015/05/22
@@ -915,23 +892,24 @@ public class OSSUtils {
 
     /**
      * 分块上传文件，针对大文件。每块大小不能小于100k<br>
+     *
      * @param bucketName bucket的名称
-     * @param key 所在bucket的路径，如果key的第一位为"/"，则去除"/"<br>
-     *            注意该参数为文件路径，并不包含文件名称
-     * @param meta 用户对该object的描述，由一系列name-value对组成；<br>
-     *             其中ContentLength是必须设置的，以便SDK可以正确识<br>
-     *             别上传Object的大小。支持的Http Header有四种，分<br>
-     *             别为：Cache-Control 、 Content-Disposition 、<br>
-     *             Content-Encoding 、 Expires
-     * @param partSize 每块大小，单位为：M
-     * @param fileName 文件名称
-     * @param filePath 上传文件的路径
+     * @param key        所在bucket的路径，如果key的第一位为"/"，则去除"/"<br>
+     *                   注意该参数为文件路径，并不包含文件名称
+     * @param meta       用户对该object的描述，由一系列name-value对组成；<br>
+     *                   其中ContentLength是必须设置的，以便SDK可以正确识<br>
+     *                   别上传Object的大小。支持的Http Header有四种，分<br>
+     *                   别为：Cache-Control 、 Content-Disposition 、<br>
+     *                   Content-Encoding 、 Expires
+     * @param partSize   每块大小，单位为：M
+     * @param fileName   文件名称
+     * @param filePath   上传文件的路径
      * @return Map对象
-     * 			1）code：00000为成功代码，其他为失败代码；
-     *          2）msg：失败信息，code不为00000的时候存在；
-     *          3）completeMultipartUploadResult：分块上传结果；
-     *          4）url：对象对应的服务器地址；
-     *          5）key：文件的具体路径
+     * 1）code：00000为成功代码，其他为失败代码；
+     * 2）msg：失败信息，code不为00000的时候存在；
+     * 3）completeMultipartUploadResult：分块上传结果；
+     * 4）url：对象对应的服务器地址；
+     * 5）key：文件的具体路径
      * @author Wind.Zhao
      * @date 2015/05/20
      */

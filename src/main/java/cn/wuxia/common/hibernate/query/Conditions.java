@@ -14,10 +14,8 @@ import cn.wuxia.common.util.StringUtil;
  */
 
 public class Conditions implements Serializable {
-    /**
-     * 
-     */
-    private static final long serialVersionUID = -6566499451064404648L;
+
+    private static final long serialVersionUID = -6338801823988130524L;
 
     public final static String EQUAL = " = ";
 
@@ -35,12 +33,12 @@ public class Conditions implements Serializable {
 
     private Object anotherValue;
 
-    private String groupType = AND;
+    private String groupType;
 
     /**
      * default
      */
-    private String conditionType = MatchType.EQ.toString();
+    private String conditionType;
 
     public Conditions() {
     }
@@ -48,17 +46,15 @@ public class Conditions implements Serializable {
     public Conditions(String name, Object value) {
         this.property = name;
         this.value = value;
+        this.conditionType = MatchType.EQ.toString();
+        this.groupType = AND;
     }
 
     public Conditions(String name, MatchType matchType, Object value) {
         this.property = name;
         this.conditionType = matchType.toString();
         this.value = value;
-    }
-
-    public Conditions(String name, MatchType matchType) {
-        this.property = name;
-        this.conditionType = matchType.toString();
+        this.groupType = AND;
     }
 
     /**
@@ -95,7 +91,7 @@ public class Conditions implements Serializable {
             } else if (value.toString().equals("%null%")) {
                 return null;
             } else {
-                return MatchType.get(conditionType).getFormatValue(value);
+                return getMatchType().getFormatValue(value);
             }
         }
         return value;
@@ -121,7 +117,10 @@ public class Conditions implements Serializable {
     }
 
     public MatchType getMatchType() {
-        return MatchType.get(conditionType);
+        if (StringUtil.isBlank(conditionType)) {
+            return MatchType.EQ;
+        }
+        return MatchType.valueOf(conditionType);
     }
 
     public void setMatchType(MatchType m) {
@@ -140,6 +139,8 @@ public class Conditions implements Serializable {
      * @return
      */
     public String getGroupType() {
+        if (StringUtil.isBlank(groupType))
+            return AND;
         return groupType;
     }
 

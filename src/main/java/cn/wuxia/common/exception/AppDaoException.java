@@ -9,6 +9,7 @@ package cn.wuxia.common.exception;
  * @author songlin.li
  * @since 2011-2-24
  */
+
 public class AppDaoException extends AppRollbackException {
     /**
      * 

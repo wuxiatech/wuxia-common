@@ -53,16 +53,6 @@ public class UploadFile {
         client = new OSSClient(accessKeyId, accessKeySecret);
     }
 
-    public static void main(String[] args) {
-        UploadFile u = new UploadFile("Icqg2SyoVqqrp7j0", "7lXbHeIWGtTzOrLhYcO67lVnWAzAAA", "micro-shop");
-        try {
-            u.getUrl("H3xm");
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-    }
 
     private String upload(String key) throws FileNotFoundException {
         // 新建一个 Bucket

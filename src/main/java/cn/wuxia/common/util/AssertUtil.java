@@ -7,11 +7,12 @@ import org.nutz.lang.Lang;
 import org.springframework.util.Assert;
 
 /**
- * <h3>Class name</h3> <h4>Description</h4> <h4>Special Notes</h4>
- * 
+ * 暂时不要使用，待优化工具
+ * TODO
  * @ver 0.1
  * @author songlin.li 2012-05-17
  */
+@Deprecated
 public class AssertUtil extends Assert {
 
     /**

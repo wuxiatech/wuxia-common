@@ -120,14 +120,6 @@ public enum MatchType {
         return String.format(symbol, newValues);
     }
 
-    public static MatchType get(String conditionType) {
-        for (MatchType mt : EnumSet.allOf(MatchType.class)) {
-            if (StringUtils.equalsIgnoreCase(mt.name(), conditionType)) {
-                return mt;
-            }
-        }
-        return null;
-    }
 
     /**
      * object compare the name

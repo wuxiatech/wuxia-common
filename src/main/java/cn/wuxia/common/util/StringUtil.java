@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import cn.wuxia.common.util.reflection.BeanUtil;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -32,9 +34,9 @@ import cn.wuxia.common.util.reflection.ReflectionUtil;
 
 /**
  * <h3>String handling.</h3> <h4>Description</h4> <h4>Special Notes</h4>
- * 
- * @version 0.5
+ *
  * @author songlin.li 2009-11-3
+ * @version 0.5
  */
 public class StringUtil extends StringUtils {
 
@@ -52,12 +54,12 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description : replace string from s to e
-     * @param s from char
-     * @param e end char
+     * @param s       from char
+     * @param e       end char
      * @param content original content
-     * @param value replace content
+     * @param value   replace content
      * @return
+     * @description : replace string from s to e
      */
     public static String replaceInValue(String s, String e, String content, String value) {
         if (content == null)
@@ -71,7 +73,7 @@ public class StringUtil extends StringUtils {
             sbf.append(content.substring(0, i)).append(value);
             int n = i + s_length;
             int m = k + e_length;
-            for (; ((i = (content.indexOf(s, n))) >= 0 && (k = (content.indexOf(e, m))) >= 0);) {
+            for (; ((i = (content.indexOf(s, n))) >= 0 && (k = (content.indexOf(e, m))) >= 0); ) {
                 sbf.append(content.substring(m, i)).append(value);
                 n = i + s_length;
                 m = k + e_length;
@@ -83,11 +85,11 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description : Interception string a top front the length of the
-     *              character
-     * @param length To capture length
+     * @param length  To capture length
      * @param content
      * @return
+     * @description : Interception string a top front the length of the
+     * character
      */
     public static String cutString(int length, String content) {
         if (content.length() > length)
@@ -96,12 +98,12 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description : Interception string a top front the length of the
-     *              character, add "..." to the end
-     *              com.loyoyo.common.utils.StringUtil.java
      * @param length
      * @param content
      * @return String
+     * @description : Interception string a top front the length of the
+     * character, add "..." to the end
+     * com.loyoyo.common.utils.StringUtil.java
      * @author: bobo 2008-8-22 Afternoon 04:12:12
      */
     public static String cutSubString(int length, String content) {
@@ -111,9 +113,9 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description : decode
      * @param src
      * @return
+     * @description : decode
      * @author songlin.li
      */
     public static String unescape(String src) {
@@ -147,11 +149,11 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description : Add alias for each arguments in the SQL string
      * @param sqlString
      * @return
-     * @author Sagax.Luo
      * @throws Exception
+     * @description : Add alias for each arguments in the SQL string
+     * @author Sagax.Luo
      */
     public static String addAliasForSQLArgs(String sqlString, String[] aliases) throws Exception {
         String lowSqlString = sqlString.toLowerCase();
@@ -176,10 +178,10 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description : string support el tags <code>${contents}</code>
      * @param paraMap
      * @param destStr
      * @return
+     * @description : string support el tags <code>${contents}</code>
      * @author songlin.li
      */
     public static String replaceKeysSimple(Object bean, String destStr) {
@@ -187,51 +189,37 @@ public class StringUtil extends StringUtils {
             return destStr;
         }
 
-        for (String key : getTemplateKey(destStr)) {
-            Object value = ReflectionUtil.invokeGetterMethod(bean, key);
-            if (StringUtil.isBlank(value))
-                value = "";
-            key = "${" + key + "}";
-            destStr = destStr.replace(key, value.toString());
-        }
-
-        return destStr;
-    }
-
-    /**
-     * @description : string support el tags <code>${contents}</code>
-     * @param paraMap
-     * @param destStr
-     * @return
-     * @author songlin.li
-     */
-    public static String replaceKeysSimple(Map<String, Object> paraMap, String destStr) {
-        if (paraMap == null) {
-            return destStr;
-        }
         Pattern p = Pattern.compile("[${]+\\w+[}]");
         Matcher m = p.matcher(destStr);
 
         while (m.find()) {
             String k = m.group();
-            k = k.substring(2, k.length() - 1);
-            for (String key : paraMap.keySet()) {
-                if (StringUtil.equals(k, key)) {
-                    String value = paraMap.get(key) == null ? "" : paraMap.get(key).toString();
-                    key = "${" + key + "}";
-                    destStr = destStr.replace(key, value);
-                }
+            String key = k.substring(2, k.length() - 1);
+            Object value = null;
+            try {
+                value = BeanUtil.getProperty(bean, key);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
             }
+            value = value == null ? "" : value;
+            destStr = destStr.replace(k, value.toString());
         }
+
+
         return destStr;
     }
 
+
     /**
-     * @description : string support el tags <code>${contents}</code>
      * @param destStr
      * @param key
      * @param repalcement
      * @return
+     * @description : string support el tags <code>${contents}</code>
      * @author songlin.li
      */
     public static String replaceKeysSimple(String destStr, String key, String repalcement) {
@@ -252,9 +240,9 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description : support Object and String is null
      * @param target
      * @return
+     * @description : support Object and String is null
      */
     public static boolean isNotBlankPlus(Object target) {
         if (target == null)
@@ -269,11 +257,11 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description : Escape function
      * @param rules
      * @param target
-     * @author Jay Wu
      * @return
+     * @description : Escape function
+     * @author Jay Wu
      */
     public static String transferRegex(String rules, String target) {
         if (StringUtil.isBlank(rules) || StringUtil.isBlank(target))
@@ -289,11 +277,11 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description : count target appear times at strSource
      * @param strSource
      * @param target
-     * @author songlin.li
      * @return
+     * @description : count target appear times at strSource
+     * @author songlin.li
      */
     public static int countString(String strSource, String target) {
         int result = 0;
@@ -310,12 +298,12 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description : get the time target at strSource
      * @param strSource
      * @param target
      * @param times
-     * @author songlin.li
      * @return
+     * @description : get the time target at strSource
+     * @author songlin.li
      */
     public static int indexOf(String strSource, String target, int times) {
         int result = -1;
@@ -344,12 +332,12 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description : Returns the number of times times the target appeared in
-     *              strSource
      * @param strSource
      * @param target
      * @param times
      * @return
+     * @description : Returns the number of times times the target appeared in
+     * strSource
      * @author songlin.li
      */
     public static int lastIndexOf(String strSource, String target, int times) {
@@ -385,11 +373,11 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description : validate String length, One Chinese char is 3 bit
      * @param strParameter To validate the string
-     * @param limitLength Verification length
+     * @param limitLength  Verification length
      * @return Conform to the length then return true,out of range the return
-     *         false
+     * false
+     * @description : validate String length, One Chinese char is 3 bit
      */
     public static boolean validateStrByLength(String strParameter, int limitLength) {
         int temp_int = 0;
@@ -411,9 +399,9 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description : Determine whether case letter
      * @param s
      * @return
+     * @description : Determine whether case letter
      */
     public static boolean isLetter(String s) {
         for (int i = 0; i < s.length(); i++) {
@@ -425,10 +413,10 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description : string to object
      * @param str
      * @param classObj
      * @return
+     * @description : string to object
      */
     public static Object string2Object(String str, Class<?> classObj) {
         if (isEmpty(str))
@@ -437,7 +425,7 @@ public class StringUtil extends StringUtils {
         if (classObj.equals(Date.class))
             return DateUtil.stringToDate(str, DateFormatter.FORMAT_DD_MMM_YYYY_HH_MM_SS);
 
-        return ClassLoaderUtil.newInstanceByConstructor(classObj, new Class<?>[] { String.class }, new Object[] { str });
+        return ClassLoaderUtil.newInstanceByConstructor(classObj, new Class<?>[]{String.class}, new Object[]{str});
     }
 
     public static boolean isBlank(Object value) {
@@ -457,11 +445,11 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description :replace Regex
      * @param regex
      * @param orgi
      * @param pos
      * @return
+     * @description :replace Regex
      */
     public static String replaceRegex(String regex, String orgi, int pos) {
         if (isBlank(orgi) || isBlank(regex))
@@ -494,9 +482,9 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description : String to Map
      * @param mapStr key1=val1,key2=val2,key3=val3
      * @return
+     * @description : String to Map
      */
     public static Map<String, Object> String2Map(String mapStr) {
         Map<String, Object> map = new HashMap<String, Object>();
@@ -535,9 +523,9 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description :compress
      * @param value
      * @return
+     * @description :compress
      */
     public static String compress(String value) {
         if (isBlank(value))
@@ -557,9 +545,9 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description : unCompress
      * @param value
      * @return
+     * @description : unCompress
      */
     public static String unCompress(String value) {
         if (isBlank(value))
@@ -586,9 +574,9 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description : if input String is null then return "";
      * @param input
      * @return
+     * @description : if input String is null then return "";
      * @author Solex.Li
      */
     public static String nullToEmpty(Object input) {
@@ -607,23 +595,23 @@ public class StringUtil extends StringUtils {
      * String support like EL Tag <br>
      * <code>
      * Map<String, Object> map = new HashMap<String, Object>();<br><br>
-     * 
+     * <p>
      * Map<String, Object> test = new HashMap<String, Object>();<br>
      * test.put("a", "I'm a！");<br>
      * map.put("test", test);<br><br>
-     *  
-     *  Map<String, Object> test2 = new HashMap<String, Object>();<br>  
-     *  test2.put("b", "I'm b！");   <br>
-     *  map.put("test2", test2);<br>
-     *  
-     *  String str = "${map.test[a]}";<br>
-     *  System.out.println(replaceKeys(map, str));<br><br>
-     * 
+     * <p>
+     * Map<String, Object> test2 = new HashMap<String, Object>();<br>
+     * test2.put("b", "I'm b！");   <br>
+     * map.put("test2", test2);<br>
+     * <p>
+     * String str = "${map.test[a]}";<br>
+     * System.out.println(replaceKeys(map, str));<br><br>
+     * <p>
      * String str2 = "${map.test[a]}，and more，${map.test2[b]}";<br>
      * System.out.println(replaceKeys(map, str2));<br>
-     * 
-      </code>
-     * 
+     * <p>
+     * </code>
+     *
      * @param map
      * @param key
      * @return
@@ -662,10 +650,10 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @description : get key from str,like ${abc}
-     * @author songlin.li
      * @param str
      * @return
+     * @description : get key from str,like ${abc}
+     * @author songlin.li
      */
     public static String[] getTemplateKey(String str) {
         Pattern p = Pattern.compile("[${]+\\w+[}]");
@@ -678,17 +666,17 @@ public class StringUtil extends StringUtils {
             value.add(key);
         }
         if (ListUtil.isEmpty(value)) {
-            return new String[] {};
+            return new String[]{};
         }
         value = ListUtil.removeDuplicateBySet(value);
         return ListUtil.listToArray(value);
     }
 
     /**
-     * @description : trim all string blank
-     * @author songlin.li
      * @param source
      * @return
+     * @description : trim all string blank
+     * @author songlin.li
      */
     public static String trimBlank(String source) {
         if (isBlank(source)) {
@@ -726,7 +714,7 @@ public class StringUtil extends StringUtils {
 
     /**
      * 把"1,2,3"转换成"'1','2','3'"
-     * 
+     *
      * @param string
      * @return
      */
@@ -791,11 +779,11 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @author songlin
-     * @param sorceStr 为原字符串
+     * @param sorceStr  为原字符串
      * @param insertStr 为要插入的字符串
-     * @param location 为插入位置
+     * @param location  为插入位置
      * @return
+     * @author songlin
      */
     public static String insert(String sorceStr, String insertStr, int location) {
         return StringUtils.substring(sorceStr, 0, location) + insertStr + StringUtils.substring(sorceStr, location, sorceStr.length());
@@ -803,11 +791,12 @@ public class StringUtil extends StringUtils {
 
     /**
      * 首字母转小写
-     * 
+     * <p>
      * {@link org.apache.commons.lang3.StringUtils#uncapitalize(String str)}
-     * @author songlin
+     *
      * @param s
      * @return
+     * @author songlin
      */
     public static String toLowerCaseFirstChar(String s) {
         return uncapitalize(s);
@@ -819,11 +808,12 @@ public class StringUtil extends StringUtils {
 
     /**
      * 首字母转大写
-     * 
+     * <p>
      * {@link org.apache.commons.lang3.StringUtils#capitalize(String str)}
-     * @author songlin
+     *
      * @param s
      * @return
+     * @author songlin
      */
     public static String toUpperCaseFirstChar(String s) {
         return capitalize(s);

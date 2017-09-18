@@ -46,56 +46,6 @@ public class PropertiesUtils {
 
     private static final PathMatchingResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
 
-    // =========================开始静态获取properties的值，修改的properties重启后生效或者clean后生效=====================
-
-    private static Properties initProperties;
-
-    /**
-     * 请使用
-     * @author songlin
-     * @return
-     */
-
-    @Deprecated
-    public static Properties getProperties() {
-        if (initProperties == null || initProperties.isEmpty())
-            initProperties = loadProperties();
-        return initProperties;
-    }
-
-    /**
-    * 请使用@Value标签获取application.properties的值
-    * @author songlin
-    * @param key
-    * @return
-    */
-    @Deprecated
-    public static String getPropertiesValue(String key) {
-        if (getProperties().containsKey(key)) {
-            String value = getProperties().getProperty(key);
-            String[] keys = StringUtil.getTemplateKey(value);
-            if (ArrayUtil.isNotEmpty(keys)) {
-                Map<String, Object> param = Maps.newHashMap();
-                for (String k : keys) {
-                    param.put(k, getPropertiesValue(k));
-                }
-                return StringUtil.replaceKeysSimple(param, value);
-            }
-            return value;
-        } else
-            return "";
-    }
-
-    /**
-     * @description : clear properties
-     */
-    @Deprecated
-    public static void clean() {
-        initProperties.clear();
-    }
-
-    // =========================结束静态获取properties的值，修改的properties重启后生效或者clean后生效=====================
-
     /**
      * Loading multiple properties files , the same attribute value will
      * overwrite the last file loaded before the load. The file path to use the
@@ -112,7 +62,7 @@ public class PropertiesUtils {
      */
     public static Properties loadProperties(String... resourcesPaths) {
         if (ArrayUtils.isEmpty(resourcesPaths)) {
-            resourcesPaths = new String[] { "classpath:application.properties", "classpath:application.location.properties" };
+            throw new IllegalArgumentException("properties路径不能为空：如 classpath:application.properties");
         }
         Properties p = new Properties();
         for (String location : resourcesPaths) {
@@ -154,14 +104,7 @@ public class PropertiesUtils {
         filePath = resourcesPaths;
     }
 
-    /**
-     * 请使用PropertiesUtils(String resourcesPaths)构造方法
-     * 默认读取:classpath:application.properties，classpath:application.location.
-     * properties
-     */
-    @Deprecated
     public PropertiesUtils() {
-        properties = loadProperties();
     }
 
     /**
@@ -271,16 +214,6 @@ public class PropertiesUtils {
             m.put(key, value);
         }
         return m;
-    }
-
-    public static void main(String[] args) {
-        Properties propertie = loadProperties("file:/Users/songlin/Documents/ibmallworkspace/WeChatAPI/src/main/resources/wechat.config.properties",
-                "file:/Users/songlin/Documents/ibmallworkspace/MicroApp/src/main/resources/wechat.config.properties");
-        //        logger.error(propertie.getProperty("cas.logoutUrl"));
-        for (Map.Entry<Object, Object> s : propertie.entrySet()) {
-            System.out.println(s.getKey() + "   " + s.getValue());
-        }
-        //        System.out.println(ClassLoaderUtil.getAbsolutePathOfClassLoaderClassPath());
     }
 
     /**
