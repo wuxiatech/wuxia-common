@@ -1,5 +1,7 @@
 package cn.wuxia.common.spring.orm.mongo;
 
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +19,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import com.google.common.collect.Lists;
 import com.mongodb.WriteResult;
 
+import cn.wuxia.common.entity.ValidationEntity;
 import cn.wuxia.common.hibernate.query.Conditions;
 import cn.wuxia.common.hibernate.query.Pages;
 import cn.wuxia.common.hibernate.query.Sort.Order;
@@ -24,17 +27,17 @@ import cn.wuxia.common.util.ListUtil;
 import cn.wuxia.common.util.StringUtil;
 import cn.wuxia.common.util.reflection.ReflectionUtil;
 
-public abstract class SpringDataMongoDao<T> {
+public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends Serializable> {
     protected static Logger logger = LoggerFactory.getLogger(SpringDataMongoDao.class);
 
     protected MongoTemplate mongoTemplate;
 
     /**
      * 如非实体存储的时候需要制定collection name
-     * 
+     *
      * @return
      */
-    protected abstract String collectionName();
+    protected String collectionName;
 
     public SpringDataMongoDao() {
     }
@@ -44,114 +47,114 @@ public abstract class SpringDataMongoDao<T> {
     }
 
     /**
-     * 
      * @param query
      * @return
      */
     public List<T> find(Query query) {
-        if (StringUtil.isBlank(collectionName())) {
+        if (StringUtil.isBlank(collectionName)) {
             return getMongoTemplate().find(query, this.getEntityClass());
         } else
-            return getMongoTemplate().find(query, this.getEntityClass(), collectionName());
+            return getMongoTemplate().find(query, this.getEntityClass(), collectionName);
     }
 
     /**
      * 查找唯一
-     * 
+     *
      * @param query
      * @return
      */
     public T findOne(Query query) {
-        if (StringUtil.isBlank(collectionName())) {
+        if (StringUtil.isBlank(collectionName)) {
             return getMongoTemplate().findOne(query, this.getEntityClass());
         } else
-            return getMongoTemplate().findOne(query, this.getEntityClass(), collectionName());
+            return getMongoTemplate().findOne(query, this.getEntityClass(), collectionName);
     }
 
     /**
      * 更新
-     * 
+     *
      * @param query
      * @param update
      */
     public void update(Query query, Update update) {
-        if (StringUtil.isBlank(collectionName())) {
+        if (StringUtil.isBlank(collectionName)) {
             getMongoTemplate().findAndModify(query, update, this.getEntityClass());
         } else
-            getMongoTemplate().findAndModify(query, update, this.getEntityClass(), collectionName());
+            getMongoTemplate().findAndModify(query, update, this.getEntityClass(), collectionName);
     }
 
     /**
      * 保存
-     * 
+     *
      * @param entity
      * @return
      */
-    public T save(T entity) {
-        if (StringUtil.isBlank(collectionName())) {
+    public void save(T entity) {
+        if (StringUtil.isBlank(collectionName)) {
             getMongoTemplate().insert(entity);
         } else {
-            getMongoTemplate().insert(entity, collectionName());
+            getMongoTemplate().insert(entity, collectionName);
         }
-        return entity;
     }
 
-    public void batchSave(List<T> entitys) {
+    public void batchSave(Collection<T> entitys) {
         if (ListUtil.isEmpty(entitys))
             return;
-        if (StringUtil.isBlank(collectionName())) {
+        if (StringUtil.isBlank(collectionName)) {
             getMongoTemplate().insert(entitys, this.getEntityClass());
         } else {
-            getMongoTemplate().insert(entitys, collectionName());
+            getMongoTemplate().insert(entitys, collectionName);
         }
     }
 
-    public Map<String, ?> save(Map<String, ?> m) {
-        if (StringUtil.isBlank(collectionName())) {
+    public void save(Map<String, ?> m) {
+        if (StringUtil.isBlank(collectionName)) {
             getMongoTemplate().insert(m);
         } else {
-            getMongoTemplate().insert(m, collectionName());
+            getMongoTemplate().insert(m, collectionName);
         }
-        return m;
     }
 
     /**
      * 删除对象
-     * @author songlin
+     *
      * @param entity
+     * @author songlin
      */
-    public void remove(T entity) {
-        if (StringUtil.isBlank(collectionName())) {
+    public void delete(T entity) {
+        if (StringUtil.isBlank(collectionName)) {
             WriteResult res = getMongoTemplate().remove(entity);
+            logger.info("", res);
         } else {
-            WriteResult res = getMongoTemplate().remove(entity, collectionName());
+            WriteResult res = getMongoTemplate().remove(entity, collectionName);
+            logger.info("", res);
         }
     }
 
-    public void removeById(final String id) {
-        if (StringUtil.isBlank(collectionName())) {
+    public void deleteById(final K id) {
+        if (StringUtil.isBlank(collectionName)) {
             getMongoTemplate().findAndRemove(new Query().addCriteria(Criteria.where("id").is(id)), this.getEntityClass());
         } else {
-            getMongoTemplate().findAndRemove(new Query().addCriteria(Criteria.where("id").is(id)), this.getEntityClass(), collectionName());
+            getMongoTemplate().findAndRemove(new Query().addCriteria(Criteria.where("id").is(id)), this.getEntityClass(), collectionName);
         }
     }
 
     /**
      * 根据id查找
-     * 
+     *
      * @param id
      * @return
      */
-    public T findById(final String id) {
-        if (StringUtil.isBlank(collectionName())) {
+    public T findById(final K id) {
+        if (StringUtil.isBlank(collectionName)) {
             return getMongoTemplate().findById(id, this.getEntityClass());
         } else
-            return getMongoTemplate().findById(id, this.getEntityClass(), collectionName());
+            return getMongoTemplate().findById(id, this.getEntityClass(), collectionName);
     }
 
     /**
      * 根据某个熟悉查找
-     * 
+     *
      * @param properties
      * @param value
      * @return
@@ -163,7 +166,7 @@ public abstract class SpringDataMongoDao<T> {
 
     /**
      * 分页查找
-     * 
+     *
      * @param query
      * @param page
      * @return
@@ -199,20 +202,20 @@ public abstract class SpringDataMongoDao<T> {
 
     /**
      * 统计总数
-     * 
+     *
      * @param query
      * @return
      */
     protected long count(Query query) {
-        if (StringUtil.isBlank(collectionName())) {
+        if (StringUtil.isBlank(collectionName)) {
             return getMongoTemplate().count(query, this.getEntityClass());
         } else
-            return getMongoTemplate().count(query, this.getEntityClass(), collectionName());
+            return getMongoTemplate().count(query, this.getEntityClass(), collectionName);
     }
 
     /**
      * 获取需要操作的实体类class
-     * 
+     *
      * @return
      */
     protected Class<T> getEntityClass() {
@@ -220,8 +223,9 @@ public abstract class SpringDataMongoDao<T> {
     }
 
     /**
-     * 注入mongodbTemplate
-     * 
+     * 可以重写注入
+     *
+     * @param mongoTemplate
      */
     @Autowired
     public void setMongoTemplate(MongoTemplate mongoTemplate) {
@@ -230,6 +234,14 @@ public abstract class SpringDataMongoDao<T> {
 
     public MongoTemplate getMongoTemplate() {
         return mongoTemplate;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public void setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
     }
 
 }

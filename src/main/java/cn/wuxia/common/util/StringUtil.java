@@ -18,7 +18,6 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import cn.wuxia.common.util.reflection.BeanUtil;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -30,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
 
 import cn.wuxia.common.util.DateUtil.DateFormatter;
-import cn.wuxia.common.util.reflection.ReflectionUtil;
+import cn.wuxia.common.util.reflection.BeanUtil;
 
 /**
  * <h3>String handling.</h3> <h4>Description</h4> <h4>Special Notes</h4>
@@ -181,7 +180,8 @@ public class StringUtil extends StringUtils {
      * @param paraMap
      * @param destStr
      * @return
-     * @description : string support el tags <code>${contents}</code>
+     * @description : string support el tags <code>${contents}</code> 
+     * <br>but not support <code> ${bean.contents}</code>  support in {@link #replaceKeysSimple(String, String, String)}
      * @author songlin.li
      */
     public static String replaceKeysSimple(Object bean, String destStr) {
@@ -189,7 +189,7 @@ public class StringUtil extends StringUtils {
             return destStr;
         }
 
-        Pattern p = Pattern.compile("[${]+\\w+[}]");
+        Pattern p = Pattern.compile("\\$+[{]+\\w+[}]");
         Matcher m = p.matcher(destStr);
 
         while (m.find()) {
@@ -219,12 +219,12 @@ public class StringUtil extends StringUtils {
      * @param key
      * @param repalcement
      * @return
-     * @description : string support el tags <code>${contents}</code>
+     * @description : string support el tags <code>${contents} and ${bean.contents}</code>
      * @author songlin.li
      */
     public static String replaceKeysSimple(String destStr, String key, String repalcement) {
 
-        Pattern p = Pattern.compile("[${]+\\w+[}]");
+        Pattern p = Pattern.compile("\\$+[{]+[\\w\\.]+[}]");
         Matcher m = p.matcher(destStr);
 
         while (m.find()) {
@@ -656,7 +656,7 @@ public class StringUtil extends StringUtils {
      * @author songlin.li
      */
     public static String[] getTemplateKey(String str) {
-        Pattern p = Pattern.compile("[${]+\\w+[}]");
+        Pattern p = Pattern.compile("\\$+[{]+[\\w\\.]+[}]");
         Matcher m = p.matcher(str);
 
         List<String> value = new ArrayList<String>();

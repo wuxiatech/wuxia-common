@@ -23,6 +23,7 @@ import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
 import cn.wuxia.common.util.ArrayUtil;
@@ -80,6 +81,7 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
      *              multiple SesionFactory of to reload this function in a
      *              subclass.
      */
+    @Autowired
     public void setSessionFactory(final SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }
