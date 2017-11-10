@@ -38,13 +38,17 @@ public class BrowserUtils {
 
     private final static String SE360 = "360SE";
 
-    /** 判断是否是微信浏览器 */
+    /**
+     * 判断是否是微信浏览器
+     */
     public static boolean isWeiXin(HttpServletRequest request) {
         logger.info(request.getHeader("USER-AGENT"));
         return request.getHeader("USER-AGENT").toLowerCase().indexOf("micromessenger") > 0 ? true : false;
     }
 
-    /** 判断是否是IE */
+    /**
+     * 判断是否是IE
+     */
     public static boolean isIE(HttpServletRequest request) {
         logger.info(request.getHeader("USER-AGENT"));
         return request.getHeader("USER-AGENT").toLowerCase().indexOf("msie") > 0 ? true : false;
@@ -52,7 +56,7 @@ public class BrowserUtils {
 
     /**
      * 获取IE版本
-     * 
+     *
      * @param request
      * @return
      */
@@ -66,7 +70,7 @@ public class BrowserUtils {
 
     /**
      * 获取浏览器类型
-     * 
+     *
      * @param request
      * @return
      */
@@ -85,6 +89,9 @@ public class BrowserUtils {
 
     public static String checkBrowse(HttpServletRequest request) {
         String userAgent = request.getHeader("USER-AGENT");
+        if (StringUtil.isBlank(userAgent))
+            return BrowserType.Other.bname;
+
         for (BrowserType b : BrowserType.values()) {
             if (regex(b.getBname(), userAgent)) {
                 return b.bname;

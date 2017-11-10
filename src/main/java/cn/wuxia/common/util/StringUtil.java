@@ -183,6 +183,7 @@ public class StringUtil extends StringUtils {
      * @description : string support el tags <code>${contents}</code> 
      * <br>but not support <code> ${bean.contents}</code>  support in {@link #replaceKeysSimple(String, String, String)}
      * @author songlin.li
+     * @see {@link BeanTemplateParser#parser}
      */
     public static String replaceKeysSimple(Object bean, String destStr) {
         if (bean == null) {

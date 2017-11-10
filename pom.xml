@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>cn.wuxia.parent</groupId>
 		<artifactId>parent2017</artifactId>
-		<version>1.4.3</version>
+		<version>1.5.0</version>
 		<relativePath>../wuxia-parent</relativePath>
 	</parent>
 
@@ -235,11 +235,34 @@
 		<dependency>
 			<groupId>org.jodd</groupId>
 			<artifactId>jodd-core</artifactId>
-			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.jodd</groupId>
 			<artifactId>jodd-lagarto</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.jodd</groupId>
+			<artifactId>jodd-props</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jodd</groupId>
+			<artifactId>jodd-bean</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jodd</groupId>
+			<artifactId>jodd-http</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.jodd</groupId>
+			<artifactId>jodd-json</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<!-- joda -->
+		<dependency>
+			<groupId>joda-time</groupId>
+			<artifactId>joda-time</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<!-- redis cache begin -->
@@ -352,6 +375,8 @@
 			<artifactId>aliyun-sdk-mns</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<!-- <dependency> <groupId>com.taobao.util</groupId> <artifactId>taobao-express</artifactId> <version>3.0.17</version> 
+			</dependency> -->
 		<!-- image process end -->
 		<!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk16 -->
 		<dependency>
@@ -374,6 +399,10 @@
 			<optional>true</optional>
 		</dependency>
 		<!-- Test lib -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>

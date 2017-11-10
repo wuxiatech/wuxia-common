@@ -10,6 +10,7 @@ package cn.wuxia.aliyun.api.ons.producer.bean;
 
 import java.util.Properties;
 
+import cn.wuxia.common.util.StringUtil;
 import com.aliyun.openservices.ons.api.Message;
 import com.aliyun.openservices.ons.api.ONSFactory;
 import com.aliyun.openservices.ons.api.Producer;
@@ -28,6 +29,7 @@ public class UnorderProducerBean extends BasicProducerBean {
 
     /**
      * Description of the method
+     *
      * @author songlin
      */
     public void start() {
@@ -47,7 +49,7 @@ public class UnorderProducerBean extends BasicProducerBean {
         try {
             // 分区顺序消息中区分不同分区的关键字段，sharding key于普通消息的key是完全不同的概念。
             // 全局顺序消息，该字段可以设置为任意非空字符串。
-            Message message = new Message(producerBean.getTopic(), producerBean.getExpression(), bean.getKey(), bean.getBody());
+            Message message = new Message(producerBean.getTopic(), StringUtil.isBlank(producerBean.getExpression()) ? "*" : producerBean.getExpression(), bean.getKey(), bean.getBody());
             if (null != bean.getDelayTime()) {
                 message.setStartDeliverTime(System.currentTimeMillis() + bean.getDelayTime());
             }

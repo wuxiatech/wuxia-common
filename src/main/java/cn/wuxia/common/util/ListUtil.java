@@ -1,13 +1,6 @@
 package cn.wuxia.common.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
 
@@ -19,20 +12,20 @@ import cn.wuxia.common.util.reflection.BeanUtil;
  * <h3>Class name</h3> Array Tools
  * <h4>Description</h4>
  * <h4>Special Notes</h4> for more
- * 
- * @see org.apache.commons.collections.ListUtils
- * @version 0.1
+ *
  * @author songlin.li 2012-5-29
+ * @version 0.1
+ * @see org.apache.commons.collections.ListUtils
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class ListUtil extends CollectionUtils {
 
     /**
      * 去除null值
-     * 
-     * @author songlin
+     *
      * @param source
      * @return
+     * @author songlin
      */
     public static <T> List<T> removeAllNullValue(Collection<T> source) {
         List<T> c = Lists.newArrayList(source);
@@ -41,10 +34,10 @@ public class ListUtil extends CollectionUtils {
     }
 
     /**
-     * @description :remove Collection Duplicate values
-     * @author songlin.li
      * @param list
      * @return
+     * @description :remove Collection Duplicate values
+     * @author songlin.li
      */
     public static <T> List<T> removeDuplicateBySet(Collection<T> source) {
         if (source == null) {
@@ -54,7 +47,10 @@ public class ListUtil extends CollectionUtils {
         List distinctResult = new ArrayList();
         for (Iterator iter = source.iterator(); iter.hasNext();) {
             Object element = iter.next();
-            if (set.add(element))
+            if (element instanceof String && StringUtil.isBlank(element)) {
+                continue;
+            }
+            if (element != null && set.add(element))
                 distinctResult.add(element);
         }
         // source.clear();
@@ -63,10 +59,10 @@ public class ListUtil extends CollectionUtils {
     }
 
     /**
-     * @description : must be generic remove Collection Duplicate values
-     * @author songlin.li
      * @param list
      * @return
+     * @description : must be generic remove Collection Duplicate values
+     * @author songlin.li
      */
     public static <T> List<T> removeDuplicateByContains(Collection<T> list) {
         if (null == list) {
@@ -74,7 +70,10 @@ public class ListUtil extends CollectionUtils {
         }
         List<T> distinctResult = new ArrayList();
         for (T t : list) {
-            if (!distinctResult.contains(t)) {
+            if (t instanceof String && StringUtil.isBlank(t)) {
+                continue;
+            }
+            if (t != null && !distinctResult.contains(t)) {
                 distinctResult.add(t);
             }
         }
@@ -82,18 +81,17 @@ public class ListUtil extends CollectionUtils {
     }
 
     /**
-     * @description :
-     * 
-     *              <pre>
-     * Arrays.asList() return java.util.Arrays$ArrayList are not return ArrayList, 
-     *  Arrays$ArrayList and ArrayList are extends AbstractList, remove,add Etc. 
-     *   method at AbstractList is  defaults throw UnsupportedOperationException and not do and works return Arrays.asList(array); 
-     *   this method is return ArrayList
-     *              </pre>
-     * 
-     * @author songlin.li
      * @param array
      * @return
+     * @description :
+     * <p>
+     * <pre>
+     * Arrays.asList() return java.util.Arrays$ArrayList are not return ArrayList,
+     *  Arrays$ArrayList and ArrayList are extends AbstractList, remove,add Etc.
+     *   method at AbstractList is  defaults throw UnsupportedOperationException and not do and works return Arrays.asList(array);
+     *   this method is return ArrayList
+     *              </pre>
+     * @author songlin.li
      */
     public static <T> List<T> arrayToList(T[] array) {
         if (array == null)
@@ -102,10 +100,10 @@ public class ListUtil extends CollectionUtils {
     }
 
     /**
-     * @description : Description of the method
-     * @author songlin.li
      * @param list
      * @return
+     * @description : Description of the method
+     * @author songlin.li
      */
     public static <T> T[] listToArray(List<T> list) {
         T[] a = null;
@@ -120,13 +118,11 @@ public class ListUtil extends CollectionUtils {
 
     /**
      * 将原集合转换为目标Class型的集合，并复制其中相同属性的值
-     * 
-     * @author songlin.l
-     * @param t
-     *            目标类型的Class
-     * @param sourceList
-     *            原list集合
+     *
+     * @param t          目标类型的Class
+     * @param sourceList 原list集合
      * @return 返回转换后的list集合
+     * @author songlin.li
      */
     public static <T, E> List<T> copyProperties(Class<T> t, Collection<E> sourceList) {
         if (t != null && isNotEmpty(sourceList)) {

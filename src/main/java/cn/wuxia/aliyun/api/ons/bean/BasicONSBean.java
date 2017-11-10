@@ -9,26 +9,38 @@
 package cn.wuxia.aliyun.api.ons.bean;
 
 import com.aliyun.openservices.ons.api.bean.Subscription;
+import org.hibernate.validator.constraints.NotBlank;
 
 public class BasicONSBean extends Subscription {
-    private BusinessMQ business;
 
-    private Boolean istartup = Boolean.TRUE;
+    private String name;
 
-    public BusinessMQ getBusiness() {
-        return business;
+    private boolean istartup;
+
+    private boolean isorder;
+
+    @NotBlank
+    public String getName() {
+        return name;
     }
 
-    public void setBusiness(BusinessMQ business) {
-        this.business = business;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public Boolean isIstartup() {
+    public boolean isIstartup() {
         return istartup;
     }
 
-    public void setIstartup(Boolean istartup) {
+    public void setIstartup(boolean istartup) {
         this.istartup = istartup;
     }
 
+    public boolean getIsorder() {
+        return isorder;
+    }
+
+    public void setIsorder(boolean isorder) {
+        this.isorder = isorder;
+    }
 }

@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import jodd.props.Props;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
@@ -77,9 +78,11 @@ public class PropertiesUtils {
                     Properties properties = new Properties();
                     propertiesPersister.load(properties, new InputStreamReader(is, DEFAULT_ENCODING));
                     copy(p, properties);
+//                    Props props = new Props();
+//                    props.load(properties);
                 }
             } catch (IOException ex) {
-                logger.warn("Could not load properties from classpath:" + location + ": " + ex.getMessage());
+                logger.warn("Could not load properties from " + location + ": " + ex.getMessage());
             } finally {
                 if (is != null) {
                     IOUtils.closeQuietly(is);

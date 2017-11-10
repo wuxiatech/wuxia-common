@@ -42,10 +42,14 @@ public class HttpClientRequest {
 
     private HttpClientMethod method = HttpClientMethod.GET;
 
-    /** 回应超时时间, 由bean factory设置，缺省为30秒钟 */
+    /**
+     * 回应超时时间, 由bean factory设置，缺省为30秒钟
+     */
     private int socketTimeout = 30000;
 
-    /** 连接超时时间，由bean factory设置，缺省为10秒钟 */
+    /**
+     * 连接超时时间，由bean factory设置，缺省为10秒钟
+     */
     private int connectionTimeout = 10000;
 
     /**
@@ -174,13 +178,15 @@ public class HttpClientRequest {
 
     /**
      * 添加参数
-     * @author songlin
+     *
      * @param map
+     * @author songlin
      */
-    public HttpClientRequest addParam(Map<String, Object> map) {
+    public HttpClientRequest addParam(Map<String, ? extends Object> map) {
         if (MapUtil.isNotEmpty(map)) {
-            for (Map.Entry<String, Object> s : map.entrySet()) {
-                addParam(s.getKey(), s.getValue());
+            for (Map.Entry<String, ? extends Object> s : map.entrySet()) {
+                if (s.getValue() != null)
+                    addParam(s.getKey(), s.getValue());
             }
         }
         return this;
@@ -188,9 +194,10 @@ public class HttpClientRequest {
 
     /**
      * 添加各类型参数
-     * @author songlin
+     *
      * @param property
      * @param value
+     * @author songlin
      */
     public HttpClientRequest addParam(String property, Object value) {
         ContentBody body = null;
@@ -219,9 +226,10 @@ public class HttpClientRequest {
 
     /**
      * 添加header
-     * @author songlin
+     *
      * @param name
      * @param value
+     * @author songlin
      */
     public HttpClientRequest addHeader(String name, String value) {
         if (null == header) {
@@ -235,8 +243,9 @@ public class HttpClientRequest {
 
     /**
      * 上传请求参数
-     * @author songlin
+     *
      * @return
+     * @author songlin
      */
     public Map<String, ContentBody> getContent() {
         return content;
@@ -244,8 +253,9 @@ public class HttpClientRequest {
 
     /**
      * Post 请求参数
-     * @author songlin
+     *
      * @return
+     * @author songlin
      */
     public List<BasicNameValuePair> getParams() {
         return params;
@@ -253,8 +263,9 @@ public class HttpClientRequest {
 
     /**
      * get 请求参数
-     * @author songlin
+     *
      * @return
+     * @author songlin
      */
     public String getQueryString() {
         return URLEncodedUtils.format(params, charset);
@@ -262,8 +273,9 @@ public class HttpClientRequest {
 
     /**
      * 是否存在多媒体参数
-     * @author songlin
+     *
      * @return
+     * @author songlin
      */
     public boolean isMultipart() {
         for (Map.Entry<String, ContentBody> c : content.entrySet()) {
@@ -316,8 +328,9 @@ public class HttpClientRequest {
 
     /**
      * build
+     *
+     * @throws HttpClientException
      * @author songlin
-     * @throws HttpClientException 
      */
     public HttpClientResponse execute() throws HttpClientException {
         return HttpClientUtil.execute(this);

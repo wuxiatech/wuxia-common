@@ -3,18 +3,14 @@ package cn.wuxia.common.excel;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -32,12 +28,16 @@ import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.hssf.util.HSSFColor.HSSFColorPredefined;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFCell;
@@ -57,12 +57,12 @@ import cn.wuxia.common.excel.exception.ExcelException;
 import cn.wuxia.common.exception.AppServiceException;
 import cn.wuxia.common.exception.ValidateException;
 import cn.wuxia.common.util.DateUtil;
-import cn.wuxia.common.util.DateUtil.DateFormatter;
 import cn.wuxia.common.util.ListUtil;
 import cn.wuxia.common.util.StringUtil;
 import cn.wuxia.common.util.SystemUtil;
 import cn.wuxia.common.util.ValidatorUtil;
 import cn.wuxia.common.util.reflection.ReflectionUtil;
+import jodd.typeconverter.TypeConverterManager;
 
 /**
  * [ticket id] Description of the class
@@ -267,7 +267,6 @@ public class ExcelUtil {
             /**
              * font bold
              */
-            font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
             font.setBold(true);
         } else {
 
@@ -303,19 +302,19 @@ public class ExcelUtil {
         /**
          * set border
          */
-        cellStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
-        cellStyle.setBorderLeft(HSSFCellStyle.BORDER_THIN);
-        cellStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
-        cellStyle.setBorderTop(HSSFCellStyle.BORDER_THIN);
-        cellStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
-        cellStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+        cellStyle.setBorderBottom(BorderStyle.THIN);
+        cellStyle.setBorderLeft(BorderStyle.THIN);
+        cellStyle.setBorderRight(BorderStyle.THIN);
+        cellStyle.setBorderTop(BorderStyle.THIN);
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        cellStyle.setAlignment(HorizontalAlignment.CENTER);
         /**
          * border color
          */
-        cellStyle.setLeftBorderColor(HSSFColor.BLACK.index);
-        cellStyle.setRightBorderColor(HSSFColor.BLACK.index);
-        cellStyle.setBottomBorderColor(HSSFColor.BLACK.index);
-        cellStyle.setTopBorderColor(HSSFColor.BLACK.index);
+        cellStyle.setLeftBorderColor(HSSFColorPredefined.BLACK.getIndex());
+        cellStyle.setRightBorderColor(HSSFColorPredefined.BLACK.getIndex());
+        cellStyle.setBottomBorderColor(HSSFColorPredefined.BLACK.getIndex());
+        cellStyle.setTopBorderColor(HSSFColorPredefined.BLACK.getIndex());
         return cellStyle;
     }
 
@@ -337,7 +336,6 @@ public class ExcelUtil {
              * font bold
              */
             font.setBold(true);
-            font.setBoldweight(XSSFFont.BOLDWEIGHT_BOLD);
         } else {
 
         }
@@ -372,12 +370,12 @@ public class ExcelUtil {
         /**
          * set border
          */
-        cellStyle.setBorderBottom(XSSFCellStyle.BORDER_THIN);
-        cellStyle.setBorderLeft(XSSFCellStyle.BORDER_THIN);
-        cellStyle.setBorderRight(XSSFCellStyle.BORDER_THIN);
-        cellStyle.setBorderTop(XSSFCellStyle.BORDER_THIN);
-        cellStyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);
-        cellStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);
+        cellStyle.setBorderBottom(BorderStyle.THIN);
+        cellStyle.setBorderLeft(BorderStyle.THIN);
+        cellStyle.setBorderRight(BorderStyle.THIN);
+        cellStyle.setBorderTop(BorderStyle.THIN);
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        cellStyle.setAlignment(HorizontalAlignment.CENTER);
         /**
          * border color
          */
@@ -386,42 +384,6 @@ public class ExcelUtil {
         cellStyle.setBottomBorderColor((short) 8);
         cellStyle.setTopBorderColor((short) 8);
         return cellStyle;
-    }
-
-    public static void main(String[] args) throws Exception {
-        // System.out.println((MAX_ROWS + 1) / MAX_ROWS + 1);
-        // Write the output to a file
-        long start = System.currentTimeMillis();
-        FileOutputStream fileOut1 = new FileOutputStream("/app/workbook1.XLSx");
-        // FileOutputStream fileOut2 = new
-        // FileOutputStream("c:/workbook2.xls");
-        String[] selfields = new String[] { "apply_organ", "business_line", "name", "form_title", "undertake_date", "remark", "accept", "remark_date",
-                "user_name", "office_phone" };
-        String[] selfieldsName = new String[] { "提出机构", "业务条线", "承办部门名称", "创意名称", "转承办部门日期", "处理意见", "是否认可", "反馈意见日期", "联系人", "电话" };
-        List<Map<String, String>> dataList1 = new ArrayList<Map<String, String>>();
-        for (int i = 0; i < (16); i++) {
-            Map m = new HashMap();
-            for (String selfield : selfields) {
-                m.put(selfield, i + " 我是仲文中午呢访问访问了福建省辽");
-            }
-            dataList1.add(m);
-        }
-        List<Map<String, Object>> dataList2 = new ArrayList<Map<String, Object>>();
-        ExcelBean excelBean = new ExcelBean();
-        excelBean.setFileName("workbook1.XLSx");
-        excelBean.setDataList(dataList1);
-        excelBean.setSelfields(selfields);
-        excelBean.setSelfieldsName(selfieldsName);
-        excelBean.setSheetName("sheet");
-        ExcelUtil.createExcel(excelBean, fileOut1);
-
-        // excelBean.setDataList(dataList2);
-        // ExcelUtil.createExcel(excelBean, fileOut2);
-
-        fileOut1.close();
-        // fileOut2.close();
-        long end = System.currentTimeMillis();
-        System.out.println(("create Excel end, Used " + ((end - start) / 1000) + " s"));
     }
 
     /**
@@ -436,7 +398,7 @@ public class ExcelUtil {
      * @author songlin.li
      */
     public static void export(String excelName, String sheetName, String[] excelHeader, List<?> lists, HttpServletRequest request,
-            HttpServletResponse response) {
+                              HttpServletResponse response) {
         try {
             // 创建Excel对象
             HSSFWorkbook wb = new HSSFWorkbook();
@@ -514,10 +476,10 @@ public class ExcelUtil {
      *
      * @param inputStream
      * @param clazz       需要导入的xls文件
+     * @throws IOException
+     * @throws InvalidFormatException
+     * @throws EncryptedDocumentException
      * @author songlin.li
-     * @throws IOException 
-     * @throws InvalidFormatException 
-     * @throws EncryptedDocumentException 
      */
     public static <T> List<T> importExcel(InputStream inputStream, Class<T> clazz)
             throws ExcelException, EncryptedDocumentException, InvalidFormatException, IOException {
@@ -559,59 +521,78 @@ public class ExcelUtil {
 
     /**
      * 校验是否为空行
+     *
      * @param row
      * @return
      */
     public static boolean isRowEmpty(Row row) {
         for (int c = row.getFirstCellNum(); c < row.getLastCellNum(); c++) {
             Cell cell = row.getCell(c);
-            if (cell != null && cell.getCellType() != Cell.CELL_TYPE_BLANK)
+            if (cell != null && CellType.BLANK.compareTo(cell.getCellTypeEnum()) != 0)
                 return false;
         }
         return true;
     }
 
     /**
-     * 得到一个单元格内的值,强制转换成string类型返回
+     * 得到一个单元格内的值, 并根据特定类型赋值
      *
      * @param cell
+     * @param bean
+     * @param field
      * @return
-     * @author guwen
+     * @author songlin.li
      */
-    public static String getCellStringValue(Cell cell, Field field) {
+    public static void setFieldCellValue(Cell cell, Object bean, Field field) {
         if (cell == null) {
-            return "";
+            return;
         }
-        int type = cell.getCellType();
+        Object fieldValue = null;
+        CellType cellType = cell.getCellTypeEnum();
         String fieldType = field.getType().getName();
-        if (type == Cell.CELL_TYPE_STRING || fieldType.equals("java.lang.String")) {
-            cell.setCellType(Cell.CELL_TYPE_STRING);
-            return cell.getStringCellValue();
+        switch (cellType) {
+            case STRING:
+                fieldValue = StringUtil.trim(cell.getStringCellValue());
+                break;
+
+            case NUMERIC:
+                Double value = cell.getNumericCellValue();
+                // 读取日期进行
+                if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)) {
+                    ExcelColumn an = field.getAnnotation(ExcelColumn.class);
+                    java.util.Date value2 = org.apache.poi.ss.usermodel.DateUtil.getJavaDate((Double) value);
+                    fieldValue = DateUtil.dateToString(value2, an.dateFormat());
+                } else if (fieldType.equals("java.lang.Integer") || fieldType.equals("int") || fieldType.equals("java.lang.Long")
+                        || fieldType.equals("long")) {
+                    DecimalFormat df = new DecimalFormat("#");// 转换成整型
+                    fieldValue = df.format(value);
+                } else if (fieldType.equals("java.lang.String")) {
+                    cell.setCellType(CellType.STRING);
+                    fieldValue = StringUtil.trim(cell.getStringCellValue());
+                } else
+                    fieldValue = value;
+                break;
+            case BOOLEAN:
+                fieldValue = cell.getBooleanCellValue();
+                break;
+
+            case FORMULA:
+                fieldValue = cell.getArrayFormulaRange().formatAsString();
+                break;
+            case BLANK:
+                fieldValue = "";
+                break;
         }
-        if (type == Cell.CELL_TYPE_NUMERIC) {
-            Double value = cell.getNumericCellValue();
-            // 读取日期进行
-            if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)) {
-                java.util.Date value2 = org.apache.poi.ss.usermodel.DateUtil.getJavaDate((Double) value);
-                return DateUtil.dateToString(value2, "");
+        field.setAccessible(true);
+        if (fieldValue != null) {
+            try {
+                Object convertValue = TypeConverterManager.convertType(fieldValue, field.getType());
+                field.set(bean, convertValue);
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                logger.warn(e.getMessage());
+                throw new ExcelException("无法赋值，原因是字段类型：" + field.getType() + "，值类型：" + fieldValue.getClass() + "，值：" + fieldValue);
             }
-            if (fieldType.equals("java.lang.Integer") || fieldType.equals("int") || fieldType.equals("java.lang.Long") || fieldType.equals("long")) {
-                DecimalFormat df = new DecimalFormat("#");// 转换成整型
-                return df.format(value);
-            }
-            return value.toString();
         }
-        if (type == Cell.CELL_TYPE_BOOLEAN) {
-            Boolean value = cell.getBooleanCellValue();
-            return value.toString();
-        }
-        if (type == Cell.CELL_TYPE_FORMULA) {
-            return cell.getArrayFormulaRange().formatAsString();
-        }
-        if (type == Cell.CELL_TYPE_BLANK) {
-            return "";
-        }
-        return "";
     }
 
     public static <T> T getRowObject(Row row, Class<T> clazz) throws ExcelException, InstantiationException, IllegalAccessException {
@@ -630,22 +611,17 @@ public class ExcelUtil {
                     }
                 }
                 if (excelHead != null) {
-                    String value = "";
                     try {
-                        Cell cell = row.getCell(excelHead.no());
+                        Cell cell = row.getCell(excelHead.colunmIndex());
                         if (cell != null) {
-                            /**
-                             * 将cell数据统一转换为字符串
-                             */
-                            value = getCellStringValue(cell, field);
                             /**
                              * 根据field类型转换相应值
                              */
-                            setFieldValue(field, obj, StringUtil.trim(value));
+                            setFieldCellValue(cell, obj, field);
                         }
-                    } catch (Exception e) {
-                        exceptions.add("第" + excelHead.no() + "列，表头为：" + excelHead.name() + "，赋值属性名：" + field.getName() + "，值：" + value + "【详细错误】"
-                                + e.getMessage());
+                    } catch (ExcelException e) {
+                        exceptions.add("第" + (excelHead.colunmIndex() + 1) + "列，表头为：" + excelHead.columnName() + "，赋值属性名：" + field.getName() + "，值："
+                                + ReflectionUtil.getFieldValue(obj, field.getName()) + "【详细错误】" + e.getMessage());
                     }
                 } else {
                     logger.info("跳过：" + field.getName() + "赋值");
@@ -661,59 +637,4 @@ public class ExcelUtil {
         return obj;
     }
 
-    /**
-     * @param field
-     * @param bean
-     * @param value
-     * @throws ExcelException 
-     * @throws IllegalAccessException
-     * @description : The data object assignment to designated the corresponding
-     * attributes
-     */
-    private static void setFieldValue(Field field, Object bean, String value) throws ExcelException {
-        // Take the field of data types
-        String fieldType = field.getType().getName();
-        field.setAccessible(true);
-        if (StringUtil.isNotBlank(value)) {
-            try {
-                if (fieldType.equals("java.lang.String")) {
-                    field.set(bean, value);
-                } else if (fieldType.equals("java.lang.Integer") || fieldType.equals("int")) {
-                    field.set(bean, Integer.valueOf(value));
-                } else if (fieldType.equals("java.lang.Long") || fieldType.equals("long")) {
-                    field.set(bean, Long.valueOf(value));
-                } else if (fieldType.equals("java.lang.Float") || fieldType.equals("float")) {
-                    field.set(bean, Float.valueOf(value));
-                } else if (fieldType.equals("java.lang.Double") || fieldType.equals("double")) {
-                    field.set(bean, Double.valueOf(value));
-                } else if (fieldType.equals("java.math.BigDecimal")) {
-                    field.set(bean, new BigDecimal(value));
-                } else if (fieldType.equals("java.util.Date")) {
-                    Date d = DateUtil.parse(value, DateFormatter.FORMAT_YYYY_MM_DD_HH_MM_SS);
-                    if (d == null) {
-                        d = DateUtil.parse(value, DateFormatter.FORMAT_YYYY_MM_DD);
-                    }
-                    field.set(bean, d);
-                } else if (fieldType.equals("java.sql.Date")) {
-                    Date d = DateUtil.parse(value, DateFormatter.FORMAT_YYYY_MM_DD_HH_MM_SS);
-                    if (d == null) {
-                        d = DateUtil.parse(value, DateFormatter.FORMAT_YYYY_MM_DD);
-                    }
-                    field.set(bean, DateUtil.utilDateToSQLDate(d));
-                } else if (fieldType.equals("java.lang.Boolean") || fieldType.equals("boolean")) {
-                    field.set(bean, Boolean.valueOf(value));
-                } else if (fieldType.equals("java.lang.Byte") || fieldType.equals("byte")) {
-                    field.set(bean, Byte.valueOf(value));
-                } else if (fieldType.equals("java.lang.Short") || fieldType.equals("short")) {
-                    field.set(bean, Short.valueOf(value));
-                }
-            } catch (NumberFormatException ex) {
-                throw new ExcelException("【" + value + "】无法转换值对应类型的数值：" + fieldType + " " + field.getName());
-            } catch (IllegalArgumentException e) {
-                throw new ExcelException("【" + value + "】无法转换值对应类型的数值：" + fieldType + " " + field.getName());
-            } catch (IllegalAccessException e) {
-                throw new ExcelException("【" + value + "】无法转换值对应类型的数值：" + fieldType + " " + field.getName());
-            }
-        }
-    }
 }

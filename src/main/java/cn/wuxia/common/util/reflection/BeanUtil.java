@@ -3,23 +3,11 @@
  */
 package cn.wuxia.common.util.reflection;
 
-import java.beans.IntrospectionException;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-
+import cn.wuxia.common.util.*;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import jodd.bean.BeanCopy;
+import jodd.typeconverter.TypeConverterManager;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.lang3.StringUtils;
@@ -27,16 +15,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.beans.IntrospectionException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import cn.wuxia.common.util.ArrayUtil;
-import cn.wuxia.common.util.ClassLoaderUtil;
-import cn.wuxia.common.util.DateUtil;
-import cn.wuxia.common.util.ListUtil;
-import cn.wuxia.common.util.MapUtil;
-import cn.wuxia.common.util.NumberUtil;
-import cn.wuxia.common.util.StringUtil;
 
 public class BeanUtil extends BeanUtils {
     private static Logger logger = LoggerFactory.getLogger(BeanUtil.class);
@@ -51,13 +39,11 @@ public class BeanUtil extends BeanUtils {
     /**
      * <pre>
      * override
-     * {@link  org.apache.commons.beanutils.BeanUtils.copyProperties}的复制方法，增加对java.util.Date的支持<br>
-     * 这里要注意一点，
-     * {@link org.apache.commons.beanutils.BeanUtils.copyProperties}
-     * java.util.Date是不被支持的，而它的子类java.sql.Date是被支持的。
-     * 因此如果对象包含时间类型的属性，且希望被转换的时候，一定要使用java.sql.Date类型。 否则在转换时会提示argument
-     * mistype异常。
-     * BeanUtils支持的转换类型如下：<br>
+     * 本方法使用jodd beanutil 扩展支持时间，不同类型值的拷贝。
+     *
+     * 不建议使用{@link  org.apache.commons.beanutils.BeanUtils#copyProperties(Object, Object)}的复制方法
+     *
+     * 因为它支持的转换类型如下：<br>
      * java.lang.BigDecimal<br>
      * java.lang.BigInteger<br>
      * boolean and java.lang.Boolean<br>
@@ -74,55 +60,32 @@ public class BeanUtil extends BeanUtils {
      * java.sql.Time<br>
      * java.sql.Timestamp<br>
      * 这个方法的优点是同属性名不同对象的拷贝，缺点是资源和时间花费较多
-     * 如有可能尽量选择spring下同名方法
-     * {@link org.springframework.beans.BeanUtils} 
-     * 建议在使用spring框架应用下使用此方法
-     * {@link org.apache.commons.beanutils.PropertyUtils}
-     * PropertyUtils.copyProperties作用与 BeanUtils.copyProperties的同名方法十分相似，
+     * {@link org.apache.commons.beanutils.PropertyUtils#copyProperties(Object, Object)}
+     * 作用与 {@link  org.apache.commons.beanutils.BeanUtils#copyProperties(Object, Object)}的同名方法十分相似，
      * 主要的区别在于后者提供类型转换功能，即发现两个JavaBean的同名属性为不同类型时，在支持的数据类型范围内进行转换，
      * 而前者不支持这个功能，而且速度会更快一些。
+     *
+     * 另外：如没有特殊要求，简单bean复制可以使用spring下同名方法
+     * {@link org.springframework.beans.BeanUtils#copyProperties(Object, Object)}建议在使用spring框架应用下使用
+     *
+     *
      * </pre>
-     * 
-     * @author songlin.li
+     *
      * @param target
      * @param source
+     * @author songlin.li
      */
     public static void copyProperties(Object target, Object source) {
-        try {
-            BeanUtils.copyProperties(target, source);
-        } catch (IllegalAccessException e) {
-            logger.error(e.getMessage(), e);
-        } catch (InvocationTargetException e) {
-            logger.error(e.getMessage(), e);
-        }
+        BeanCopy.beans(source, target).copy();
     }
 
-    /**
-     * @author linhl
-     * @version 1.0
-     * @since 2006-7-4
-     * @lastest modify date 2006-7-4
-     * @description 主要是：避免在编辑更新时以NULL值覆盖表单上没有出现的值;简化从request得到表单上值到目标对象的过程。
-     */
-    public static void copyProperties(Object dest, HttpServletRequest request)
-            throws ServletException, IOException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, Exception {
-        Assert.notNull(dest, "No destination bean specified");
-        Enumeration<String> enum1 = request.getParameterNames();
-        BeanUtilsBean bean = BeanUtilsBean.getInstance();
-        while (enum1.hasMoreElements()) {
-            String name = (String) enum1.nextElement();
-            if (bean.getPropertyUtils().isWriteable(dest, name)) {
-                Object value = request.getParameter(name);
-                bean.copyProperty(dest, name, value);
-            }
-        }
-    }
+
 
     /**
-     * @description : copy source filed value to target, when source filed value
-     *              is null then not convert target value
      * @param dest
      * @param orig
+     * @description : copy source filed value to target, when source filed value
+     * is null then not convert target value
      * @author songlin.li
      */
     public static void copyPropertiesWithoutNullValues(Object dest, Object orig) {
@@ -141,56 +104,9 @@ public class BeanUtil extends BeanUtils {
         }
     }
 
-    /**
-     * @author linhl
-     * @version 1.0
-     * @since 2006-12-8
-     * @lastest modify date 2006-12-19
-     * @description
-     */
-    public static void copyProperties(Object dest, Map parameters)
-            throws ServletException, IOException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, Exception {
-        if (dest == null)
-            throw new IllegalArgumentException("No destination bean specified");
-        Set keySet = parameters.keySet();
-        BeanUtilsBean bean = BeanUtilsBean.getInstance();
-        Iterator keys = keySet.iterator();
-        while (keys.hasNext()) {
-            String name = (String) keys.next();
 
-            if (!name.equals("id")) {
-                if (bean.getPropertyUtils().isWriteable(dest, name)) {
-                    Object value = parameters.get(name);
-                    if (value instanceof String) {
-                        bean.copyProperty(dest, name, ((String) value).trim());
-                    } else if (value instanceof String[]) {
-                        bean.copyProperty(dest, name, (((String[]) value))[0].trim());// 有些parameters.get(name)取出来的竟然是个数组，
-                        // 这个有可能跟不同的servlet
-                        // container 实现有关
-                    } else if (value instanceof Number) {
-                        bean.copyProperty(dest, name, (Number) value);
-                    }
-                }
-            }
-        }
-    }
 
-    /**
-     * override populate, convert with date
-     * 
-     * @author songlin.li
-     * @param target
-     * @param source
-     */
-    public static void populate(Object target, Map source) {
-        try {
-            BeanUtils.populate(target, source);
-        } catch (IllegalAccessException e) {
-            logger.error(e.getMessage(), e);
-        } catch (InvocationTargetException e) {
-            logger.error(e.getMessage(), e);
-        }
-    }
+
 
     public static <T> T mapToBean(Map<String, Object> map, Class<T> beanClass, String prefix) {
         if (beanClass == null) {
@@ -210,59 +126,45 @@ public class BeanUtil extends BeanUtils {
 
     /**
      * Description of the method
-     * 
-     * @author songlin.li
+     *
      * @param map
      * @param bean
      * @param prefix
+     * @author songlin.li
      */
     public static void mapToBean(Map<String, Object> map, Object bean, String prefix) {
         if (bean == null || map == null) {
             return;
         }
-        if (StringUtil.isBlank(prefix)) {
-            String entityName = bean.getClass().getName().toLowerCase();
-            String[] entityNames = entityName.split("\\.");
-            entityName = entityNames[entityNames.length - 1];
-            prefix = entityName + ".";
-        } else if (!prefix.endsWith(".")) {
-            prefix += ".";
-        }
 
         for (Map.Entry<String, Object> m : map.entrySet()) {
             String fieldName = m.getKey();
-            if (StringUtil.isNotBlank(prefix) && fieldName.startsWith(prefix)) {
-                fieldName = StringUtil.substringAfter(fieldName, prefix);
+            if (StringUtil.isNotBlank(prefix)) {
+                if (fieldName.startsWith(prefix)) {
+                    fieldName = StringUtil.substringAfter(fieldName, prefix);
+                } else {
+                    continue;
+                }
             }
             try {
-                ReflectionUtil.setFieldValue(bean, fieldName, m.getValue());
+                /**
+                 * FIXED 当value为数组时，只能获取第一个值
+                 */
+                if (m.getValue() instanceof String[] && bean instanceof Map) {
+                    ((Map) bean).put(fieldName, m.getValue());
+                } else {
+                    BeanUtils.setProperty(bean, fieldName, m.getValue());
+                }
             } catch (Exception e) {
                 logger.error("", e);
             }
-        }
-    }
 
-    /**
-     * if expr like *.b.c(* just a prefix) then will return bean.getB().getC()
-     * 
-     * @author songlin.li
-     * @param bean
-     * @param expr
-     * @return
-     */
-    public static Object getPropertiesValueByPrefix(Object bean, String expr) {
-        String keys[] = StringUtils.split(expr, "\\.");
-        Object obj = null;
-        for (int i = 1; i < keys.length; i++) {
-            obj = ReflectionUtil.invokeGetterMethod(bean, keys[i]);
-            bean = obj;
         }
-        return obj;
     }
 
     /**
      * 将Map转换为目标对象，支持深度转换及List拷贝
-     * 
+     *
      * @param map
      * @param type
      * @return
@@ -304,7 +206,7 @@ public class BeanUtil extends BeanUtils {
                         value = Lists.newArrayList(mapToBean((Map) value, valueCls));
                     } else {
                         Object v = valueCls.newInstance();
-                        copyProperties(v, value);
+                        copyProperties( v, value);
                         value = Lists.newArrayList(v);
                     }
                 } else if (propertyType.isAssignableFrom(Map.class)) {
@@ -319,7 +221,7 @@ public class BeanUtil extends BeanUtils {
                             + " " + propertyName + ") 方法");
                     ReflectionUtil.invokeSetterMethod(obj, propertyName, value, value.getClass());
                     continue;
-                } else if (StringUtil.equals(propertyType.getName(), "java.lang.String") && !(value instanceof String)) {
+                }/* else if (StringUtil.equals(propertyType.getName(), "java.lang.String") && !(value instanceof String)) {
                     value = value.toString();
                 } else if (StringUtil.equals(propertyType.getName(), "java.util.Date") && !(value instanceof Date)) {
                     value = DateUtil.stringToDate(value.toString());
@@ -333,10 +235,12 @@ public class BeanUtil extends BeanUtils {
                     value = NumberUtil.toShort(value.toString());
                 } else if (StringUtil.equals(propertyType.getName(), "java.lang.Long") && !(value instanceof Long)) {
                     value = NumberUtil.toLong(value);
-                } else if (value instanceof Map) {
+                }*/ else if (value instanceof Map) {
                     value = mapToBean((Map) value, propertyType);
+                } else {
+//                    value = ConvertUtil.convert(value, propertyType);
+                    value = TypeConverterManager.convertType(value, propertyType);
                 }
-
                 ReflectionUtil.invokeSetterMethod(obj, propertyName, value, propertyType);
             } catch (Exception e) {
                 String msg = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
@@ -351,17 +255,9 @@ public class BeanUtil extends BeanUtils {
 
     /**
      * Converts a JavaBean to a map.
-     * 
-     * @param bean
-     *            JavaBean to convert
+     *
+     * @param bean JavaBean to convert
      * @return map converted
-     * @throws IntrospectionException
-     *             failed to get class fields
-     * @throws IllegalAccessException
-     *             failed to instant JavaBean
-     * @throws InvocationTargetException
-     *             failed to call setters
-     * @throws NoSuchMethodException 
      */
     public static final Map<String, Object> beanToMap(Object bean) {
         Map<String, Object> returnMap = new HashMap<String, Object>();
@@ -380,14 +276,12 @@ public class BeanUtil extends BeanUtils {
                 logger.debug(e.getMessage());
             }
         }
-
         return returnMap;
     }
 
     /**
      * 比较两个对象的属性值
-     * 
-     * @author songlin
+     *
      * @param dest
      * @param org
      * @param ignore
@@ -396,6 +290,7 @@ public class BeanUtil extends BeanUtils {
      * @throws NoSuchMethodException
      * @throws IllegalAccessException
      * @throws InvocationTargetException
+     * @author songlin
      */
     public static List<Map<String, Object>> compareProperties(Object dest, Object org, String... ignore)
             throws SecurityException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
@@ -425,7 +320,7 @@ public class BeanUtil extends BeanUtils {
                 Map<String, Object> rec = Maps.newHashMap();
                 rec.put("fieldName", propertyName);
                 if (type.equals("class java.lang.String")) { // 如果type是类类型，则前面包含"class
-                                                                 // "，后面跟类名
+                    // "，后面跟类名
 
                     String _newV = (String) destValue;
                     String _orgV = (String) value;
@@ -493,33 +388,49 @@ public class BeanUtil extends BeanUtils {
     public static void main(String[] args) throws Exception {
         CopyBean1 p1 = new CopyBean1();
         CopyBean2 p2 = new CopyBean2();
-        // p1.setTestDate(new Date());
-        p2.setTestDate(new Date());
+//         p2.setTestDate(new Date());
+//         p2.setNumber(2);
+        p1.setTestDate("2017-12-30");
+        p1.setNumber("2");
         // copyProperties(p2, p1);
-        copyProperties(p1, p2);
-        // org.apache.commons.beanutils.PropertyUtils.copyProperties(p2, p1);
-        // org.springframework.beans.BeanUtils.copyProperties(p2, p1);
+//        copyProperties(p1, p2);
+//        org.apache.commons.beanutils.PropertyUtils.copyProperties(p2, p1);
+//         org.springframework.beans.BeanUtils.copyProperties(p1, p2);
+        BeanCopy.beans(p1, p2).copy();
         System.out.println(p1.getTestDate());
         System.out.println(p2.getTestDate());
+        System.out.println(p1.getNumber());
+        System.out.println(p2.number);
     }
 }
 
 class CopyBean1 {
-    Date testDate;
+    String testDate;
 
-    public Date getTestDate() {
+    String number;
+
+    public String getTestDate() {
         return testDate;
     }
 
-    public void setTestDate(Date testDate) {
+    public void setTestDate(String testDate) {
         this.testDate = testDate;
     }
 
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
+    }
 }
 
 class CopyBean2 {
     Date testDate;
 
+    Integer number;
+
     public Date getTestDate() {
         return testDate;
     }
@@ -528,4 +439,11 @@ class CopyBean2 {
         this.testDate = testDate;
     }
 
+    public Integer getNumber() {
+        return number;
+    }
+
+    public void setNumber(Integer number) {
+        this.number = number;
+    }
 }

@@ -1,39 +1,23 @@
 package cn.wuxia.common.util;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
-import java.math.BigDecimal;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import com.google.common.collect.Maps;
-
-import cn.wuxia.common.util.DateUtil.DateFormatter;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.*;
 
 /**
  * Http and Servlet utility class.
- * 
+ *
  * @author songlin.li
  */
 public class ServletUtils {
@@ -59,9 +43,9 @@ public class ServletUtils {
     public static final long ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 
     /**
-     * @description : Set the client cache expired time Header.
      * @param response
      * @param expiresSeconds
+     * @description : Set the client cache expired time Header.
      */
     public static void setExpiresHeader(HttpServletResponse response, long expiresSeconds) {
         // Http 1.0 header
@@ -71,8 +55,8 @@ public class ServletUtils {
     }
 
     /**
-     * @description : Set banned the client cache of Header.
      * @param response
+     * @description : Set banned the client cache of Header.
      */
     public static void setDisableCacheHeader(HttpServletResponse response) {
         // Http 1.0 header
@@ -83,28 +67,28 @@ public class ServletUtils {
     }
 
     /**
-     * @description : Set LastModified Header.
      * @param response
      * @param lastModifiedDate
+     * @description : Set LastModified Header.
      */
     public static void setLastModifiedHeader(HttpServletResponse response, long lastModifiedDate) {
         response.setDateHeader("Last-Modified", lastModifiedDate);
     }
 
     /**
-     * @description : Set Etag Header.
      * @param response
      * @param etag
+     * @description : Set Etag Header.
      */
     public static void setEtag(HttpServletResponse response, String etag) {
         response.setHeader("ETag", etag);
     }
 
     /**
-     * @description : According to the browser If-Modified-Since Header,
-     *              Calculation if the file has been modified. If no changes,
-     *              checkIfModify return false ,set 304 not modify status.
      * @param lastModified The content of the last modification time.
+     * @description : According to the browser If-Modified-Since Header,
+     * Calculation if the file has been modified. If no changes,
+     * checkIfModify return false ,set 304 not modify status.
      */
     public static boolean checkIfModifiedSince(HttpServletRequest request, HttpServletResponse response, long lastModified) {
         long ifModifiedSince = request.getDateHeader("If-Modified-Since");
@@ -116,10 +100,10 @@ public class ServletUtils {
     }
 
     /**
-     * @description : According to the browser If-None-Match Header, Calculation
-     *              Etag whether invalid. if Etag is valid, checkIfNoneMatch
-     *              return false, set 304 not modify status.
      * @param etag Content ETag.
+     * @description : According to the browser If-None-Match Header, Calculation
+     * Etag whether invalid. if Etag is valid, checkIfNoneMatch
+     * return false, set 304 not modify status.
      */
     public static boolean checkIfNoneMatchEtag(HttpServletRequest request, HttpServletResponse response, String etag) {
         String headerValue = request.getHeader("If-None-Match");
@@ -148,8 +132,8 @@ public class ServletUtils {
     }
 
     /**
-     * @description :Set the browser pop-up download dialog Header.
      * @param fileName After download the file name.
+     * @description :Set the browser pop-up download dialog Header.
      */
     public static void setFileDownloadHeader(HttpServletRequest request, HttpServletResponse response, String fileName) {
         try {
@@ -167,116 +151,6 @@ public class ServletUtils {
         }
     }
 
-    /**
-     * <strong>Request To Entity</strong>
-     * <p>
-     * Request to Entity
-     * </p>
-     * 
-     * @param entity bean
-     * @param request
-     * @return object
-     * @author songlin.li
-     */
-    public static <T> T parameterToEntity(HttpServletRequest request, Class<T> entity, String prefix) {
-        Assert.notNull(entity, "Entity must be not null");
-        Object bean = null;
-        try {
-            bean = entity.newInstance();
-        } catch (InstantiationException e1) {
-            logger.error(e1.getMessage(), e1);
-        } catch (IllegalAccessException e1) {
-            logger.error(e1.getMessage(), e1);
-        }
-        if (StringUtil.isBlank(prefix)) {
-            String entityName = entity.getName().toLowerCase();
-            String[] entityNames = entityName.split("\\.");
-            entityName = entityNames[entityNames.length - 1];
-            prefix = entityName + ".";
-        } else if (!prefix.endsWith(".")) {
-            prefix += ".";
-        }
-        Map<String, String> m = getParametersStartingWith2(request, prefix);
-        bean = getFiledNames(bean, entity, m);
-
-        return (T) bean;
-    }
-
-    private static <T> Object getFiledNames(Object bean, Class<T> entity, Map<String, String> m) {
-        Field[] fields = entity.getDeclaredFields();
-        int len = fields.length;
-        for (int i = 0; i < len; i++) {
-            Field field = entity.getDeclaredFields()[i];
-            String fieldName = field.getName();
-            if (m.get(fieldName) != null) {
-                try {
-                    setFieldValue(field, bean, m.get(fieldName));
-                } catch (IllegalAccessException e) {
-                    logger.error(e.getMessage(), e);
-                }
-            }
-        }
-        entity = (Class<T>) entity.getSuperclass();
-        if (entity != null) {
-            bean = getFiledNames(bean, entity, m);
-        }
-        return bean;
-    }
-
-    /**
-     * @description : The data object assignment to designated the corresponding
-     *              attributes
-     * @param field
-     * @param bean
-     * @param value
-     * @throws IllegalAccessException
-     */
-    private static void setFieldValue(Field field, Object bean, String value) throws IllegalAccessException {
-        // Take the field of data types
-        String fieldType = field.getType().getName();
-        field.setAccessible(true);
-        if (StringUtil.isNotBlank(value)) {
-            try {
-                if (fieldType.equals("java.lang.String")) {
-                    field.set(bean, value);
-                } else if (fieldType.equals("java.lang.Integer") || fieldType.equals("int")) {
-                    field.set(bean, Integer.valueOf(value));
-                } else if (fieldType.equals("java.lang.Long") || fieldType.equals("long")) {
-                    field.set(bean, Long.valueOf(value));
-                } else if (fieldType.equals("java.lang.Float") || fieldType.equals("float")) {
-                    field.set(bean, Float.valueOf(value));
-                } else if (fieldType.equals("java.lang.Double") || fieldType.equals("double")) {
-                    field.set(bean, Double.valueOf(value));
-                } else if (fieldType.equals("java.math.BigDecimal")) {
-                    field.set(bean, new BigDecimal(value));
-                } else if (fieldType.equals("java.util.Date")) {
-                    Date d = DateUtil.parse(value, DateFormatter.FORMAT_DD_MMM_YYYY_HH_MM_SS);
-                    if (d == null) {
-                        d = DateUtil.parse(value, DateFormatter.FORMAT_DD_MMM_YYYY);
-                    }
-                    field.set(bean, d);
-                } else if (fieldType.equals("java.sql.Date")) {
-                    Date d = DateUtil.parse(value, DateFormatter.FORMAT_DD_MMM_YYYY_HH_MM_SS);
-                    if (d == null) {
-                        d = DateUtil.parse(value, DateFormatter.FORMAT_DD_MMM_YYYY);
-                    }
-                    field.set(bean, DateUtil.utilDateToSQLDate(d));
-                } else if (fieldType.equals("java.lang.Boolean") || fieldType.equals("boolean")) {
-                    field.set(bean, Boolean.valueOf(value));
-                } else if (fieldType.equals("java.lang.Byte") || fieldType.equals("byte")) {
-                    field.set(bean, Byte.valueOf(value));
-                } else if (fieldType.equals("java.lang.Short") || fieldType.equals("short")) {
-                    field.set(bean, Short.valueOf(value));
-                }
-            } catch (NumberFormatException ex) {
-                // When using a simple data types will throw an exception
-                logger.info(ex.getMessage(), ex);
-            } catch (Exception e) {
-                field.set(bean, null);
-                logger.info(e.getMessage(), e);
-            }
-        }
-    }
 
     public static Map<String, Object> getParametersMap(final HttpServletRequest req) {
         Map<String, Object> params = new HashMap<>();
@@ -297,11 +171,11 @@ public class ServletUtils {
     }
 
     /**
-     * @description : 多个值则使用逗号(,)分割
-     * @author songlin.li
      * @param request
      * @param prefix
      * @return
+     * @description : 多个值则使用逗号(,)分割
+     * @author songlin.li
      */
     public static Map<String, String> getParametersStartingWith2(HttpServletRequest request, String prefix) {
         Map<String, Object> params = getParametersStartingWith1(request, prefix);
@@ -309,17 +183,17 @@ public class ServletUtils {
         for (String key : params.keySet()) {
             Object values = params.get(key);
             if (values instanceof String[]) {
-                aMap.put(key, StringUtil.join((String[])values, ","));
+                aMap.put(key, StringUtil.join((String[]) values, ","));
             } else if (values instanceof String) {
                 aMap.put(key, (String) values);
             }
         }
-        return aMap;
+        return Collections.unmodifiableMap(aMap);
     }
 
     /**
      * @description :With the same prefix made the Request Parameters. The
-     *              results of Parameter name has been to remove the prefix.
+     * results of Parameter name has been to remove the prefix.
      */
     public static Map<String, Object> getParametersStartingWith1(HttpServletRequest request, String prefix) {
         Assert.notNull(request, "Request must not be null");
@@ -342,44 +216,16 @@ public class ServletUtils {
                 }
             }
         }
-        return params;
+        return Collections.unmodifiableMap(params);
     }
 
-    /**
-     * @description : start entity is key, like user.userName
-     * @author songlin.li
-     * @param request
-     * @return
-     */
-    public Map<String, Map<String, Object[]>> parameterToEntityMap(ServletRequest request) {
-        Map<String, String[]> m = request.getParameterMap();
-        Map<String, String> e = Maps.newLinkedHashMap();
-        for (String key : m.keySet()) {
-            String entity = key.split("\\.")[0];
-            e.put(entity, "");
-        }
-        Map<String, Map<String, Object[]>> mm = Maps.newLinkedHashMap();
-        for (String entity : e.keySet()) {
-            Map<String, Object[]> map = Maps.newLinkedHashMap();
-            for (String key : m.keySet()) {
-                String[] values = m.get(key);
-                String entityKey = key.split("\\.")[1];
-                // entityKey = key.substring(key.indexOf(".")+1);
-                if (key.startsWith(entity)) {
-                    map.put(entityKey, values);
-                }
-            }
-            mm.put(entity, map);
-        }
-        return mm;
-    }
 
     /**
      * Convenience method for deleting a cookie by name
-     * 
+     *
      * @param response the current web response
-     * @param cookie the cookie to delete
-     * @param path the path on which the cookie was set (i.e. /appfuse)
+     * @param cookie   the cookie to delete
+     * @param path     the path on which the cookie was set (i.e. /appfuse)
      */
     public static void deleteCookie(HttpServletResponse response, Cookie cookie, String path) {
         if (cookie != null) {
@@ -392,9 +238,9 @@ public class ServletUtils {
 
     /**
      * Convenience method to get a cookie by name
-     * 
+     *
      * @param request the current request
-     * @param name the name of the cookie to find
+     * @param name    the name of the cookie to find
      * @return the cookie (if found), null if not found
      */
     public static Cookie getCookie(HttpServletRequest request, String name) {
@@ -447,7 +293,6 @@ public class ServletUtils {
         cookie.setSecure(false);
         cookie.setPath((path == null || "".equals(path) ? "/" : path));
         cookie.setMaxAge(maxAge); // 30 days
-
         response.addCookie(cookie);
     }
 
@@ -470,7 +315,7 @@ public class ServletUtils {
 
     /**
      * 重写request getQueryString 函数 ，解决乱码问题
-     * 
+     *
      * @param request
      * @return
      */
@@ -484,9 +329,10 @@ public class ServletUtils {
     /**
      * 将url参数转换成map ex. aa=11&bb=22&cc=33 -> {aa=11,bb=22,cc=33}
      * 暂不支持数组如：aa=11&aa=22
-     * @author songlin
+     *
      * @param param
      * @return
+     * @author songlin
      */
     public static Map<String, Object> getUrlParams(String param) {
         Map<String, Object> map = new LinkedHashMap<String, Object>(0);
@@ -503,7 +349,7 @@ public class ServletUtils {
                 if (map.containsKey(p[0])) {
                     Object v = map.get(p[0]);
                     if (v instanceof String) {
-                        String[] v2 = { v.toString(), p[1] };
+                        String[] v2 = {v.toString(), p[1]};
                         map.put(p[0], v2);
                     } else if (v instanceof String[]) {
                         String[] v2 = (String[]) v;
@@ -520,10 +366,10 @@ public class ServletUtils {
 
     /**
      * 将map转换成url ex. {abc=123, 123=abc} -> abc=123&123=abc
-     * 
-     * @author songlin
+     *
      * @param map
      * @return
+     * @author songlin
      */
     public static String getUrlParamsByMap(final Map<String, Object> map) {
         if (map == null) {
@@ -563,11 +409,11 @@ public class ServletUtils {
 
     /**
      * 将HTTP资源另存为文件
-     * 
+     *
      * @param destUrl
      * @throws IOException
-     * @author songlin.li
      * @throws Exception
+     * @author songlin.li
      */
     public static void requestToFile(String fileName, String savePath, String requestUrl) throws Exception {
         FileUtil fileUtil = new FileUtil(savePath, fileName);
@@ -596,7 +442,7 @@ public class ServletUtils {
     public static void main(String[] args) {
         Map<String, Object> m = new HashMap<>();
         Map<String, String[]> m2 = new HashMap<>();
-        m2.put("abc", new String[] { "a", "b" });
+        m2.put("abc", new String[]{"a", "b"});
         m.putAll(m2);
         System.out.println(getUrlParamsByMap(m));
 
