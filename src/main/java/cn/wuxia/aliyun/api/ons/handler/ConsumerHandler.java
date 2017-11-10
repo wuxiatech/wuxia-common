@@ -8,15 +8,17 @@
 */
 package cn.wuxia.aliyun.api.ons.handler;
 
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
-
+import cn.wuxia.aliyun.api.ons.bean.BasicONSBean;
+import cn.wuxia.aliyun.api.ons.bean.ONSAccountBean;
+import cn.wuxia.aliyun.api.ons.consumer.bean.BasicConsumerBean;
+import cn.wuxia.aliyun.api.ons.consumer.bean.ConsumerONSBean;
+import cn.wuxia.aliyun.api.ons.consumer.bean.OrderConsumerBean;
+import cn.wuxia.aliyun.api.ons.consumer.bean.UnorderConsumerBean;
+import cn.wuxia.aliyun.api.ons.exception.MQException;
+import cn.wuxia.common.exception.ValidateException;
+import cn.wuxia.common.spring.SpringContextHolder;
+import cn.wuxia.common.util.*;
+import cn.wuxia.common.util.reflection.ReflectionUtil;
 import com.aliyun.openservices.ons.api.Action;
 import com.aliyun.openservices.ons.api.ConsumeContext;
 import com.aliyun.openservices.ons.api.Message;
@@ -25,25 +27,18 @@ import com.aliyun.openservices.ons.api.order.ConsumeOrderContext;
 import com.aliyun.openservices.ons.api.order.MessageOrderListener;
 import com.aliyun.openservices.ons.api.order.OrderAction;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
-import cn.wuxia.aliyun.api.ons.bean.BasicONSBean;
-import cn.wuxia.aliyun.api.ons.bean.BusinessMQ;
-import cn.wuxia.aliyun.api.ons.bean.ONSAccountBean;
-import cn.wuxia.aliyun.api.ons.consumer.bean.BasicConsumerBean;
-import cn.wuxia.aliyun.api.ons.consumer.bean.ConsumerONSBean;
-import cn.wuxia.aliyun.api.ons.consumer.bean.OrderConsumerBean;
-import cn.wuxia.aliyun.api.ons.consumer.bean.UnorderConsumerBean;
-import cn.wuxia.common.spring.SpringContextHolder;
-import cn.wuxia.common.util.ClassLoaderUtil;
-import cn.wuxia.common.util.ListUtil;
-import cn.wuxia.common.util.MapUtil;
-import cn.wuxia.common.util.StringUtil;
-import cn.wuxia.common.util.reflection.ReflectionUtil;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
 
 /**
- * 
  * [ticket id] mq 消费者监听类
- * 
+ *
  * @author songlin @ Version : V<Ver.No> <2017年3月9日>
  */
 public class ConsumerHandler {
@@ -62,7 +57,7 @@ public class ConsumerHandler {
     /**
      * 消费的实现类（可选，三选一） 消费的方法为队列的名字+tag名 eg:method1 sendmailValid method2
      * sendmailRegister
-     * 
+     * <p>
      * <pre>
      * mq.sendmail.producerId
      * mq.sendmail.tag=valid,register
@@ -73,7 +68,7 @@ public class ConsumerHandler {
     /**
      * 消费的实现对象（可选，三选一） * 消费的方法为队列的名字+tag名 eg:method1 sendmailValid method2
      * sendmailRegister
-     * 
+     * <p>
      * <pre>
      * mq.sendmail.producerId
      * mq.sendmail.tag=valid,register
@@ -83,9 +78,9 @@ public class ConsumerHandler {
 
     /**
      * 消费的实现类所在包 （可选，三选一） 消费的类名为:
-     * 
+     * <p>
      * class1 SendmailValidConsumer class2 SendmailRegisterConsumer
-     * 
+     * <p>
      * <pre>
      * mq.sendmail.producerId
      * mq.sendmail.tag=valid,register
@@ -98,7 +93,7 @@ public class ConsumerHandler {
      */
     private ONSAccountBean accountBean;
 
-    public void start() {
+    public void start() throws MQException,ValidateException{
         valid();
 
         if (ListUtil.isEmpty(getConsumers())) {
@@ -116,24 +111,23 @@ public class ConsumerHandler {
              */
             if (bean != null && bean instanceof ConsumerONSBean && bean.isIstartup()) {
                 ConsumerONSBean onsBean = (ConsumerONSBean) bean;
-                BusinessMQ business = onsBean.getBusiness();
-
-                if (business.isOrder_()) {
+                ValidatorUtil.validate(onsBean);
+                if (onsBean.getIsorder()) {
                     OrderConsumerBean consumerBean = new OrderConsumerBean();
                     consumerBean.setConsumerBean(onsBean);
                     consumerBean.setAccountBean(getAccountBean());
-                    consumerBean.setMessageListener(getMessageOrderListener(business, onsBean.getExpression()));
+                    consumerBean.setMessageListener(getMessageOrderListener(onsBean));
                     consumerBean.start();
                     logger.info("已启动有序消息：{}", onsBean);
-                    consumersMap.put(business.getName(), consumerBean);
+                    consumersMap.put(onsBean.getName(), consumerBean);
                 } else {
                     UnorderConsumerBean consumerBean = new UnorderConsumerBean();
                     consumerBean.setConsumerBean(onsBean);
                     consumerBean.setAccountBean(getAccountBean());
-                    consumerBean.setMessageListener(getMessageListener(business, onsBean.getExpression()));
+                    consumerBean.setMessageListener(getMessageListener(onsBean));
                     consumerBean.start();
                     logger.info("启动无序消息：{}", onsBean);
-                    consumersMap.put(business.getName(), consumerBean);
+                    consumersMap.put(onsBean.getName(), consumerBean);
                 }
             }
         }
@@ -142,7 +136,7 @@ public class ConsumerHandler {
 
     /**
      * 校验参数是否都已传递
-     * 
+     *
      * @author songlin
      */
     private void valid() {
@@ -154,48 +148,45 @@ public class ConsumerHandler {
 
     /**
      * 有序队列的监听
-     * 
-     * @author songlin
+     *
      * @return
+     * @author songlin
      */
-    private MessageOrderListener getMessageOrderListener(BusinessMQ business, String tag) {
-        String tagName = "";
-        if (StringUtil.isNotBlank(tag) && !StringUtil.equals("*", tag)) {
-            tagName = StringUtils.capitalize(tag);
-        }
+    private MessageOrderListener getMessageOrderListener(ConsumerONSBean onsBean) throws MQException{
+
 
         if (StringUtil.isNotBlank(getConsumerPackage())) {
             String consumerPath = getConsumerPackage();
             if (!StringUtils.endsWith(consumerPath, ".")) {
                 consumerPath += ".";
             }
-            consumerPath += StringUtil.capitalize(business.getName()) + tagName + "Consumer";
+            consumerPath += StringUtil.capitalize(onsBean.getName()) + "Consumer";
             try {
                 Class<MessageOrderListener> clazz = ClassLoaderUtil.loadClass(consumerPath);
                 logger.info("启动消息监听类：" + clazz.getName());
                 return (MessageOrderListener) clazz.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
-                logger.warn("尝试加载无tag方法", e.getCause());
-                return getMessageOrderListener(business, "");
+                logger.error("无法加载"+consumerPath, e.getCause());
+                throw  new MQException("无法加载"+consumerPath);
             }
         } else {
-            final String consumerMethodName = StringUtils.uncapitalize(business.getName()) + tagName;
+            final String consumerMethodName = StringUtils.uncapitalize(onsBean.getName());
             MessageOrderListener listener = new MessageOrderListener() {
                 @Override
                 public OrderAction consume(Message message, ConsumeOrderContext context) {
                     String info = String.format("第%d次消费有序消息,topic=%s,tag=%s,key=%s,MsgId=%s", message.getReconsumeTimes() + 1, message.getTopic(),
                             message.getTag(), message.getKey(), message.getMsgID());
                     logger.info(info);
-                    Method method = ReflectionUtil.getAccessibleMethod(getConsumerObject(), consumerMethodName, new Class[] { Message.class });
+                    Method method = ReflectionUtil.getAccessibleMethod(getConsumerObject(), consumerMethodName, new Class[]{Message.class});
                     if (method == null) {
                         logger.warn("{}方法{}无法找到,尝试加载方法{}", getConsumerObject().getClass().getName(), consumerMethodName,
-                                StringUtils.uncapitalize(business.getName()));
-                        method = ReflectionUtil.getAccessibleMethod(getConsumerObject(), StringUtils.uncapitalize(business.getName()),
-                                new Class[] { Message.class });
+                                StringUtils.uncapitalize(onsBean.getName()));
+                        method = ReflectionUtil.getAccessibleMethod(getConsumerObject(), StringUtils.uncapitalize(onsBean.getName()),
+                                new Class[]{Message.class});
                     }
                     if (method != null) {
                         try {
-                            method.invoke(getConsumerObject(), new Object[] { message });
+                            method.invoke(getConsumerObject(), new Object[]{message});
                         } catch (Exception e) {
                             logger.error("消费失败！！！！！" + info, e.getCause());
                             return OrderAction.Suspend;
@@ -215,47 +206,44 @@ public class ConsumerHandler {
 
     /**
      * 无序队列监听
-     * 
-     * @author songlin
+     *
      * @return
+     * @author songlin
      */
-    private MessageListener getMessageListener(BusinessMQ business, String tag) {
-        String tagName = "";
-        if (StringUtil.isNotBlank(tag) && !StringUtil.equals("*", tag)) {
-            tagName = StringUtils.capitalize(tag);
-        }
+    private MessageListener getMessageListener(ConsumerONSBean onsBean) throws  MQException{
+
         if (StringUtil.isNotBlank(getConsumerPackage())) {
             String consumerPath = getConsumerPackage();
             if (!StringUtils.endsWith(consumerPath, ".")) {
                 consumerPath += ".";
             }
-            consumerPath += StringUtil.capitalize(business.getName()) + tagName + "Consumer";
+            consumerPath += StringUtil.capitalize(onsBean.getName()) + "Consumer";
             try {
                 Class<MessageListener> clazz = ClassLoaderUtil.loadClass(consumerPath);
                 logger.info("启动消息监听类：" + clazz.getName());
                 return (MessageListener) clazz.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
-                logger.warn("尝试加载无tag方法", e);
-                return getMessageListener(business, "");
+                logger.error("无法加载"+consumerPath, e.getCause());
+                throw  new MQException("无法加载"+consumerPath);
             }
         } else {
-            final String consumerMethodName = StringUtils.uncapitalize(business.getName()) + tagName;
+            final String consumerMethodName = StringUtils.uncapitalize(onsBean.getName());
             MessageListener listener = new MessageListener() {
                 @Override
                 public Action consume(Message message, ConsumeContext context) {
                     String info = String.format("第%d次消费无序消息,topic=%s,tag=%s,key=%s,MsgId=%s", message.getReconsumeTimes() + 1, message.getTopic(),
                             message.getTag(), message.getKey(), message.getMsgID());
                     logger.info(info);
-                    Method method = ReflectionUtil.getAccessibleMethod(getConsumerObject(), consumerMethodName, new Class[] { Message.class });
+                    Method method = ReflectionUtil.getAccessibleMethod(getConsumerObject(), consumerMethodName, new Class[]{Message.class});
                     if (method == null) {
                         logger.warn("{}方法{}无法找到,尝试加载方法{}", getConsumerObject().getClass().getName(), consumerMethodName,
-                                StringUtils.uncapitalize(business.getName()));
-                        method = ReflectionUtil.getAccessibleMethod(getConsumerObject(), StringUtils.uncapitalize(business.getName()),
-                                new Class[] { Message.class });
+                                StringUtils.uncapitalize(onsBean.getName()));
+                        method = ReflectionUtil.getAccessibleMethod(getConsumerObject(), StringUtils.uncapitalize(onsBean.getName()),
+                                new Class[]{Message.class});
                     }
                     if (method != null) {
                         try {
-                            method.invoke(getConsumerObject(), new Object[] { message });
+                            method.invoke(getConsumerObject(), new Object[]{message});
                         } catch (Exception e) {
                             logger.error("消费失败！！！！" + info, e.getCause());
                             return Action.ReconsumeLater;

@@ -10,6 +10,7 @@ package cn.wuxia.aliyun.api.ons.consumer.bean;
 
 import java.util.Properties;
 
+import cn.wuxia.common.util.StringUtil;
 import com.aliyun.openservices.ons.api.ONSFactory;
 import com.aliyun.openservices.ons.api.PropertyKeyConst;
 import com.aliyun.openservices.ons.api.order.MessageOrderListener;
@@ -23,6 +24,7 @@ public class OrderConsumerBean extends BasicConsumerBean {
 
     /**
      * Description of the method
+     *
      * @author songlin
      */
     public void start() {
@@ -35,7 +37,7 @@ public class OrderConsumerBean extends BasicConsumerBean {
         //设置每条消息消费的最大超时时间,超过这个时间,这条消息将会被视为消费失败,等下次重新投递再次消费. 每个业务需要设置一个合理的值. 单位(分钟)
         consumerProperties.put(PropertyKeyConst.ConsumeTimeout, "3");
         orderconsumer = ONSFactory.createOrderedConsumer(consumerProperties);
-        orderconsumer.subscribe(consumerBean.getTopic(), consumerBean.getExpression(), messageListener);
+        orderconsumer.subscribe(consumerBean.getTopic(), StringUtil.isBlank(consumerBean.getExpression()) ? "*" : consumerBean.getExpression(), messageListener);
         orderconsumer.start();
         logger.info("开始监听有序消费队列：{}", consumerBean);
     }

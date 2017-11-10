@@ -9,7 +9,7 @@
 package cn.wuxia.aliyun.api.ons.consumer.bean;
 
 import cn.wuxia.aliyun.api.ons.bean.BasicONSBean;
-import cn.wuxia.aliyun.api.ons.bean.BusinessMQ;
+import org.hibernate.validator.constraints.NotBlank;
 
 public class ConsumerONSBean extends BasicONSBean {
 
@@ -24,11 +24,17 @@ public class ConsumerONSBean extends BasicONSBean {
     }
 
 
-    public ConsumerONSBean(String ConsumerId, BusinessMQ business) {
-        this.ConsumerId = ConsumerId;
-        this.setBusiness(business);
+    public ConsumerONSBean(String ConsumerId, boolean isOrder) {
+        this(ConsumerId);
+        this.setIsorder(isOrder);
     }
 
+    public ConsumerONSBean(String consumerBeanName, String ConsumerId, boolean isOrder) {
+        this(ConsumerId, isOrder);
+        this.setName(consumerBeanName);
+    }
+
+    @NotBlank
     public String getConsumerId() {
         return ConsumerId;
     }

@@ -4,8 +4,6 @@
  */
 package cn.wuxia.common.spring.support;
 
-import java.io.File;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -19,10 +17,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.MessageSourceResourceBundle;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 
-import cn.wuxia.common.util.ClassLoaderUtil;
-import cn.wuxia.common.util.FileUtil;
 import cn.wuxia.common.util.StringUtil;
-import cn.wuxia.common.util.SystemUtil;
 
 public class MessageSourceHandler {
     public final Logger logger = LoggerFactory.getLogger(MessageSourceHandler.class);
@@ -40,27 +35,9 @@ public class MessageSourceHandler {
         messageSource.setUseCodeAsDefaultMessage(true);
         this.messageSource = messageSource;
         this.defaultLocale = LocaleContextHolder.getLocale();
-        String i18nfile = String.format("%s/i18n/messages_%s.properties", ClassLoaderUtil.getAbsolutePathOfClassLoaderClassPath(),
-                this.defaultLocale.getLanguage());
-        File file = new File(i18nfile);
-        if (file.exists())
-            logger.info("初始化{}", i18nfile);
-        else {
-            String defaulti18nfile = String.format("%s/i18n/messages.properties", ClassLoaderUtil.getAbsolutePathOfClassLoaderClassPath());
-            logger.info("无法初始化{}， 因为文件不存在，尝试初始化{}", i18nfile, defaulti18nfile);
-            file = new File(defaulti18nfile);
-            if (!file.exists()) {
-                try {
-                    FileUtil.forceMkdirParent(file);
-                    file.createNewFile();
-                    logger.info("不存在{}，已创建", defaulti18nfile);
-                } catch (IOException e) {
-                    logger.warn("初始化失败，无法创建{}", defaulti18nfile);
-                }
-            } else {
-                logger.info("初始化{}", i18nfile);
-            }
-        }
+
+        logger.info("初始化国际化文件classpath:i18n/messages_{}.properties, 如不存在则使用classpath:i18n/messages.properties", this.defaultLocale.getLanguage());
+
     }
 
     public MessageSourceHandler(MessageSource messageSource, Locale defaultLocale) {

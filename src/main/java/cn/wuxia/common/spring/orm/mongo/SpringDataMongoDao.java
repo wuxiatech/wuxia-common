@@ -1,6 +1,11 @@
 package cn.wuxia.common.spring.orm.mongo;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -9,6 +14,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -26,6 +32,7 @@ import cn.wuxia.common.hibernate.query.Sort.Order;
 import cn.wuxia.common.util.ListUtil;
 import cn.wuxia.common.util.StringUtil;
 import cn.wuxia.common.util.reflection.ReflectionUtil;
+
 
 public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends Serializable> {
     protected static Logger logger = LoggerFactory.getLogger(SpringDataMongoDao.class);
@@ -131,11 +138,11 @@ public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends S
         }
     }
 
-    public void deleteById(final K id) {
+    public void deleteById(final K id) throws Exception {
         if (StringUtil.isBlank(collectionName)) {
-            getMongoTemplate().findAndRemove(new Query().addCriteria(Criteria.where("id").is(id)), this.getEntityClass());
+            getMongoTemplate().findAndRemove(new Query().addCriteria(Criteria.where(getIdName()).is(id)), this.getEntityClass());
         } else {
-            getMongoTemplate().findAndRemove(new Query().addCriteria(Criteria.where("id").is(id)), this.getEntityClass(), collectionName);
+            getMongoTemplate().findAndRemove(new Query().addCriteria(Criteria.where(getIdName()).is(id)), this.getEntityClass(), collectionName);
         }
     }
 
@@ -244,4 +251,20 @@ public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends S
         this.collectionName = collectionName;
     }
 
+
+    public String getIdName() throws IntrospectionException {
+        BeanInfo beanInfo = Introspector.getBeanInfo(this.getEntityClass());
+        PropertyDescriptor[] properties = beanInfo.getPropertyDescriptors();
+
+        String idName = null;
+        for (int i = 0; i < properties.length; i++) {
+            Method get = properties[i].getReadMethod();
+            if (get.getAnnotation(Id.class) == null) {
+                continue;
+            }
+            idName = properties[i].getName();
+            break;
+        }
+        return idName;
+    }
 }

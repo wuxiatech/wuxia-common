@@ -350,11 +350,11 @@ public class HttpClientUtil {
             switch (param.getMethod()) {
                 case GET:
                     // 创建httpget.  
-                    httpRequest = new HttpGet(param.getUrl() + (StringUtil.indexOf(param.getUrl(), "?") > 0 ? "" : "?") + param.getQueryString());
+                    httpRequest = new HttpGet(param.getUrl() + (StringUtil.indexOf(param.getUrl(), "?") > 0 ? "&" : "?") + param.getQueryString());
                     break;
                 case DELETE:
                     // 创建httpget.  
-                    httpRequest = new HttpDelete(param.getUrl() + (StringUtil.indexOf(param.getUrl(), "?") > 0 ? "" : "?") + param.getQueryString());
+                    httpRequest = new HttpDelete(param.getUrl() + (StringUtil.indexOf(param.getUrl(), "?") > 0 ? "&" : "?") + param.getQueryString());
                     break;
                 case POST:
                     // 创建httppost 
@@ -415,7 +415,7 @@ public class HttpClientUtil {
             long start = System.currentTimeMillis();
 
             // 创建httppost
-            HttpPost httppost = new HttpPost(param.getUrl() + (StringUtil.indexOf(param.getUrl(), "?") > 0 ? "" : "?") + param.getQueryString());
+            HttpPost httppost = new HttpPost(param.getUrl() + (StringUtil.indexOf(param.getUrl(), "?") > 0 ? "&" : "?") + param.getQueryString());
            
             // 创建参数队列  
             httppost.setEntity(entity);
@@ -530,8 +530,8 @@ public class HttpClientUtil {
         String contentType = conn.getContentType();
         logger.info("contentType: " + contentType);
         File file = new File(filePath);
-        if (!file.exists())
-            file.mkdirs();
+        if (!file.getParentFile().exists())
+            file.getParentFile().mkdirs();
         FileOutputStream output = FileUtils.openOutputStream(file);
         try {
             // 通过输入流获取文件数据

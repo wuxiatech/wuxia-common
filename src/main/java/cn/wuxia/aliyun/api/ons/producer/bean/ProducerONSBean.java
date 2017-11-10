@@ -9,7 +9,7 @@
 package cn.wuxia.aliyun.api.ons.producer.bean;
 
 import cn.wuxia.aliyun.api.ons.bean.BasicONSBean;
-import cn.wuxia.aliyun.api.ons.bean.BusinessMQ;
+import org.hibernate.validator.constraints.NotBlank;
 
 public class ProducerONSBean extends BasicONSBean {
 
@@ -23,12 +23,17 @@ public class ProducerONSBean extends BasicONSBean {
     }
 
 
-
-    public ProducerONSBean(String ProducerId, BusinessMQ business) {
-        this.ProducerId = ProducerId;
-        this.setBusiness(business);
+    public ProducerONSBean(String ProducerId, boolean isOrder) {
+        this(ProducerId);
+        this.setIsorder(isOrder);
     }
 
+    public ProducerONSBean(String producerBeanName, String ProducerId, boolean isOrder) {
+        this(ProducerId, isOrder);
+        this.setName(producerBeanName);
+    }
+
+    @NotBlank
     public String getProducerId() {
         return ProducerId;
     }
