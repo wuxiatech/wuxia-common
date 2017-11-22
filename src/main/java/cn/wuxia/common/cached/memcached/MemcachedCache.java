@@ -56,7 +56,7 @@ public class MemcachedCache implements Cache {
         if (MemcachedUtils.hasControlChar((String) key)) {
             key = key.toString().replaceAll("\\s*", "");
         }
-        logger.debug("get:" + key);
+        logger.debug("get:{}, cachename:{}" , key, this.cacheName);
 
         Object object = this.memcachedClient.get((String) key, this.cacheName);
         return (object != null ? new SimpleValueWrapper(object) : null);
@@ -69,7 +69,7 @@ public class MemcachedCache implements Cache {
         if (MemcachedUtils.hasControlChar((String) key)) {
             key = key.toString().replaceAll("\\s*", "");
         }
-        logger.debug("set:" + key);
+        logger.debug("set:{}, cachename:{}" , key, this.cacheName);
         this.memcachedClient.set((String) key, value, this.expiredTime, this.cacheName);
     }
 
@@ -78,7 +78,7 @@ public class MemcachedCache implements Cache {
         if (MemcachedUtils.hasControlChar((String) key)) {
             key = key.toString().replaceAll("\\s*", "");
         }
-        logger.debug("delete:" + key);
+        logger.debug("delete:{}, cachename:{}" , key, this.cacheName);
         this.memcachedClient.delete((String) key, this.cacheName);
     }
 

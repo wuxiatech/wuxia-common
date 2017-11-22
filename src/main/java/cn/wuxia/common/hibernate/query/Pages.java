@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
@@ -26,6 +27,7 @@ import cn.wuxia.common.util.NumberUtil;
  * @author songlin.li 2012-5-30
  */
 @JsonAutoDetect
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Pages<T> implements Serializable {
 
     /**
