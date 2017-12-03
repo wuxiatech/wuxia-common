@@ -33,7 +33,6 @@ import cn.wuxia.common.util.ListUtil;
 import cn.wuxia.common.util.StringUtil;
 import cn.wuxia.common.util.reflection.ReflectionUtil;
 
-
 public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends Serializable> {
     protected static Logger logger = LoggerFactory.getLogger(SpringDataMongoDao.class);
 
@@ -70,11 +69,33 @@ public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends S
      * @param query
      * @return
      */
-    public T findOne(Query query) {
+    public T findUnique(Query query) {
         if (StringUtil.isBlank(collectionName)) {
             return getMongoTemplate().findOne(query, this.getEntityClass());
         } else
             return getMongoTemplate().findOne(query, this.getEntityClass(), collectionName);
+    }
+
+    /**
+     *
+     * @param properties
+     * @param value
+     * @return
+     */
+    public T findUniqueBy(final String properties, final Object value) {
+        Query query = new Query(Criteria.where(properties).is(value));
+        return this.findUnique(query);
+    }
+
+    /**
+     *
+     * @param properties
+     * @param value
+     * @return
+     */
+    public List<T> findIn(final String properties, final Object... value) {
+        Query query = new Query(Criteria.where(properties).in(value));
+        return this.find(query);
     }
 
     /**
@@ -250,7 +271,6 @@ public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends S
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
-
 
     public String getIdName() throws IntrospectionException {
         BeanInfo beanInfo = Introspector.getBeanInfo(this.getEntityClass());

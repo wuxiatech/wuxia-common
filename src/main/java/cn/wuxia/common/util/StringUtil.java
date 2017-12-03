@@ -762,6 +762,8 @@ public class StringUtil extends StringUtils {
         System.out.println(sql + "   " + sql.length());
 
         System.out.println(Hex.encodeHexString(sql.getBytes()));
+
+
     }
 
     public static String parseValue(Object valueObj) {

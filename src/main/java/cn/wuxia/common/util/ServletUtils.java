@@ -415,6 +415,7 @@ public class ServletUtils {
      * @throws Exception
      * @author songlin.li
      */
+    @Deprecated
     public static void requestToFile(String fileName, String savePath, String requestUrl) throws Exception {
         FileUtil fileUtil = new FileUtil(savePath, fileName);
 
