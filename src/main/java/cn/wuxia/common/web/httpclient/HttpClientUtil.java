@@ -407,7 +407,9 @@ public class HttpClientUtil {
     }
 
     public static HttpClientResponse execute(HttpClientRequest param, HttpEntity entity) throws HttpClientException {
-
+        if (param.getMethod().compareTo(HttpClientMethod.POST) != 0) {
+            logger.warn("不支持{},将使用POST方法调用{}", param.getMethod(), param.getUrl());
+        }
         // 创建默认的httpClient实例.  
         CloseableHttpClient httpclient = getHttpClient(param);
         HttpClientResponse result = new HttpClientResponse();
@@ -416,7 +418,7 @@ public class HttpClientUtil {
 
             // 创建httppost
             HttpPost httppost = new HttpPost(param.getUrl() + (StringUtil.indexOf(param.getUrl(), "?") > 0 ? "&" : "?") + param.getQueryString());
-           
+
             // 创建参数队列  
             httppost.setEntity(entity);
             addHeader(httppost, param);
@@ -585,6 +587,8 @@ public class HttpClientUtil {
                     logger.debug("--------------------------------------");
                 }
                 resp.setResponseHeaders(response.getAllHeaders());
+            } else {
+                throw new IOException("" + statusCode);
             }
             HttpClientUtils.closeQuietly(response);
             return resp;

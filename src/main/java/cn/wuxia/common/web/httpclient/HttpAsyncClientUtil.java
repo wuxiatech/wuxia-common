@@ -262,7 +262,11 @@ public class HttpAsyncClientUtil {
             try {
                 latch.await();
                 for (Future<org.apache.http.HttpResponse> future : lists) {
-                    resps.add(getResponse(future));
+                    try {
+                        resps.add(getResponse(future));
+                    } catch (HttpClientException e) {
+                        logger.error("", e);
+                    }
                 }
             } catch (InterruptedException e) {
             }
@@ -326,7 +330,11 @@ public class HttpAsyncClientUtil {
             }
             latch.await();
             for (Future<org.apache.http.HttpResponse> future : lists) {
-                resps.add(getResponse(future));
+                try {
+                    resps.add(getResponse(future));
+                } catch (Exception e) {
+                    logger.error("", e);
+                }
             }
         } catch (Exception e) {
             throw new HttpClientException(e);
@@ -363,6 +371,7 @@ public class HttpAsyncClientUtil {
                 try {
                     resp.setByteResult(EntityUtils.toByteArray(entity));
                 } catch (IOException e) {
+                    throw new HttpClientException(e);
                 }
                 Charset respcharset = ContentType.getOrDefault(entity).getCharset();
                 //如果返回编码为空则使用默认的http 编码 ISO-8859-1
@@ -377,6 +386,8 @@ public class HttpAsyncClientUtil {
                             entity.getContentEncoding(), resp.getStringResult());
                     logger.debug("--------------------------------------");
                 }
+            } else {
+                throw new HttpClientException("" + statusCode);
             }
         } catch (InterruptedException | ExecutionException e) {
             logger.error(e.getMessage());

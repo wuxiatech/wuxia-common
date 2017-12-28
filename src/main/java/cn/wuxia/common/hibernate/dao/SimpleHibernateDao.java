@@ -34,8 +34,8 @@ import cn.wuxia.common.util.reflection.ReflectionUtil;
  * Service layer can also be extended to the generic DAO subclass, see the
  * comments of two constructors. The example of Petlinc reference Spring2.5
  * comes canceled HibernateTemplate, directly using Hibernate native APIs.
- * 
- * @param <T> The DAO operation of the object type
+ *
+ * @param <T>  The DAO operation of the object type
  * @param <PK> The type of the primary key
  * @author calvin
  */
@@ -78,8 +78,8 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
 
     /**
      * @description : when have
-     *              multiple SesionFactory of to reload this function in a
-     *              subclass.
+     * multiple SesionFactory of to reload this function in a
+     * subclass.
      */
     @Autowired
     public void setSessionFactory(final SessionFactory sessionFactory) {
@@ -106,8 +106,9 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
 
     /**
      * 批量操作
-     * @author songlin
+     *
      * @param entitys
+     * @author songlin
      */
     public void batchSave(final Collection<T> entitys) {
         Assert.notEmpty(entitys, "entity Can not be null");
@@ -129,9 +130,9 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
     }
 
     /**
+     * @param entity
      * @description : Description of the method
      * @author songlin.li
-     * @param entity
      */
     public void merge(final T entity) {
         Assert.notNull(entity, "entity Can not be null");
@@ -142,9 +143,9 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
     }
 
     /**
-     * @description : Delete objects.
      * @param entity The object must be an object in the session or the
-     *            transient object with id attribute.
+     *               transient object with id attribute.
+     * @description : Delete objects.
      */
     public void delete(final T entity) {
         Assert.notNull(entity, "entity Can not be null");
@@ -199,7 +200,7 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
 
     /**
      * @description : Find a list of objects by attributes match the way for
-     *              equal.
+     * equal.
      */
     public List<T> findBy(final String propertyName, final Object value) {
         Assert.hasText(propertyName, "propertyName Can not be null");
@@ -208,11 +209,11 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
     }
 
     /**
-     * @description : Find a list of objects by attributes match the way for in.
-     * @author songlin
      * @param propertyName
      * @param values
      * @return
+     * @description : Find a list of objects by attributes match the way for in.
+     * @author songlin
      */
     public List<T> findIn(final String propertyName, final Collection<?> values) {
         Assert.hasText(propertyName, "propertyName Can not be null");
@@ -221,11 +222,11 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
     }
 
     /**
-     * @description : Find a list of objects by attributes match the way for in.
-     * @author songlin
      * @param propertyName
      * @param values
      * @return
+     * @description : Find a list of objects by attributes match the way for in.
+     * @author songlin
      */
     public List<T> findIn(final String propertyName, final Object... values) {
         Assert.hasText(propertyName, "propertyName Can not be null");
@@ -234,12 +235,12 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
     }
 
     /**
-     * @description : Find a list of objects by attributes match the way for
-     *              notin.
-     * @author songlin
      * @param propertyName
      * @param values
      * @return
+     * @description : Find a list of objects by attributes match the way for
+     * notin.
+     * @author songlin
      */
     public List<T> findNotIn(final String propertyName, final Collection<?> values) {
         Assert.hasText(propertyName, "propertyName Can not be null");
@@ -248,12 +249,12 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
     }
 
     /**
-     * @description : Find a list of objects by attributes match the way for
-     *              notin.
-     * @author songlin
      * @param propertyName
      * @param values
      * @return
+     * @description : Find a list of objects by attributes match the way for
+     * notin.
+     * @author songlin
      */
     public List<T> findNotIn(final String propertyName, final Object... values) {
         Assert.hasText(propertyName, "propertyName Can not be null");
@@ -263,7 +264,7 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
 
     /**
      * @description : Find a list of objects by attributes, matching equal find
-     *              only objects by attributes, matching equal.
+     * only objects by attributes, matching equal.
      */
     public T findUniqueBy(final String propertyName, final Object value) {
         Assert.hasText(propertyName, "propertyName Can not be null");
@@ -272,8 +273,8 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
     }
 
     /**
-     * @description : HQL query object list.
      * @param values A variable number of parameters, in order binding.
+     * @description : HQL query object list.
      */
     public <X> List<X> find(final String hql, final Object... values) {
         Query<X> query = createQuery(hql, values);
@@ -281,8 +282,8 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
     }
 
     /**
-     * @description : HQL query object list.
      * @param values Named parameters, bind by name.
+     * @description : HQL query object list.
      */
     public <X> List<X> find(final String hql, final Map<String, ?> values) {
         Query<X> query = createQuery(hql, values);
@@ -290,34 +291,34 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
     }
 
     /**
-     * @description : The HQL queries a unique object.
      * @param values A variable number of parameters, in order binding.
+     * @description : The HQL queries a unique object.
      */
     public <X> X findUnique(final String hql, final Object... values) {
         return (X) createQuery(hql, values).uniqueResult();
     }
 
     /**
-     * @description : The HQL queries a unique object.
      * @param values Named parameters, bind by name.
+     * @description : The HQL queries a unique object.
      */
-    public <X> X  findUnique(final String hql, final Map<String, ?> values) {
+    public <X> X findUnique(final String hql, final Map<String, ?> values) {
         return (X) createQuery(hql, values).uniqueResult();
     }
 
     /**
-     * @description : Execute HQL bulk modify / delete operations.
      * @param values A variable number of parameters, in order binding.
      * @return Updating the number of records.
+     * @description : Execute HQL bulk modify / delete operations.
      */
     public int batchExecute(final String hql, final Object... values) {
         return createQuery(hql, values).executeUpdate();
     }
 
     /**
-     * @description : Execute HQL bulk modify / delete operations.
      * @param values Named parameters, bind by name.
      * @return Updating the number of records.
+     * @description : Execute HQL bulk modify / delete operations.
      */
     public int batchExecute(final String hql, final Map<String, ?> values) {
         return createQuery(hql, values).executeUpdate();
@@ -326,7 +327,7 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
     /**
      * Based on the query HQL parameter list to create a Query object. And find
      * () function can be more flexible operation.
-     * 
+     *
      * @param values Variable number of parameters, in order to bind.
      */
     public <X> Query<X> createQuery(final String hql, final Object... values) {
@@ -343,7 +344,7 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
     /**
      * Based on the query HQL parameter list to create a Query object. And find
      * () function can be more flexible operation.
-     * 
+     *
      * @param values Named parameters, bind by name.
      */
     public <X> Query<X> createQuery(final String hql, final Map<String, ?> values) {
@@ -356,25 +357,57 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
     }
 
     /**
-     * @description : Criteria query object list.
+     * Based on the query HQL parameter list to create a Query object. And find
+     * () function can be more flexible operation.
+     *
+     * @param values Variable number of parameters, in order to bind.
+     */
+    public <X> Query<X> createQuery(final String hql, final Class<X> clazz, final Object... values) {
+        Assert.hasText(hql, "queryString can not be null");
+        Query<X> query = getSession().createQuery(hql, clazz);
+        if (ArrayUtil.isNotEmpty(values)) {
+            for (int i = 0; i < values.length; i++) {
+                query.setParameter(i, values[i]);
+            }
+        }
+        return query;
+    }
+
+    /**
+     * Based on the query HQL parameter list to create a Query object. And find
+     * () function can be more flexible operation.
+     *
+     * @param values Named parameters, bind by name.
+     */
+    public <X> Query<X> createQuery(final String hql, final Class<X> clazz, final Map<String, ?> values) {
+        Assert.hasText(hql, "queryString Can not be null");
+        Query<X> query = getSession().createQuery(hql, clazz);
+        if (MapUtils.isNotEmpty(values)) {
+            query.setProperties(values);
+        }
+        return query;
+    }
+
+    /**
      * @param criterions Variable number of Criterion.
+     * @description : Criteria query object list.
      */
     public List<T> find(final Criterion... criterions) {
         return createCriteria(criterions).list();
     }
 
     /**
-     * @description : Criteria query a unique object.
      * @param criterions Variable number of Criterion.
+     * @description : Criteria query a unique object.
      */
     public T findUnique(final Criterion... criterions) {
         return (T) createCriteria(criterions).uniqueResult();
     }
 
     /**
-     * @description : Created under Criterion conditions with the find ()
-     *              function can be more flexible operation.
      * @param criterions Variable number of Criterion.
+     * @description : Created under Criterion conditions with the find ()
+     * function can be more flexible operation.
      */
     public Criteria createCriteria(final Criterion... criterions) {
         Criteria criteria = getSession().createCriteria(entityClass);
@@ -386,16 +419,16 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
 
     /**
      * @description : Initialize the object. Use the load () method to get only
-     *              the object Proxy needs to be initialized before reached the
-     *              View layer. Incoming entity, only initialize the entity
-     *              directly attribute, but it will not initializelazy
-     *              associations collections and properties For initialization
-     *              associated attributes, to be performed:
-     *              Hibernate.initialize(user.getRoles ()), direct
-     *              initialization User attributes and associated collection.
-     *              Hibernate.initialize(user.getDescription())，Direct
-     *              initialization User properties and delay the loading of the
-     *              Description property.
+     * the object Proxy needs to be initialized before reached the
+     * View layer. Incoming entity, only initialize the entity
+     * directly attribute, but it will not initializelazy
+     * associations collections and properties For initialization
+     * associated attributes, to be performed:
+     * Hibernate.initialize(user.getRoles ()), direct
+     * initialization User attributes and associated collection.
+     * Hibernate.initialize(user.getDescription())，Direct
+     * initialization User properties and delay the loading of the
+     * Description property.
      */
     public void initProxyObject(Object proxy) {
         Hibernate.initialize(proxy);
@@ -418,8 +451,8 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
 
     /**
      * @description : Add Criteria distinct transformer. HQL pre-load the
-     *              associated object will cause duplication of the main object,
-     *              the need for a distinct processing.
+     * associated object will cause duplication of the main object,
+     * the need for a distinct processing.
      */
     public Criteria distinct(Criteria criteria) {
         criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
@@ -436,9 +469,9 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
 
     /**
      * @description : Judgment object attribute values ​​in the database is
-     *              unique. Modify the object scenarios, if the attribute value
-     *              (value) of the newly amended compare equal are not the
-     *              property of the original value (orgValue).
+     * unique. Modify the object scenarios, if the attribute value
+     * (value) of the newly amended compare equal are not the
+     * property of the original value (orgValue).
      */
     public boolean isPropertyUnique(final String propertyName, final Object newValue, final Object oldValue) {
         if (newValue == null || newValue.equals(oldValue)) {

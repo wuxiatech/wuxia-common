@@ -12,34 +12,20 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.Disjunction;
-import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projection;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.*;
 import org.hibernate.internal.CriteriaImpl;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
 import org.hibernate.transform.ResultTransformer;
 import org.hibernate.transform.Transformers;
+import org.nutz.dao.Sqls;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import cn.wuxia.common.hibernate.query.Conditions;
-import cn.wuxia.common.hibernate.query.MatchType;
-import cn.wuxia.common.hibernate.query.Pages;
-import cn.wuxia.common.hibernate.query.PropertyFilter;
-import cn.wuxia.common.hibernate.query.Sort;
-import cn.wuxia.common.util.ArrayUtil;
-import cn.wuxia.common.util.ListUtil;
-import cn.wuxia.common.util.MapUtil;
-import cn.wuxia.common.util.NumberUtil;
-import cn.wuxia.common.util.StringUtil;
+import cn.wuxia.common.hibernate.query.*;
+import cn.wuxia.common.util.*;
 import cn.wuxia.common.util.reflection.ReflectionUtil;
 
 /**
@@ -47,8 +33,8 @@ import cn.wuxia.common.util.reflection.ReflectionUtil;
  * features including paging query , query by attribute filter criteria list.
  * Can use directly in the Service layer , can also be extended to the use of
  * the generic DAO subclass , see the comment of the two constructors.
- * 
- * @param <T> DAOOperation of the object type
+ *
+ * @param <T>  DAOOperation of the object type
  * @param <PK> Primary key type
  * @author songlin.li
  */
@@ -75,10 +61,10 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * get all data by sort
-     * 
-     * @author songlin
+     *
      * @param sort
      * @return
+     * @author songlin
      */
 
     public List<T> findAll(final Sort sort) {
@@ -101,14 +87,14 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * query by HQL.
-     * 
+     *
      * @param page.
      * @param hql.
      * @param values values Variable number of parameters, in order to bind.
      * @return Paging query results , with the list of results and all of the
-     *         query input parameters.
+     * query input parameters.
      */
-    public <X> Pages<X> findPage(final Pages<X> page, final String hql, final Object... values) {
+    public <X> Pages<X> findPage(final Pages<X> page, final Class<X> clazz, final String hql, final Object... values) {
         Assert.notNull(page, "page can not be null");
         /**
          * 动态拼接参数
@@ -125,7 +111,7 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
         queryHql += appendOrderBy(queryHql, page.getSort());
 
-        Query<X> q = createQuery(queryHql, paramValue.toArray());
+        Query<X> q = createQuery(queryHql, clazz, paramValue.toArray());
 
         setPageParameterToQuery(q, page);
 
@@ -134,14 +120,18 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
         return page;
     }
 
+    public <T> Pages<T> findPage(final Pages page, final String hql, final Object... values) {
+        return findPage(page, entityClass, hql, values);
+    }
+
     /**
      * query by HQL.
-     * 
+     *
      * @param page.
      * @param hql.
      * @param values Named parameters, bind by name.
      * @return Paging query results , with the list of results and all of the
-     *         query input parameters.
+     * query input parameters.
      */
     public <X> Pages<X> findPage(final Pages<X> page, final String hql, final Map<String, ?> values) {
         Assert.notNull(page, "page can not be null");
@@ -171,11 +161,11 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * query by Criteria.
-     * 
+     *
      * @param page.
      * @param criterions
      * @return Paging query results. Comes with a list of results and all of the
-     *         query input parameters.
+     * query input parameters.
      */
     public <X> Pages<X> findPage(final Pages<X> page, final Criterion... criterions) {
         Assert.notNull(page, "page can not be null");
@@ -205,11 +195,11 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * build the queryString to append the sort order by
-     * 
-     * @author songlin
+     *
      * @param queryString
      * @param sort
      * @return
+     * @author songlin
      */
     protected String appendOrderBy(String queryString, Sort sort) {
         String orderBy = "";
@@ -223,11 +213,11 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * build the queryString to append condition
-     * 
-     * @author songlin
+     *
      * @param queryString
      * @param conditions
      * @return
+     * @author songlin
      */
     private String appendConditionParameterAndValue(List<Conditions> conditions, List<Object> values) {
         String appendCondition = " ";
@@ -237,16 +227,22 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
             for (Conditions condition : conditions) {
                 switch (condition.getMatchType()) {
                     case LL:
-                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
-                        appendValues.add("%" + condition.getValue());
+                        if (StringUtil.isNotBlank(condition.getValue())) {
+                            queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
+                            appendValues.add("%" + condition.getValue());
+                        }
                         break;
                     case RL:
-                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
-                        appendValues.add(condition.getValue() + "%");
+                        if (StringUtil.isNotBlank(condition.getValue())) {
+                            queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
+                            appendValues.add(condition.getValue() + "%");
+                        }
                         break;
                     case FL:
-                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
-                        appendValues.add("%" + condition.getValue() + "%");
+                        if (StringUtil.isNotBlank(condition.getValue())) {
+                            queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
+                            appendValues.add("%" + condition.getValue() + "%");
+                        }
                         break;
                     case BW:
                         queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
@@ -255,11 +251,17 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
                         break;
                     case IN:
                     case NIN:
-                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(":" + condition.getProperty()));
+                        List v1 = Lists.newArrayList();
+                        for (Object v : (Object[]) condition.getValue()) {
+                            v1.add(Sqls.formatSqlFieldValue(v));
+                        }
+                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(StringUtil.join(v1, ",")));
                         break;
                     default:
-                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
-                        appendValues.add(condition.getValue());
+                        if (StringUtil.isNotBlank(condition.getValue())) {
+                            queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
+                            appendValues.add(condition.getValue());
+                        }
                         break;
                 }
 
@@ -284,21 +286,38 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
             List<String> queryParameter = Lists.newArrayList();
             for (Conditions condition : conditions) {
                 if (MatchType.LL.equals(condition.getMatchType())) {
-                    values.put(condition.getProperty(), "%" + condition.getValue());
+                    if (StringUtil.isNotBlank(condition.getValue())) {
+                        values.put(condition.getProperty(), "%" + condition.getValue());
+                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(":" + condition.getProperty()));
+                    }
                 } else if (MatchType.RL.equals(condition.getMatchType())) {
-                    values.put(condition.getProperty(), condition.getValue() + "%");
+                    if (StringUtil.isNotBlank(condition.getValue())) {
+                        values.put(condition.getProperty(), condition.getValue() + "%");
+                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(":" + condition.getProperty()));
+                    }
                 } else if (MatchType.FL.equals(condition.getMatchType())) {
-                    values.put(condition.getProperty(), "%" + condition.getValue() + "%");
+                    if (StringUtil.isNotBlank(condition.getValue())) {
+                        values.put(condition.getProperty(), "%" + condition.getValue() + "%");
+                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(":" + condition.getProperty()));
+                    }
                 } else if (MatchType.BW.equals(condition.getMatchType())) {
                     queryParameter.add(condition.getProperty()
                             + condition.getMatchType().getSymbol(":" + condition.getProperty(), ":" + condition.getProperty() + "2"));
                     values.put(condition.getProperty(), condition.getValue());
                     values.put(condition.getProperty() + "2", condition.getAnotherValue());
+                    queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(":" + condition.getProperty()));
                     continue;
+                } else if (MatchType.ISN.equals(condition.getMatchType())) {
+                    if (StringUtil.isNotBlank(condition.getValue())) {
+                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
+                    }
                 } else {
-                    values.put(condition.getProperty(), condition.getValue());
+                    if (StringUtil.isNotBlank(condition.getValue())) {
+                        values.put(condition.getProperty(), condition.getValue());
+                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(":" + condition.getProperty()));
+                    }
                 }
-                queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(":" + condition.getProperty()));
+
             }
             /**
              * 需要判断是否需要添加and开头，此处先默认需要添加and开头即前面需要已有查询条件
@@ -337,11 +356,11 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * set sort order to hibernate order
-     * 
-     * @author songlin
+     *
      * @param c
      * @param sort
      * @return
+     * @author songlin
      */
     protected void setSortOrder(Criteria c, final Sort sort) {
         Iterator<cn.wuxia.common.hibernate.query.Sort.Order> it = sort.iterator();
@@ -356,13 +375,13 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * set condition
-     * 
-     * @author songlin
+     *
      * @param conditions
      * @return
+     * @author songlin
      */
     public Criterion[] buildCriterion(final Conditions... conditions) {
-        Criterion[] array = new Criterion[] {};
+        Criterion[] array = new Criterion[]{};
         if (ArrayUtil.isEmpty(conditions)) {
             return array;
         }
@@ -396,7 +415,8 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
      */
     protected long countHqlResult(final String hql, final Object... values) {
         String countHql = prepareCountHql(hql);
-        return NumberUtil.toLong(findUnique(countHql, values), 0L);
+        Object count = findUnique(countHql, values);
+        return NumberUtil.toLong(count, 0L);
     }
 
     /**
@@ -407,7 +427,8 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
      */
     protected long countHqlResult(final String hql, final Map<String, ?> values) {
         String countHql = prepareCountHql(hql);
-        return NumberUtil.toLong(findUnique(countHql, values), 0L);
+        Object count = findUnique(countHql, values);
+        return NumberUtil.toLong(count, 0L);
     }
 
     private String prepareCountHql(String orgHql) {
@@ -464,11 +485,11 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * count record
-     * 
-     * @author songlin.li
+     *
      * @param sql
      * @param values
      * @return
+     * @author songlin.li
      */
     protected long countSQLResult(String sql, Object... values) {
         long recordTotal;
@@ -480,6 +501,7 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
         }
 
         NativeQuery<Object> query = createSQLQuery(sql, values);
+
         recordTotal = NumberUtil.toLong(query.uniqueResult(), 0L);
         logger.debug("Total: " + recordTotal);
         return recordTotal;
@@ -487,11 +509,11 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * count record
-     * 
-     * @author songlin.li
+     *
      * @param sql
      * @param values
      * @return
+     * @author songlin.li
      */
     protected long countSQLResult(String sql, Map<String, ?> values) {
         long recordTotal;
@@ -564,10 +586,11 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * 根据sql查询返回Map
-     * @author songlin
+     *
      * @param sql
      * @param values
      * @return
+     * @author songlin
      * @deprecated (since 1.4.0) use {@link #queryToMap(String, Object...)} instead
      */
     @Deprecated
@@ -577,11 +600,12 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * 根据sql查询返回Map
-     * @author songlin
+     *
      * @param sql
      * @param values
      * @return
-     * @deprecated (since 1.4.0) {@link #queryToMap(String, Map)} instead 
+     * @author songlin
+     * @deprecated (since 1.4.0) {@link #queryToMap(String, Map)} instead
      */
     @Deprecated
     public List<Map<String, Object>> queryForMap(String sql, Map<String, ?> values) {
@@ -590,10 +614,11 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * 根据sql查询返回Map
-     * @author songlin
+     *
      * @param sql
      * @param values
      * @return
+     * @author songlin
      */
     public List<Map<String, Object>> queryToMap(String sql, Object... values) {
         logger.debug("sql: " + sql);
@@ -608,10 +633,11 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * 根据sql查询返回Map
-     * @author songlin
+     *
      * @param sql
      * @param values
      * @return
+     * @author songlin
      */
     public List<Map<String, Object>> queryToMap(String sql, Map<String, ?> values) {
         logger.debug("sql: " + sql);
@@ -625,11 +651,11 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * get unique result by sql, if result is empty then return null
-     * 
-     * @author songlin.li
+     *
      * @param sql
      * @param objs
      * @return
+     * @author songlin.li
      */
     public <X> X queryUnique(String sql, Class<X> clazz, Object... objs) {
         List<X> list = (List<X>) query(sql, clazz, objs);
@@ -641,7 +667,7 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * sql query, return list
-     * 
+     *
      * @param sql
      * @param clas
      * @return List
@@ -657,7 +683,7 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * sql query, return entity list
-     * 
+     *
      * @param sql
      * @param clazz
      * @return List
@@ -684,12 +710,11 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
     }
 
     /**
-     * 
-     * @author songlin.li
      * @param sql
      * @param clas
      * @param objs
      * @return
+     * @author songlin.li
      */
     public <X> List<X> query(String sql, Map<String, ?> objs) {
         NativeQuery<X> query = this.createSQLQuery(sql, objs);
@@ -699,12 +724,11 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
     }
 
     /**
-     * 
-     * @author songlin.li
      * @param sql
      * @param entityClass
      * @param objs
      * @return
+     * @author songlin.li
      */
     public <X> List<X> query(String sql, Class<X> entityClass, Map<String, ?> objs) {
         NativeQuery<X> query = this.createSQLQuery(sql, entityClass, objs);
@@ -715,7 +739,7 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * same as createSQLQuery(sql, values).executeUpdate()
-     * 
+     *
      * @param values Variable number of parameters, in order to bind.
      */
     public void queryUpdate(String sql, Object... values) {
@@ -727,7 +751,7 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * same as createSQLQuery(sql, values).executeUpdate()
-     * 
+     *
      * @param values Named parameters, bind by name.
      */
     public void queryUpdate(String sql, Map<String, ?> values) {
@@ -737,12 +761,11 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
     }
 
     /**
-     * 
-     * @author songlin.li
      * @param page
      * @param sql
      * @param values
      * @return
+     * @author songlin.li
      */
     public Pages<Map<String, Object>> findPageBySql(final Pages page, final String sql, final Object... values) {
         return findPageBySql(page, null, sql, values);
@@ -750,12 +773,13 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * 支持简单的Conditions 赋值查询，复杂sql请自行处理再调用本方法
-     * @author songlin
+     *
      * @param page
      * @param clas
      * @param sql
      * @param values
      * @return
+     * @author songlin
      */
     public <X> Pages<X> findPageBySql(final Pages<X> page, final Class<X> clas, final String sql, final Object... values) {
         int classNameIndex = sql.toLowerCase().indexOf("from");
@@ -789,7 +813,7 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
             q.setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
         }
         @SuppressWarnings("rawtypes")
-        List list = q.list();
+        List<X> list = q.list();
         page.setResult(list);
         return page;
     }
@@ -874,14 +898,15 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
     }
 
     // -- PropertyFilter --//
+
     /**
-     * @description : Find the list of Entity List by propertyName
-     * @author songlin.li
      * @param propertyName
      * @param value
      * @param orderBy
      * @param isAsc
      * @return
+     * @description : Find the list of Entity List by propertyName
+     * @author songlin.li
      */
     public List<T> findBy(String propertyName, Object value, String orderBy, boolean isAsc) {
         Assert.hasText(propertyName, "propertyName Can not be null");
@@ -899,10 +924,10 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
     }
 
     /**
-     * @description : Find the list of Entity List by propertyName and support
-     *              for multiple matches .
      * @param matchType matching mode,Currently supports the values ​​of
-     *            PropertyFilter's MatcheType enum.
+     *                  PropertyFilter's MatcheType enum.
+     * @description : Find the list of Entity List by propertyName and support
+     * for multiple matches .
      */
     public List<T> findBy(final String propertyName, final MatchType matchType, final Object... value) {
 
@@ -911,10 +936,10 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
     }
 
     /**
-     * @description : Find a list of objects attribute to filter list of
-     *              conditions.
      * @param filters
      * @return
+     * @description : Find a list of objects attribute to filter list of
+     * conditions.
      */
     public List<T> find(List<PropertyFilter> filters) {
         Criterion[] criterions = buildCriterionByPropertyFilter(filters);
@@ -922,10 +947,10 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
     }
 
     /**
-     * @description : Find an object attribute filtering condition list page.
      * @param page
      * @param filters
      * @return
+     * @description : Find an object attribute filtering condition list page.
      */
     public Pages<T> findPage(final Pages<T> page, final List<PropertyFilter> filters) {
         Criterion[] criterions = buildCriterionByPropertyFilter(filters);
@@ -933,13 +958,13 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
     }
 
     /**
-     * @description :Criterion, the auxiliary function created by the property
-     *              condition parameters.
      * @param propertyName
      * @param propertyValue
      * @param matchType
-     * @author songlin
      * @return
+     * @description :Criterion, the auxiliary function created by the property
+     * condition parameters.
+     * @author songlin
      */
     protected Criterion buildCriterion(final String propertyName, final MatchType matchType, final Object... propertyValue) {
         Assert.hasText(propertyName, "property Name Can not be empty");
@@ -1025,20 +1050,20 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
     }
 
     /**
-     * @description : Criterion array of auxiliary functions according to the
-     *              attribute list of conditions to create.
      * @param filters
      * @return
+     * @description : Criterion array of auxiliary functions according to the
+     * attribute list of conditions to create.
      */
     protected Criterion[] buildCriterionByPropertyFilter(final List<PropertyFilter> filters) {
         List<Criterion> criterionList = new ArrayList<Criterion>();
         for (PropertyFilter filter : filters) {
             if (!filter.hasMultiProperties()) { // Only need to compare a
-                                                    // property.
+                // property.
                 Criterion criterion = buildCriterion(filter.getPropertyName(), filter.getMatchType(), filter.getMatchValue());
                 criterionList.add(criterion);
             } else {// Contain the need to compare multiple properties , or
-                        // processing.
+                // processing.
                 Disjunction disjunction = Restrictions.disjunction();
                 for (String param : filter.getPropertyNames()) {
                     Criterion criterion = buildCriterion(param, filter.getMatchType(), filter.getMatchValue());

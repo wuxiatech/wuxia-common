@@ -20,11 +20,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 
 public class BeanUtil extends BeanUtils {
     private static Logger logger = LoggerFactory.getLogger(BeanUtil.class);
@@ -79,8 +79,6 @@ public class BeanUtil extends BeanUtils {
         BeanCopy.beans(source, target).copy();
     }
 
-
-
     /**
      * @param dest
      * @param orig
@@ -103,10 +101,6 @@ public class BeanUtil extends BeanUtils {
             }
         }
     }
-
-
-
-
 
     public static <T> T mapToBean(Map<String, Object> map, Class<T> beanClass, String prefix) {
         if (beanClass == null) {
@@ -198,16 +192,22 @@ public class BeanUtil extends BeanUtils {
                      */
                     Type genericValueType = ((ParameterizedType) genericType).getActualTypeArguments()[0];
                     String genericName = genericValueType.getTypeName();
-                    logger.debug("泛型类型为<{}>", genericName);
-                    Class<?> valueCls = ClassLoaderUtil.loadClass(genericName);
-                    if (value instanceof List) {
-                        value = ListUtil.copyProperties(valueCls, (List) value);
-                    } else if (value instanceof Map) {
-                        value = Lists.newArrayList(mapToBean((Map) value, valueCls));
-                    } else {
-                        Object v = valueCls.newInstance();
-                        copyProperties( v, value);
-                        value = Lists.newArrayList(v);
+                    Class<?> valueCls = null;
+                    try {
+                        valueCls = ClassLoaderUtil.loadClass(genericName);
+                        logger.debug("泛型类型为<{}>", valueCls);
+                        if (value instanceof List) {
+                            value = ListUtil.copyProperties(valueCls, (List) value);
+                        } else if (value instanceof Map) {
+                            value = Lists.newArrayList(mapToBean((Map) value, valueCls));
+                        } else {
+                            Object v = valueCls.newInstance();
+                            copyProperties(v, value);
+                            value = Lists.newArrayList(v);
+                        }
+                    } catch (Exception e) {
+                        logger.warn("泛型类型为<{}>", genericName);
+                        value = TypeConverterManager.convertType(value, propertyType);
                     }
                 } else if (propertyType.isAssignableFrom(Map.class)) {
                     // 如果还是一个Map，则尝试将map复制到obj的对象中
@@ -221,24 +221,24 @@ public class BeanUtil extends BeanUtils {
                             + " " + propertyName + ") 方法");
                     ReflectionUtil.invokeSetterMethod(obj, propertyName, value, value.getClass());
                     continue;
-                }/* else if (StringUtil.equals(propertyType.getName(), "java.lang.String") && !(value instanceof String)) {
-                    value = value.toString();
-                } else if (StringUtil.equals(propertyType.getName(), "java.util.Date") && !(value instanceof Date)) {
-                    value = DateUtil.stringToDate(value.toString());
-                } else if (StringUtil.equals(propertyType.getName(), "java.lang.Float") && !(value instanceof Float)) {
-                    value = value.toString();
-                } else if (StringUtil.equals(propertyType.getName(), "java.lang.Integer") && !(value instanceof Integer)) {
-                    value = NumberUtil.toInteger(value);
-                } else if (StringUtil.equals(propertyType.getName(), "java.lang.Double") && !(value instanceof Double)) {
-                    value = NumberUtil.toDouble(value);
-                } else if (StringUtil.equals(propertyType.getName(), "java.lang.Short") && !(value instanceof Short)) {
-                    value = NumberUtil.toShort(value.toString());
-                } else if (StringUtil.equals(propertyType.getName(), "java.lang.Long") && !(value instanceof Long)) {
-                    value = NumberUtil.toLong(value);
-                }*/ else if (value instanceof Map) {
+                } /* else if (StringUtil.equals(propertyType.getName(), "java.lang.String") && !(value instanceof String)) {
+                     value = value.toString();
+                  } else if (StringUtil.equals(propertyType.getName(), "java.util.Date") && !(value instanceof Date)) {
+                     value = DateUtil.stringToDate(value.toString());
+                  } else if (StringUtil.equals(propertyType.getName(), "java.lang.Float") && !(value instanceof Float)) {
+                     value = value.toString();
+                  } else if (StringUtil.equals(propertyType.getName(), "java.lang.Integer") && !(value instanceof Integer)) {
+                     value = NumberUtil.toInteger(value);
+                  } else if (StringUtil.equals(propertyType.getName(), "java.lang.Double") && !(value instanceof Double)) {
+                     value = NumberUtil.toDouble(value);
+                  } else if (StringUtil.equals(propertyType.getName(), "java.lang.Short") && !(value instanceof Short)) {
+                     value = NumberUtil.toShort(value.toString());
+                  } else if (StringUtil.equals(propertyType.getName(), "java.lang.Long") && !(value instanceof Long)) {
+                     value = NumberUtil.toLong(value);
+                  }*/ else if (value instanceof Map) {
                     value = mapToBean((Map) value, propertyType);
-                } else {
-//                    value = ConvertUtil.convert(value, propertyType);
+                }else {
+                    //                    value = ConvertUtil.convert(value, propertyType);
                     value = TypeConverterManager.convertType(value, propertyType);
                 }
                 ReflectionUtil.invokeSetterMethod(obj, propertyName, value, propertyType);
@@ -388,14 +388,14 @@ public class BeanUtil extends BeanUtils {
     public static void main(String[] args) throws Exception {
         CopyBean1 p1 = new CopyBean1();
         CopyBean2 p2 = new CopyBean2();
-//         p2.setTestDate(new Date());
-//         p2.setNumber(2);
+        //         p2.setTestDate(new Date());
+        //         p2.setNumber(2);
         p1.setTestDate("2017-12-30");
         p1.setNumber("2");
         // copyProperties(p2, p1);
-//        copyProperties(p1, p2);
-//        org.apache.commons.beanutils.PropertyUtils.copyProperties(p2, p1);
-//         org.springframework.beans.BeanUtils.copyProperties(p1, p2);
+        //        copyProperties(p1, p2);
+        //        org.apache.commons.beanutils.PropertyUtils.copyProperties(p2, p1);
+        //         org.springframework.beans.BeanUtils.copyProperties(p1, p2);
         BeanCopy.beans(p1, p2).copy();
         System.out.println(p1.getTestDate());
         System.out.println(p2.getTestDate());
