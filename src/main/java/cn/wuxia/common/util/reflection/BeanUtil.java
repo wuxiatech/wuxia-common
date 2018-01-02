@@ -94,7 +94,7 @@ public class BeanUtil extends BeanUtils {
                 if (value == null) {
                     continue;
                 } else {
-                    ReflectionUtil.invokeSetterMethod(dest, field.getName(), value);
+                    ReflectionUtil.invokeSetterMethod(dest, field.getName(), value, field.getType());
                 }
             } catch (Exception e) {
                 // logger.warn(e.getMessage());
