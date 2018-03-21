@@ -1,6 +1,5 @@
 package cn.wuxia.common.spring.orm.core.jpa.factory;
 
-import static org.springframework.data.querydsl.QueryDslUtils.QUERY_DSL_PRESENT;
 
 import java.io.Serializable;
 
@@ -10,7 +9,7 @@ import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactory;
 import org.springframework.data.jpa.repository.support.QueryDslJpaRepository;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
-import org.springframework.data.querydsl.QueryDslPredicateExecutor;
+import org.springframework.data.querydsl.QueryDslUtils;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 
@@ -32,16 +31,16 @@ public class BasicJpaRepositoryFactory extends JpaRepositoryFactory {
 
 	private boolean isQueryDslExecutor(Class<?> repositoryInterface) {
 
-		return QUERY_DSL_PRESENT && QueryDslPredicateExecutor.class.isAssignableFrom(repositoryInterface);
+		return QueryDslUtils.QUERY_DSL_PRESENT && QueryDslJpaRepository.class.isAssignableFrom(repositoryInterface);
 	}
 
 	@Override
-	protected <T, ID extends Serializable> SimpleJpaRepository<?, ?> getTargetRepository(
+	protected <T, ID extends Serializable> SimpleJpaRepository<T, ?> getTargetRepository(
 			RepositoryInformation information, EntityManager entityManager) {
 		Class<?> repositoryInterface = information.getRepositoryInterface();
 		JpaEntityInformation<?, Serializable> entityInformation = getEntityInformation(information.getDomainType());
 
-		SimpleJpaRepository<?, ?> repo = null;
+		SimpleJpaRepository<T, ID> repo = null;
 
 		if (isQueryDslExecutor(repositoryInterface)) {
 			repo = new QueryDslJpaRepository(entityInformation, entityManager);

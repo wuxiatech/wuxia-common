@@ -36,21 +36,6 @@ public class PropertyFilter implements Serializable {
     /** @description : OR relationship between the multiple attribute delimiters. */
     public static final String OR_SEPARATOR = "_OR_";
 
-    /** @description : Attribute data types. */
-    public enum PropertyType {
-        S(String.class), I(Integer.class), L(Long.class), N(Double.class), D(Date.class), B(Boolean.class),DC(BigDecimal.class);
-
-        private Class<?> clazz;
-
-        private PropertyType(Class<?> clazz) {
-            this.clazz = clazz;
-        }
-
-        public Class<?> getValue() {
-            return clazz;
-        }
-    }
-
     private MatchType matchType = null;
 
     private Object matchValue = null;

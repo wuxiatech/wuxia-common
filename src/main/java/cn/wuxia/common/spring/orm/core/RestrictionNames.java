@@ -58,7 +58,18 @@ public interface RestrictionNames {
     public static String RLIKE = "RLIKE";
 
     /**
+     * 查询（from Object o where o.property is null)
+     */
+    public static String ISN = "ISNULL";
+
+    /**
+     * 模糊查询（from Object o where o.property is not null)
+     */
+    public static String INN = "ISNOTNULL";
+
+    /**
      * 模糊查询（from Object o where o.property like %?%)
      */
     public static String LIKE = "LIKE";
+
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import cn.wuxia.common.hibernate.query.PropertyType;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 

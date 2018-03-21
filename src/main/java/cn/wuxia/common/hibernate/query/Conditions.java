@@ -104,6 +104,11 @@ public class Conditions implements Serializable {
         this.value = value;
     }
 
+    public void setBetweenValue(Object begin, Object end) {
+        this.value = begin;
+        this.anotherValue = end;
+    }
+
     public Object getAnotherValue() {
         return anotherValue;
     }

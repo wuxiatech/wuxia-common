@@ -89,6 +89,8 @@ public class BeanUtil extends BeanUtils {
     public static void copyPropertiesWithoutNullValues(Object dest, Object orig) {
         List<Field> methods = ReflectionUtil.getAccessibleFields(orig);
         for (Field field : methods) {
+            if(field.getName().equals("serialVersionUID"))
+                continue;
             try {
                 Object value = ReflectionUtil.invokeGetterMethod(orig, field.getName());
                 if (value == null) {
@@ -177,6 +179,8 @@ public class BeanUtil extends BeanUtils {
         }
         List<Field> fields = ReflectionUtil.getAccessibleFields(type);
         for (Field field : fields) {
+            if(field.getName().equals("serialVersionUID"))
+                continue;
             String propertyName = field.getName();
             Object value = map.get(propertyName);
             if (value == null)
@@ -267,6 +271,8 @@ public class BeanUtil extends BeanUtils {
 
         List<Field> fields = ReflectionUtil.getAccessibleFields(bean);
         for (Field field : fields) {
+            if(field.getName().equals("serialVersionUID"))
+                continue;
             try {
                 Object value = ReflectionUtil.invokeGetterMethod(bean, field.getName());
                 if (value != null) {
@@ -301,6 +307,8 @@ public class BeanUtil extends BeanUtils {
         Field[] fields = org.getClass().getDeclaredFields();
         BeanUtilsBean bean = BeanUtilsBean.getInstance();
         for (Field field : fields) {
+            if(field.getName().equals("serialVersionUID"))
+                continue;
             String propertyName = field.getName();
             /**
              * 忽略不需比较的属性

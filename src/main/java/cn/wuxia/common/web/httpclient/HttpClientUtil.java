@@ -25,33 +25,21 @@ import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 
+import cn.wuxia.common.util.ListUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.Consts;
-import org.apache.http.Header;
-import org.apache.http.HeaderElement;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpMessage;
-import org.apache.http.HttpStatus;
+import org.apache.http.*;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.GzipDecompressingEntity;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.config.ConnectionConfig;
 import org.apache.http.config.MessageConstraints;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.FileEntity;
-import org.apache.http.entity.InputStreamEntity;
-import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.*;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ContentBody;
@@ -69,7 +57,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import cn.wuxia.common.util.FileUtil;
-import cn.wuxia.common.util.MapUtil;
 import cn.wuxia.common.util.StringUtil;
 import cn.wuxia.common.web.MediaTypes;
 import cn.wuxia.common.web.MessageDigestUtil;
@@ -207,8 +194,10 @@ public class HttpClientUtil {
             return execute(param.setMethod(HttpClientMethod.POST).addHeader("User-Agent", "Mozilla/5.0").addHeader(HEADER_CONTENT_TYPE,
                     ContentType.create(MediaTypes.MULTIPART_FORM_DATA, param.getCharset()).toString()));
         } else {
-            return execute(param.setMethod(HttpClientMethod.POST).addHeader(HEADER_CONTENT_TYPE,
-                    ContentType.create(MediaTypes.FORM, param.getCharset()).toString()));
+            if (param.getHeader().get(HEADER_CONTENT_TYPE) == null) {
+                param.addHeader(HEADER_CONTENT_TYPE, ContentType.create(MediaTypes.FORM, param.getCharset()).toString());
+            }
+            return execute(param.setMethod(HttpClientMethod.POST));
         }
     }
 
@@ -216,24 +205,30 @@ public class HttpClientUtil {
      * pub方式提交表单
      */
     public static HttpClientResponse put(HttpClientRequest param) throws HttpClientException {
-        return execute(param.setMethod(HttpClientMethod.PUT).addHeader(HEADER_CONTENT_TYPE,
-                ContentType.create(MediaTypes.FORM, param.getCharset()).toString()));
+        if (param.getHeader().get(HEADER_CONTENT_TYPE) == null) {
+            param.addHeader(HEADER_CONTENT_TYPE, ContentType.create(MediaTypes.FORM, param.getCharset()).toString());
+        }
+        return execute(param.setMethod(HttpClientMethod.PUT));
     }
 
     /**
      * 发送 get请求
      */
     public static HttpClientResponse get(HttpClientRequest param) throws HttpClientException {
-        return execute(param.setMethod(HttpGet.METHOD_NAME).addHeader(HEADER_CONTENT_TYPE,
-                ContentType.create(MediaTypes.FORM, param.getCharset()).toString()));
+        if (param.getHeader().get(HEADER_CONTENT_TYPE) == null) {
+            param.addHeader(HEADER_CONTENT_TYPE, ContentType.create(MediaTypes.FORM, param.getCharset()).toString());
+        }
+        return execute(param.setMethod(HttpGet.METHOD_NAME));
     }
 
     /**
      * 发送 delete请求
      */
     public static HttpClientResponse delete(HttpClientRequest param) throws HttpClientException {
-        return execute(param.setMethod(HttpDelete.METHOD_NAME).addHeader(HEADER_CONTENT_TYPE,
-                ContentType.create(MediaTypes.FORM, param.getCharset()).toString()));
+        if (param.getHeader().get(HEADER_CONTENT_TYPE) == null) {
+            param.addHeader(HEADER_CONTENT_TYPE, ContentType.create(MediaTypes.FORM, param.getCharset()).toString());
+        }
+        return execute(param.setMethod(HttpDelete.METHOD_NAME));
     }
 
     /**
@@ -341,7 +336,10 @@ public class HttpClientUtil {
      */
     public static HttpClientResponse execute(HttpClientRequest param) throws HttpClientException {
         Assert.notNull(param.getUrl(), "request url can not be null");
-
+        String url = param.getUrl();
+        if (ListUtil.isNotEmpty(param.getParams())) {
+            url += (StringUtil.indexOf(url, "?") > 0 ? "&" : "?") + param.getQueryString();
+        }
         HttpClientResponse result = new HttpClientResponse();
         CloseableHttpClient httpclient = getHttpClient(param);
         try {
@@ -350,11 +348,11 @@ public class HttpClientUtil {
             switch (param.getMethod()) {
                 case GET:
                     // 创建httpget.  
-                    httpRequest = new HttpGet(param.getUrl() + (StringUtil.indexOf(param.getUrl(), "?") > 0 ? "&" : "?") + param.getQueryString());
+                    httpRequest = new HttpGet(url);
                     break;
                 case DELETE:
                     // 创建httpget.  
-                    httpRequest = new HttpDelete(param.getUrl() + (StringUtil.indexOf(param.getUrl(), "?") > 0 ? "&" : "?") + param.getQueryString());
+                    httpRequest = new HttpDelete(url);
                     break;
                 case POST:
                     // 创建httppost 
@@ -461,7 +459,7 @@ public class HttpClientUtil {
      * @return
      * @throws IOException
      */
-    public static File download(String url) throws IOException, HttpClientException {
+    public static InputStream download(String url) throws IOException, HttpClientException {
         return download(new HttpClientRequest(url));
     }
 
@@ -471,8 +469,8 @@ public class HttpClientUtil {
      * @return
      * @throws IOException
      */
-    public static File download(HttpClientRequest param) throws IOException, HttpClientException {
-        return download(param, null);
+    public static InputStream download(HttpClientRequest param) throws IOException, HttpClientException {
+        return execute(param).getContent();
     }
 
     /**
@@ -483,6 +481,7 @@ public class HttpClientUtil {
      * @throws IOException
      */
     public static File download(HttpClientRequest param, String filePath) throws IOException, HttpClientException {
+        Assert.notNull(filePath, "filePath不能为空");
         HttpClientResponse response = execute(param);
         //        Header[] headers = response.getResponseHeaders();
         //        for (Header h : headers) {
@@ -490,25 +489,19 @@ public class HttpClientUtil {
         //                //根据contentType获取文件名
         //            }
         //        }
-        File tempFile = null;
-        if (StringUtil.isNotBlank(filePath)) {
-            tempFile = new File(filePath);
-        } else {
-            //FIXME TODO 文件名
-            tempFile = new File(System.getProperty("java.io.tmpdir") + File.separator + StringUtil.random(6));
-        }
-        FileOutputStream output = FileUtils.openOutputStream(tempFile);
+        File file = new File(filePath);
+        FileUtil.forceMkdirParent(file);
+        FileOutputStream output = FileUtils.openOutputStream(file);
         try {
             IOUtils.copy(response.getContent(), output);
         } finally {
             IOUtils.closeQuietly(response.getContent());
             IOUtils.closeQuietly(output);
-            if (FileUtil.sizeOf(tempFile) == 0) {
-                FileUtil.deleteQuietly(tempFile);
-                return null;
+            if (FileUtil.sizeOf(file) == 0) {
+                FileUtil.deleteQuietly(file);
             }
         }
-        return tempFile;
+        return file;
     }
 
     /**
@@ -519,7 +512,7 @@ public class HttpClientUtil {
      * @return
      * @throws Exception 
      */
-    public static File download(String url, String filePath) throws Exception {
+    public static File download(String url, String filePath) throws IOException {
         // new一个URL对象
         URL u = new URL(url);
         // 打开链接
@@ -532,8 +525,7 @@ public class HttpClientUtil {
         String contentType = conn.getContentType();
         logger.info("contentType: " + contentType);
         File file = new File(filePath);
-        if (!file.getParentFile().exists())
-            file.getParentFile().mkdirs();
+        FileUtil.forceMkdirParent(file);
         FileOutputStream output = FileUtils.openOutputStream(file);
         try {
             // 通过输入流获取文件数据
@@ -543,11 +535,9 @@ public class HttpClientUtil {
             IOUtils.closeQuietly(output);
             if (FileUtil.sizeOf(file) == 0) {
                 FileUtil.deleteQuietly(file);
-                return null;
             }
         }
         return file;
-
     }
 
     /**
@@ -557,10 +547,10 @@ public class HttpClientUtil {
 
         @Override
         public HttpClientResponse handleResponse(final org.apache.http.HttpResponse response) throws ClientProtocolException, IOException {
-            logger.info("executing response " + response.getStatusLine().toString());
             HttpClientResponse resp = new HttpClientResponse();
             int statusCode = response.getStatusLine().getStatusCode();
             HttpEntity entity = response.getEntity();
+            logger.info("executing response: {}, {}", ContentType.get(entity), statusCode);
             if (entity != null && statusCode == HttpStatus.SC_OK) {
                 final Header encoding = entity.getContentEncoding();
                 if (encoding != null) {

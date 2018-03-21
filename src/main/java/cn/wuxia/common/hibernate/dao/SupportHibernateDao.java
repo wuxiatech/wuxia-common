@@ -252,10 +252,20 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
                     case IN:
                     case NIN:
                         List v1 = Lists.newArrayList();
-                        for (Object v : (Object[]) condition.getValue()) {
-                            v1.add(Sqls.formatSqlFieldValue(v));
+                        Object v = condition.getValue();
+                        if (v instanceof List) {
+                            for (Object val : (List) v) {
+                                v1.add(Sqls.formatSqlFieldValue(val));
+                            }
+
+                        } else if (v instanceof Object[]) {
+                            for (Object val : (Object[]) v) {
+                                v1.add(Sqls.formatSqlFieldValue(val));
+                            }
                         }
-                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(StringUtil.join(v1, ",")));
+                        if (ListUtil.isNotEmpty(v1)) {
+                            queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(StringUtil.join(v1, ",")));
+                        }
                         break;
                     default:
                         if (StringUtil.isNotBlank(condition.getValue())) {
@@ -381,7 +391,7 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
      * @author songlin
      */
     public Criterion[] buildCriterion(final Conditions... conditions) {
-        Criterion[] array = new Criterion[]{};
+        Criterion[] array = new Criterion[] {};
         if (ArrayUtil.isEmpty(conditions)) {
             return array;
         }
@@ -396,6 +406,8 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
             } else {
                 if (condition.getValue() instanceof Object[]) {
                     criterion = buildCriterion(condition.getProperty(), condition.getMatchType(), (Object[]) condition.getValue());
+                } else if (condition.getValue() instanceof List) {
+                    criterion = buildCriterion(condition.getProperty(), condition.getMatchType(), ListUtil.listToArray((List) condition.getValue()));
                 } else {
                     criterion = buildCriterion(condition.getProperty(), condition.getMatchType(), condition.getValue());
                 }

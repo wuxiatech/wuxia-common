@@ -112,6 +112,19 @@ public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends S
     }
 
     /**
+     * 删除
+     *
+     * @param query
+     * @param update
+     */
+    public void delete(Query query) {
+        if (StringUtil.isBlank(collectionName)) {
+            getMongoTemplate().remove(query, this.getEntityClass());
+        } else
+            getMongoTemplate().remove(query, this.getEntityClass(), collectionName);
+    }
+
+    /**
      * 保存
      *
      * @param entity
@@ -161,9 +174,9 @@ public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends S
 
     public void deleteById(final K id) throws Exception {
         if (StringUtil.isBlank(collectionName)) {
-            getMongoTemplate().findAndRemove(new Query().addCriteria(Criteria.where(getIdName()).is(id)), this.getEntityClass());
+            getMongoTemplate().remove(new Query().addCriteria(Criteria.where(getIdName()).is(id)), this.getEntityClass());
         } else {
-            getMongoTemplate().findAndRemove(new Query().addCriteria(Criteria.where(getIdName()).is(id)), this.getEntityClass(), collectionName);
+            getMongoTemplate().remove(new Query().addCriteria(Criteria.where(getIdName()).is(id)), this.getEntityClass(), collectionName);
         }
     }
 

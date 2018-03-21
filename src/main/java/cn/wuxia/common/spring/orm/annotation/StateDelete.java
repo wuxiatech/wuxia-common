@@ -1,11 +1,12 @@
 package cn.wuxia.common.spring.orm.annotation;
 
+import cn.wuxia.common.hibernate.query.PropertyType;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import cn.wuxia.common.spring.orm.core.PropertyType;
 
 /**
  * Hibernate状态删除，如果在orm实体配置该注解，将不会物理删除数据，会根据该配置来进行对orm实体的update操作

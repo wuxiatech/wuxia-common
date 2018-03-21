@@ -25,17 +25,14 @@ public abstract class LogAspect {
             result = joinPoint.proceed();
         } finally {
             long totalTime = System.currentTimeMillis() - startTime;
-            if (totalTime <= 5 * 1000) {
-                logger.info("$$$" + ip + " Method " + joinPoint.toShortString() + " invocation time(Level-1): "
-                        + totalTime + " ms.");
+            if (totalTime >= 2000 && totalTime <= 5 * 1000) {
+                logger.info("$$$" + ip + " Method " + joinPoint.toShortString() + " invocation time(Level-1): " + totalTime + " ms.");
             } else if (totalTime > 5 * 1000 && totalTime <= 20 * 1000) {
-                logger.info("$$$" + ip + " Method " + joinPoint.toShortString() + " invocation time(Level-2): "
-                        + (totalTime) + " ms.");
+                logger.info("$$$" + ip + " Method " + joinPoint.toShortString() + " invocation time(Level-2): " + (totalTime) + " ms.");
             } else if (totalTime > 20 * 1000) {
-                logger.warn("$$$" + ip + " Method " + joinPoint.toShortString() + " invocation time(Level-3): "
-                        + (totalTime) + " ms.");
+                logger.warn("$$$" + ip + " Method " + joinPoint.toShortString() + " invocation time(Level-3): " + (totalTime) + " ms.");
             }
-            
+
         }
         return result;
     }

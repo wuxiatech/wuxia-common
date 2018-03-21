@@ -7,17 +7,7 @@ import javax.persistence.criteria.Predicate;
 
 import cn.wuxia.common.spring.orm.core.PropertyFilter;
 import cn.wuxia.common.spring.orm.core.PropertyFilters;
-import cn.wuxia.common.spring.orm.core.jpa.restriction.support.EqRestriction;
-import cn.wuxia.common.spring.orm.core.jpa.restriction.support.GeRestriction;
-import cn.wuxia.common.spring.orm.core.jpa.restriction.support.GtRestriction;
-import cn.wuxia.common.spring.orm.core.jpa.restriction.support.InRestriction;
-import cn.wuxia.common.spring.orm.core.jpa.restriction.support.LLikeRestriction;
-import cn.wuxia.common.spring.orm.core.jpa.restriction.support.LeRestriction;
-import cn.wuxia.common.spring.orm.core.jpa.restriction.support.LikeRestriction;
-import cn.wuxia.common.spring.orm.core.jpa.restriction.support.LtRestriction;
-import cn.wuxia.common.spring.orm.core.jpa.restriction.support.NeRestriction;
-import cn.wuxia.common.spring.orm.core.jpa.restriction.support.NinRestriction;
-import cn.wuxia.common.spring.orm.core.jpa.restriction.support.RLikeRestriction;
+import cn.wuxia.common.spring.orm.core.jpa.restriction.support.*;
 import cn.wuxia.common.spring.orm.core.jpa.specification.SpecificationModel;
 
 /**
@@ -43,6 +33,8 @@ public class JpaRestrictionBuilder {
         PredicateBuilder ltRestriction = new LtRestriction();
         PredicateBuilder notInRestriction = new NinRestriction();
         PredicateBuilder rLikeRestriction = new RLikeRestriction();
+        PredicateBuilder isnRestriction = new IsnRestriction();
+        PredicateBuilder innRestriction = new InnRestriction();
 
         predicateBuilders.put(eqRestriction.getRestrictionName(), eqRestriction);
         predicateBuilders.put(neRestriction.getRestrictionName(), neRestriction);
@@ -55,6 +47,8 @@ public class JpaRestrictionBuilder {
         predicateBuilders.put(ltRestriction.getRestrictionName(), ltRestriction);
         predicateBuilders.put(rLikeRestriction.getRestrictionName(), rLikeRestriction);
         predicateBuilders.put(notInRestriction.getRestrictionName(), notInRestriction);
+        predicateBuilders.put(isnRestriction.getRestrictionName(), isnRestriction);
+        predicateBuilders.put(innRestriction.getRestrictionName(), innRestriction);
     }
 
     /**

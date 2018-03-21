@@ -208,12 +208,18 @@ public class NumberUtil extends NumberUtils {
 
     public static String formatFinancing(Number n) {
         DecimalFormat df = new DecimalFormat("###,###.##");
-        return df.format(n);
+        String financingNum = df.format(n);
+        if (StringUtil.indexOf(financingNum, ".") < 0) {
+            return financingNum + ".00";
+        }
+        return financingNum;
     }
 
     public static void main(String[] args) {
         System.out.println(divide(11111, 0.9, 5, 2));
         int a = (int) (11111 / 0.9);
         System.out.println(formatFinancing(10110.123123));
+        System.out.println(formatFinancing(new BigDecimal(0.10)));
+        System.out.println(formatFinancing(8.010));
     }
 }

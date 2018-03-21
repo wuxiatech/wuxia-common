@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import cn.wuxia.common.entity.ValidationEntity;
 import cn.wuxia.common.hibernate.query.Pages;
 import cn.wuxia.common.spring.orm.core.PropertyFilter;
 

@@ -72,7 +72,7 @@ public class StringUtil extends StringUtils {
             sbf.append(content.substring(0, i)).append(value);
             int n = i + s_length;
             int m = k + e_length;
-            for (; ((i = (content.indexOf(s, n))) >= 0 && (k = (content.indexOf(e, m))) >= 0); ) {
+            for (; ((i = (content.indexOf(s, n))) >= 0 && (k = (content.indexOf(e, m))) >= 0);) {
                 sbf.append(content.substring(m, i)).append(value);
                 n = i + s_length;
                 m = k + e_length;
@@ -180,17 +180,17 @@ public class StringUtil extends StringUtils {
      * @param paraMap
      * @param destStr
      * @return
-     * @description : string support el tags <code>${contents}</code> 
-     * <br>but not support <code> ${bean.contents}</code>  support in {@link #replaceKeysSimple(String, String, String)}
+     * @description : string support el tags <code>${contents}</code> and inner Object<code>${bean.contents}</code>
      * @author songlin.li
-     * @see {@link BeanTemplateParser#parser}
+     * @see {@link jodd.bean.BeanTemplateParser#parse(String, Object)}
      */
     public static String replaceKeysSimple(Object bean, String destStr) {
         if (bean == null) {
             return destStr;
         }
 
-        Pattern p = Pattern.compile("\\$+[{]+\\w+[}]");
+//        Pattern p = Pattern.compile("\\$+[{]+\\w+[}]");
+        Pattern p =  Pattern.compile("\\$+[{]+[\\w\\.]+[}]");
         Matcher m = p.matcher(destStr);
 
         while (m.find()) {
@@ -199,21 +199,15 @@ public class StringUtil extends StringUtils {
             Object value = null;
             try {
                 value = BeanUtil.getProperty(bean, key);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                logger.warn("{}的{}为空，无法赋值！",bean.getClass().getName(), key);
             }
             value = value == null ? "" : value;
             destStr = destStr.replace(k, value.toString());
         }
 
-
         return destStr;
     }
-
 
     /**
      * @param destStr
@@ -426,7 +420,7 @@ public class StringUtil extends StringUtils {
         if (classObj.equals(Date.class))
             return DateUtil.stringToDate(str, DateFormatter.FORMAT_DD_MMM_YYYY_HH_MM_SS);
 
-        return ClassLoaderUtil.newInstanceByConstructor(classObj, new Class<?>[]{String.class}, new Object[]{str});
+        return ClassLoaderUtil.newInstanceByConstructor(classObj, new Class<?>[] { String.class }, new Object[] { str });
     }
 
     public static boolean isBlank(Object value) {
@@ -667,7 +661,7 @@ public class StringUtil extends StringUtils {
             value.add(key);
         }
         if (ListUtil.isEmpty(value)) {
-            return new String[]{};
+            return new String[] {};
         }
         value = ListUtil.removeDuplicateBySet(value);
         return ListUtil.listToArray(value);
@@ -738,13 +732,20 @@ public class StringUtil extends StringUtils {
         //        System.out.println(RandomStringUtils.randomAscii(6));
         //        System.out.println(RandomStringUtils.randomNumeric(6));
         //        for (int i = 0; i < 6; i++)
-        //            System.out.println(RandomStringUtils.randomAlphanumeric(6));
+                    System.out.println(RandomStringUtils.randomAlphanumeric(32));
         //        System.out.println(random(6));
         String[] a = getTemplateKey("aaaaafasdfsadf${Abc}afsdfasd sadfasdfasdf");
         Map m = Maps.newHashMap();
 
         m.put("accountName", "  yangjin ");
-        System.out.println(replaceKeysSimple(m, "aaaaafasdfsadf${accountName}afsdfasd sadfasdfasdf"));
+
+        Map<String, String> m2 = Maps.newHashMap();
+        m2.put("name", "abc");
+        m2.put("value", "李贵");
+        m.put("test", m2);
+        System.out.println(replaceKeysSimple(m, "aaaaafasdfsadf${accountName}afsdfasd sadfasdfasdf ${test.value}"));
+
+
         String desc = "<p><a href=\"http://武侠科技\">点我啊</a><br/></p>";
         System.out.println(desc.replaceAll("href='\"(.+?)\"'", "").replaceAll("style='\"(.+?)\"'", "").replaceAll("class='\"(.+?)\"'", "")
                 .replaceAll("href=\"(.+?)\"", "").replaceAll("style=\"(.+?)\"", "").replaceAll("class=\"\"(.+?)\"\"", ""));
@@ -762,7 +763,6 @@ public class StringUtil extends StringUtils {
         System.out.println(sql + "   " + sql.length());
 
         System.out.println(Hex.encodeHexString(sql.getBytes()));
-
 
     }
 

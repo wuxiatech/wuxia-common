@@ -19,6 +19,7 @@ import java.util.Map;
 
 import javax.servlet.ServletException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.support.WebArgumentResolver;
@@ -26,13 +27,12 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.annotation.AbstractNamedValueMethodArgumentResolver;
 
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import cn.wuxia.common.bean.MapWapper;
 import cn.wuxia.common.spring.mvc.annotation.RequestJsonParam;
+import cn.wuxia.common.util.reflection.ReflectionUtil;
 
 /**
  * 解析请求参数json字符串
@@ -40,8 +40,7 @@ import cn.wuxia.common.spring.mvc.annotation.RequestJsonParam;
  * @author songlin.li
  * @since 3.1
  */
-public class RequestJsonParamMethodArgumentResolver extends AbstractNamedValueMethodArgumentResolver implements
-        WebArgumentResolver {
+public class RequestJsonParamMethodArgumentResolver extends AbstractNamedValueMethodArgumentResolver implements WebArgumentResolver {
 
     private ObjectMapper mapper = new ObjectMapper();
 
@@ -60,7 +59,11 @@ public class RequestJsonParamMethodArgumentResolver extends AbstractNamedValueMe
     @Override
     protected NamedValueInfo createNamedValueInfo(MethodParameter parameter) {
         RequestJsonParam annotation = parameter.getParameterAnnotation(RequestJsonParam.class);
-        return new RequestJsonParamNamedValueInfo(annotation);
+        if (StringUtils.isBlank(annotation.value())) {
+            return new RequestJsonParamNamedValueInfo(parameter.getParameterName(), annotation.required());
+        } else {
+            return new RequestJsonParamNamedValueInfo(annotation.value(), annotation.required());
+        }
 
     }
 
@@ -78,17 +81,14 @@ public class RequestJsonParamMethodArgumentResolver extends AbstractNamedValueMe
             if (paramValues.length == 1) {
                 String text = paramValues[0];
                 Type type = parameter.getGenericParameterType();
-
                 if (MapWapper.class.isAssignableFrom(paramType)) {
                     MapWapper<?, ?> jsonMap = (MapWapper<?, ?>) paramType.newInstance();
 
                     MapType mapType = (MapType) getJavaType(HashMap.class);
 
                     if (type instanceof ParameterizedType) {
-                        mapType = (MapType) mapType.withKeyType((JavaType)((ParameterizedType) type)
-                                .getActualTypeArguments()[0]);
-                        mapType = (MapType) mapType.withContentType((JavaType) ((ParameterizedType) type)
-                                .getActualTypeArguments()[1]);
+                        mapType = (MapType) mapType.withKeyType((JavaType) ((ParameterizedType) type).getActualTypeArguments()[0]);
+                        mapType = (MapType) mapType.withContentType((JavaType) ((ParameterizedType) type).getActualTypeArguments()[1]);
                     }
                     jsonMap.setInnerMap(mapper.<Map> readValue(text, mapType));
                     return jsonMap;
@@ -97,19 +97,20 @@ public class RequestJsonParamMethodArgumentResolver extends AbstractNamedValueMe
                 JavaType javaType = getJavaType(paramType);
 
                 if (Collection.class.isAssignableFrom(paramType)) {
-                    javaType = javaType
-                            .withContentType((JavaType) ((ParameterizedType) type).getActualTypeArguments()[0]);
+                    Class genrictype = (Class) ((ParameterizedType) type).getActualTypeArguments()[0];
+
+                    javaType = mapper.getTypeFactory().constructParametricType(Collection.class, genrictype);
                 }
 
                 return mapper.readValue(paramValues[0], javaType);
             }
 
         } catch (Exception e) {
-            throw new JsonMappingException("Could not read request json parameter", e);
+            throw new RuntimeException("Could not read request json parameter", e);
         }
 
-        throw new UnsupportedOperationException("too many request json parameter '" + name
-                + "' for method parameter type [" + paramType + "], only support one json parameter");
+        throw new UnsupportedOperationException(
+                "too many request json parameter '" + name + "' for method parameter type [" + paramType + "], only support one json parameter");
     }
 
     protected JavaType getJavaType(Class<?> clazz) {
@@ -120,8 +121,7 @@ public class RequestJsonParamMethodArgumentResolver extends AbstractNamedValueMe
     @Override
     protected void handleMissingValue(String paramName, MethodParameter parameter) throws ServletException {
         String paramType = parameter.getParameterType().getName();
-        throw new ServletRequestBindingException("Missing request json parameter '" + paramName
-                + "' for method parameter type [" + paramType + "]");
+        throw new ServletRequestBindingException("Missing request json parameter '" + paramName + "' for method parameter type [" + paramType + "]");
     }
 
     private class RequestJsonParamNamedValueInfo extends NamedValueInfo {
@@ -130,8 +130,8 @@ public class RequestJsonParamMethodArgumentResolver extends AbstractNamedValueMe
             super("", false, null);
         }
 
-        private RequestJsonParamNamedValueInfo(RequestJsonParam annotation) {
-            super(annotation.value(), annotation.required(), null);
+        private RequestJsonParamNamedValueInfo(String name, boolean required) {
+            super(name, required, null);
         }
     }
 

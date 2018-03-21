@@ -1,5 +1,7 @@
 package cn.wuxia.common.spring.orm.core;
 
+import cn.wuxia.common.hibernate.query.PropertyType;
+
 import java.io.Serializable;
 
 /**

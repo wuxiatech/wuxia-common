@@ -109,6 +109,7 @@ public class MessageInterceptor implements HandlerInterceptor {
             all.add(map);
         }
         if (modelAndView != null) {
+            modelAndView.addObject(Msg.ALLMESSAGESKEY, all);
             modelAndView.addObject(Msg.INFOMESSAGESKEY, infos);
             modelAndView.addObject(Msg.WARNMESSAGESKEY, warns);
             modelAndView.addObject(Msg.ERRORMESSAGESKEY, errors);

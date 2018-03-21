@@ -53,7 +53,7 @@ public abstract class NoGenerateUtil {
 
     private static String generate(int length) {
         RandomStringGenerator generator = new RandomStringGenerator.Builder().withinRange('0', '9').build();
-        return generator.generate(20);
+        return generator.generate(length);
     }
 
     public static void main(String[] args) {

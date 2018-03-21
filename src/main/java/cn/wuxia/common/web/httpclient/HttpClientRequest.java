@@ -5,22 +5,19 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
-import cn.wuxia.common.util.MapUtil;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.content.ByteArrayBody;
-import org.apache.http.entity.mime.content.ContentBody;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.InputStreamBody;
-import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.entity.mime.content.*;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
+import cn.wuxia.common.util.MapUtil;
 
 /* *
  * 类名：HttpRequest功能：Http请求对象的封装详细：封装Http请求版本：3.3日期：2011-08-17说明：
@@ -177,12 +174,24 @@ public class HttpClientRequest {
     }
 
     /**
-     * 添加参数
+     * 参数
+     *
+     * @param map
+     * @author songlin
+     * @see {@link #setParam(Map)}
+     */
+    @Deprecated
+    public HttpClientRequest addParam(Map<String, ? extends Object> map) {
+        return setParam(map);
+    }
+
+    /**
+     * 参数
      *
      * @param map
      * @author songlin
      */
-    public HttpClientRequest addParam(Map<String, ? extends Object> map) {
+    public HttpClientRequest setParam(Map<String, ? extends Object> map) {
         if (MapUtil.isNotEmpty(map)) {
             for (Map.Entry<String, ? extends Object> s : map.entrySet()) {
                 if (s.getValue() != null)

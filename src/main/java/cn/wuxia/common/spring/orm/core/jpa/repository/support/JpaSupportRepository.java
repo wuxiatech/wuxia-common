@@ -6,6 +6,8 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 
+import cn.wuxia.common.entity.ValidationEntity;
+import cn.wuxia.common.hibernate.query.PropertyType;
 import org.apache.commons.collections.CollectionUtils;
 import org.hibernate.Session;
 import org.slf4j.Logger;
@@ -29,7 +31,6 @@ import cn.wuxia.common.hibernate.query.MatchType;
 import cn.wuxia.common.hibernate.query.Pages;
 import cn.wuxia.common.spring.orm.annotation.StateDelete;
 import cn.wuxia.common.spring.orm.core.PropertyFilter;
-import cn.wuxia.common.spring.orm.core.PropertyType;
 import cn.wuxia.common.spring.orm.core.RestrictionNames;
 import cn.wuxia.common.spring.orm.core.jpa.repository.BasicJpaRepository;
 import cn.wuxia.common.spring.orm.core.jpa.specification.Specifications;
@@ -273,17 +274,31 @@ public class JpaSupportRepository<T, ID extends Serializable> extends SimpleJpaR
         List<PropertyFilter> filters = Lists.newArrayList();
         for (Conditions condition : pages.getConditions()) {
             PropertyFilter filter = new PropertyFilter();
-
-            if (MatchType.LL.equals(condition.getMatchType())) {
-                filter.setRestrictionName(RestrictionNames.LLIKE);
-            } else if (MatchType.RL.equals(condition.getMatchType())) {
-                filter.setRestrictionName(RestrictionNames.RLIKE);
-            } else if (MatchType.EQ.equals(condition.getMatchType())) {
-                filter.setRestrictionName(RestrictionNames.EQ);
-            } else if (MatchType.NE.equals(condition.getMatchType())) {
-                filter.setRestrictionName(RestrictionNames.NE);
-            } else {
-                filter.setRestrictionName(RestrictionNames.LIKE);
+            
+            switch (condition.getMatchType()) {
+                case LL:
+                    filter.setRestrictionName(RestrictionNames.LLIKE);
+                    break;
+                case RL:
+                    filter.setRestrictionName(RestrictionNames.RLIKE);
+                    break;
+                case EQ:
+                    filter.setRestrictionName(RestrictionNames.EQ);
+                    break;
+                case NE:
+                    filter.setRestrictionName(RestrictionNames.NE);
+                    break;
+                case BW:
+                    break;
+                case FL:
+                    filter.setRestrictionName(RestrictionNames.LIKE);
+                    break;
+                case ISN:
+                    filter.setRestrictionName(RestrictionNames.ISN);
+                    break;
+                case INN:
+                    filter.setRestrictionName(RestrictionNames.INN);
+                    break;
             }
             filter.setPropertyType(PropertyType.S.getValue());
             filter.setPropertyNames(new String[] { condition.getProperty() });
