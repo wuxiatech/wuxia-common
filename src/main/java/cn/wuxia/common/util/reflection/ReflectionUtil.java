@@ -125,12 +125,7 @@ public class ReflectionUtil {
         if (!isMethodExists(target, getterMethodName, new Class[] {})) {
             getterMethodName = "is" + StringUtils.capitalize(propertyName);
         }
-        Method method = null;
-        try {
-            method = target.getClass().getDeclaredMethod(getterMethodName, null);
-        } catch (Exception e) {
-        }
-        return method;
+        return getAccessibleMethod(target, getterMethodName);
     }
 
     /**

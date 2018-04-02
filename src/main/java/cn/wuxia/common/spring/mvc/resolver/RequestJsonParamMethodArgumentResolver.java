@@ -40,6 +40,7 @@ import cn.wuxia.common.util.reflection.ReflectionUtil;
  * @author songlin.li
  * @since 3.1
  */
+@Deprecated
 public class RequestJsonParamMethodArgumentResolver extends AbstractNamedValueMethodArgumentResolver implements WebArgumentResolver {
 
     private ObjectMapper mapper = new ObjectMapper();

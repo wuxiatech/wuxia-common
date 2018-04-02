@@ -16,10 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.beans.IntrospectionException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -89,7 +86,7 @@ public class BeanUtil extends BeanUtils {
     public static void copyPropertiesWithoutNullValues(Object dest, Object orig) {
         List<Field> methods = ReflectionUtil.getAccessibleFields(orig);
         for (Field field : methods) {
-            if(field.getName().equals("serialVersionUID"))
+            if (field.getName().equals("serialVersionUID"))
                 continue;
             try {
                 Object value = ReflectionUtil.invokeGetterMethod(orig, field.getName());
@@ -179,7 +176,7 @@ public class BeanUtil extends BeanUtils {
         }
         List<Field> fields = ReflectionUtil.getAccessibleFields(type);
         for (Field field : fields) {
-            if(field.getName().equals("serialVersionUID"))
+            if (Modifier.isStatic(field.getModifiers()) || Modifier.isFinal(field.getModifiers()))
                 continue;
             String propertyName = field.getName();
             Object value = map.get(propertyName);
@@ -241,15 +238,20 @@ public class BeanUtil extends BeanUtils {
                      value = NumberUtil.toLong(value);
                   }*/ else if (value instanceof Map) {
                     value = mapToBean((Map) value, propertyType);
-                }else {
+                } else {
                     //                    value = ConvertUtil.convert(value, propertyType);
                     value = TypeConverterManager.convertType(value, propertyType);
                 }
+                if (value == null)
+                    continue;
+                /**
+                 * value 不能为空
+                 */
                 ReflectionUtil.invokeSetterMethod(obj, propertyName, value, propertyType);
             } catch (Exception e) {
                 String msg = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
                 logger.warn("invoke fail ： {} set{}({} {}) but value type is {}, error msg:", type.getName(), StringUtil.capitalize(propertyName),
-                        propertyType.getName(), propertyName, value.getClass().getName(), msg);
+                        propertyType.getName(), propertyName, value.getClass(), msg);
                 continue;
             }
         }
@@ -271,7 +273,7 @@ public class BeanUtil extends BeanUtils {
 
         List<Field> fields = ReflectionUtil.getAccessibleFields(bean);
         for (Field field : fields) {
-            if(field.getName().equals("serialVersionUID"))
+            if (field.getName().equals("serialVersionUID"))
                 continue;
             try {
                 Object value = ReflectionUtil.invokeGetterMethod(bean, field.getName());
@@ -307,7 +309,7 @@ public class BeanUtil extends BeanUtils {
         Field[] fields = org.getClass().getDeclaredFields();
         BeanUtilsBean bean = BeanUtilsBean.getInstance();
         for (Field field : fields) {
-            if(field.getName().equals("serialVersionUID"))
+            if (field.getName().equals("serialVersionUID"))
                 continue;
             String propertyName = field.getName();
             /**

@@ -91,25 +91,26 @@ public abstract class JdbcTemplateDao {
         } else if (values instanceof Map) {
             conditionSql = appendConditionParameterAndValue(conditions, (Map) values);
         }
-
-        /**
-         * 如果sql在xml中定义，则需要转换换行为空字符
-         */
-        sql = StringUtil.replaceChars(StringUtil.replaceChars(sql, "\t", " "), "\n", "");
-        int whereIndexof = StringUtil.lastIndexOfIgnoreCase(sql, " where ");
-        if (whereIndexof > 0) {
-            conditionSql = " " + Conditions.AND + conditionSql;
-        } else {
-            conditionSql = " where " + conditionSql;
-        }
-        int groupByIndexof = StringUtil.lastIndexOfIgnoreCase(sql, "group by");
-        int orderByIndexof = StringUtil.lastIndexOfIgnoreCase(sql, "order by");
-        if (groupByIndexof > 0) {
-            sql = StringUtil.insert(sql, conditionSql, groupByIndexof);
-        } else if (orderByIndexof > 0) {
-            sql = StringUtil.insert(sql, conditionSql, orderByIndexof);
-        } else {
-            sql += conditionSql;
+        if (StringUtil.isNotBlank(conditionSql)) {
+            /**
+             * 如果sql在xml中定义，则需要转换换行为空字符
+             */
+            sql = StringUtil.replaceChars(StringUtil.replaceChars(sql, "\t", " "), "\n", "");
+            int whereIndexof = StringUtil.lastIndexOfIgnoreCase(sql, " where ");
+            if (whereIndexof > 0) {
+                conditionSql = " " + Conditions.AND + conditionSql;
+            } else {
+                conditionSql = " where " + conditionSql;
+            }
+            int groupByIndexof = StringUtil.lastIndexOfIgnoreCase(sql, "group by");
+            int orderByIndexof = StringUtil.lastIndexOfIgnoreCase(sql, "order by");
+            if (groupByIndexof > 0) {
+                sql = StringUtil.insert(sql, conditionSql, groupByIndexof);
+            } else if (orderByIndexof > 0) {
+                sql = StringUtil.insert(sql, conditionSql, orderByIndexof);
+            } else {
+                sql += conditionSql;
+            }
         }
         return sql;
     }

@@ -88,14 +88,14 @@ public class JsonUtil {
         return JacksonMapper.alwaysMapper().toJson(obj);
     }
 
-    public static String toJsonWithDateFormat(Object obj, DateFormatter formatter) throws JsonProcessingException {
+    public static String toJson(Object obj, DateFormatter formatter) throws JsonProcessingException {
         JacksonMapper jm = new JacksonMapper(Include.NON_EMPTY);
         SimpleDateFormat dateFormat = new SimpleDateFormat(formatter == null ? DateFormatter.FORMAT_YYYY_MM_DD.getFormat() : formatter.getFormat());
         return jm.getMapper().setDateFormat(dateFormat).writeValueAsString(obj);
 
     }
 
-    public static String toFullJsonWithDateFormat(Object obj, DateFormatter formatter) throws JsonProcessingException {
+    public static String toFullJson(Object obj, DateFormatter formatter) throws JsonProcessingException {
         JacksonMapper jm = new JacksonMapper(Include.ALWAYS);
         SimpleDateFormat dateFormat = new SimpleDateFormat(formatter == null ? DateFormatter.FORMAT_YYYY_MM_DD.getFormat() : formatter.getFormat());
         return jm.getMapper().setDateFormat(dateFormat).writeValueAsString(obj);

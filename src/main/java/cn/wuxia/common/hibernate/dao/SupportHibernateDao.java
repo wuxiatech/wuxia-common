@@ -276,9 +276,13 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
                 }
 
             }
+            if (ListUtil.isEmpty(queryParameter)) {
+                return "";
+            }
             /**
              * 需要判断是否需要添加and开头，此处先默认需要添加and开头即前面需要已有查询条件
              */
+
             appendCondition = " " + StringUtil.join(queryParameter, Conditions.AND) + " ";
             logger.debug("append conditions sql:" + appendCondition);
 
@@ -328,6 +332,9 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
                     }
                 }
 
+            }
+            if (ListUtil.isEmpty(queryParameter)) {
+                return "";
             }
             /**
              * 需要判断是否需要添加and开头，此处先默认需要添加and开头即前面需要已有查询条件
@@ -886,25 +893,26 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
         } else if (values instanceof Map) {
             conditionSql = appendConditionParameterAndValue(conditions, (Map) values);
         }
-
-        /**
-         * 如果sql在xml中定义，则需要转换换行为空字符
-         */
-        sql = StringUtil.replaceChars(StringUtil.replaceChars(sql, "\t", " "), "\n", "");
-        int whereIndexof = StringUtil.lastIndexOfIgnoreCase(sql, " where ");
-        if (whereIndexof > 0) {
-            conditionSql = " " + Conditions.AND + conditionSql;
-        } else {
-            conditionSql = " where " + conditionSql;
-        }
-        int groupByIndexof = StringUtil.lastIndexOfIgnoreCase(sql, "group by");
-        int orderByIndexof = StringUtil.lastIndexOfIgnoreCase(sql, "order by");
-        if (groupByIndexof > 0) {
-            sql = StringUtil.insert(sql, conditionSql, groupByIndexof);
-        } else if (orderByIndexof > 0) {
-            sql = StringUtil.insert(sql, conditionSql, orderByIndexof);
-        } else {
-            sql += conditionSql;
+        if (StringUtil.isNotBlank(conditionSql)) {
+            /**
+             * 如果sql在xml中定义，则需要转换换行为空字符
+             */
+            sql = StringUtil.replaceChars(StringUtil.replaceChars(sql, "\t", " "), "\n", "");
+            int whereIndexof = StringUtil.lastIndexOfIgnoreCase(sql, " where ");
+            if (whereIndexof > 0) {
+                conditionSql = " " + Conditions.AND + conditionSql;
+            } else {
+                conditionSql = " where " + conditionSql;
+            }
+            int groupByIndexof = StringUtil.lastIndexOfIgnoreCase(sql, "group by");
+            int orderByIndexof = StringUtil.lastIndexOfIgnoreCase(sql, "order by");
+            if (groupByIndexof > 0) {
+                sql = StringUtil.insert(sql, conditionSql, groupByIndexof);
+            } else if (orderByIndexof > 0) {
+                sql = StringUtil.insert(sql, conditionSql, orderByIndexof);
+            } else {
+                sql += conditionSql;
+            }
         }
         return sql;
     }

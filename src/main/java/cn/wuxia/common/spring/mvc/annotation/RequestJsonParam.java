@@ -22,10 +22,12 @@ import java.lang.annotation.Target;
  * 
  * @see http://jinnianshilongnian.iteye.com/blog/1719952
  * @author songlin.li
+ * @see 使用springmvc自带的@RequestBody
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+@Deprecated
 public @interface RequestJsonParam {
 
     /**

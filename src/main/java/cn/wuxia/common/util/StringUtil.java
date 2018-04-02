@@ -36,7 +36,9 @@ import cn.wuxia.common.util.reflection.BeanUtil;
  *
  * @author songlin.li 2009-11-3
  * @version 0.5
+ * 将不就后重构该类，请使用其它方法代替
  */
+//@Deprecated
 public class StringUtil extends StringUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(StringUtil.class);
@@ -46,6 +48,7 @@ public class StringUtil extends StringUtils {
      * @author songlin.li
      * @see RandomStringGenerator
      */
+    @Deprecated
     public static String random(int count) {
         //        RandomStringGenerator generator = new RandomStringGenerator.Builder().withinRange('0', 'z').build();
         //        return generator.generate(count);
@@ -182,8 +185,9 @@ public class StringUtil extends StringUtils {
      * @return
      * @description : string support el tags <code>${contents}</code> and inner Object<code>${bean.contents}</code>
      * @author songlin.li
-     * @see {@link jodd.bean.BeanTemplateParser#parse(String, Object)}
+     * @see {@link StringParserUtil#simpleParse(String, Object)}
      */
+    @Deprecated
     public static String replaceKeysSimple(Object bean, String destStr) {
         if (bean == null) {
             return destStr;
@@ -215,6 +219,7 @@ public class StringUtil extends StringUtils {
      * @param repalcement
      * @return
      * @description : string support el tags <code>${contents} and ${bean.contents}</code>
+     * @see {@link StringParserUtil#spelParse(String, String, String)}
      * @author songlin.li
      */
     public static String replaceKeysSimple(String destStr, String key, String repalcement) {
@@ -611,8 +616,10 @@ public class StringUtil extends StringUtils {
      * @param key
      * @return
      * @author songlin.li
+     * @see {@link StringParserUtil#simpleParse(String, Object)}
      */
     @SuppressWarnings("unchecked")
+    @Deprecated
     public static String replaceKeys(Map<String, Object> paraMap, String destStr) {
         if (paraMap == null)
             return destStr;
