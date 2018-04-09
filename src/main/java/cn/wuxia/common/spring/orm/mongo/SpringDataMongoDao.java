@@ -34,7 +34,7 @@ import cn.wuxia.common.util.StringUtil;
 import cn.wuxia.common.util.reflection.ReflectionUtil;
 
 public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends Serializable> {
-    protected static Logger logger = LoggerFactory.getLogger(SpringDataMongoDao.class);
+    protected Logger logger = LoggerFactory.getLogger(getClass());
 
     protected MongoTemplate mongoTemplate;
 
@@ -202,6 +202,20 @@ public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends S
      */
     public List<T> findBy(final String properties, final Object value) {
         Query query = new Query(Criteria.where(properties).is(value));
+        return this.find(query);
+    }
+
+    /**
+     * 根据某个熟悉查找
+     *
+     * @param properties
+     * @param value
+     * @return
+     */
+    public List<T> findBy(final String properties, final Object value, String orderby, Direction direction) {
+        Query query = new Query(Criteria.where(properties).is(value));
+        Sort sort = new Sort(new Sort.Order(direction, orderby));
+        query.with(sort);
         return this.find(query);
     }
 
