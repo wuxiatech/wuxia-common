@@ -224,6 +224,58 @@ public class HttpClientRequest {
         return this;
     }
 
+    /**
+     * 添加各类型参数
+     *
+     * @param property
+     * @param value
+     * @author songlin
+     */
+    public HttpClientRequest addFileParam(File value) {
+        ContentBody body = new FileBody((File) value);
+        this.content.put("", body);
+        return this;
+    }
+
+    /**
+     * 添加各类型参数
+     *
+     * @param property
+     * @param value
+     * @author songlin
+     */
+    public HttpClientRequest addFileParam(String property, File file) {
+        ContentBody body = new FileBody(file, ContentType.DEFAULT_BINARY);
+        this.content.put(property, body);
+        return this;
+    }
+
+    /**
+     * 添加各类型参数
+     *
+     * @param property
+     * @param value
+     * @author songlin
+     */
+    public HttpClientRequest addByteParam(byte[] bytes) {
+        ContentBody body = new ByteArrayBody(bytes, ContentType.DEFAULT_BINARY, null);
+        this.content.put("", body);
+        return this;
+    }
+
+    /**
+     * 添加各类型参数
+     *
+     * @param property
+     * @param value
+     * @author songlin
+     */
+    public HttpClientRequest addByteParam(InputStream stream) {
+        ContentBody body = new InputStreamBody(stream, ContentType.DEFAULT_BINARY);
+        this.content.put("", body);
+        return this;
+    }
+
     public HttpClientRequest setHeader(Map<String, String> header) {
         this.header = header;
         return this;
@@ -297,6 +349,10 @@ public class HttpClientRequest {
 
     public static HttpClientRequest create() {
         return new HttpClientRequest();
+    }
+
+    public static HttpClientRequest create(HttpAction action) {
+        return create().setUrl(action.getUrl()).setMethod(action.getMethod());
     }
 
     public static HttpClientRequest create(String url) {

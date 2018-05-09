@@ -677,7 +677,7 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
      * @author songlin.li
      */
     public <X> X queryUnique(String sql, Class<X> clazz, Object... objs) {
-        List<X> list = (List<X>) query(sql, clazz, objs);
+        List<X> list = query(sql, clazz, objs);
         if (ListUtil.isEmpty(list)) {
             return null;
         }

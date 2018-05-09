@@ -3,13 +3,13 @@
  */
 package cn.wuxia.common.util;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
+import org.jboss.netty.handler.codec.base64.Base64;
 import org.nutz.json.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,7 @@ public class JsonUtil {
         if (StringUtil.isBlank(jsonString)) {
             return Maps.newHashMap();
         }
-        jsonString = decodeUrl(jsonString);
+        //jsonString = decodeUrl(jsonString);
         return JacksonMapper.nonEmptyMapper().fromJson(jsonString, HashMap.class);
     }
 
@@ -51,7 +51,7 @@ public class JsonUtil {
         if (StringUtil.isBlank(json)) {
             return null;
         }
-        json = decodeUrl(json);
+        //json = decodeUrl(json);
         return JacksonMapper.nonEmptyMapper().fromJson(json, clazz);
     }
 
@@ -113,6 +113,7 @@ public class JsonUtil {
      * @return
      */
     private static String decodeUrl(String url) {
+        
         try {
             return URLDecoder.decode(url, "utf-8");
         } catch (UnsupportedEncodingException e) {
@@ -136,4 +137,20 @@ public class JsonUtil {
 
     }
 
+    public static void main(String[] args) {
+        String json = "rO0ABXQEnlt7ImlkIjoiWmgtcWcyQWRRa0txVDlBQlJxazVQQSIsInRpdGxlIjoi55yL55yL5o-Q6YaS5oiR5rKh5pyJIiwic3RhcnQiOiIyMDE4LTA0LTE5IDE0OjMwIiwiZW5kIjoiMjAxOC0wNC0xOSAxNTowMCIsImFsbERheSI6ZmFsc2UsImNsYXNzTmFtZSI6ImxhYmVsLXN1Y2Nlc3MiLCJ0ZXh0Q29sb3IiOiJ3aGl0ZSJ9LHsiaWQiOiJyYnNhVHJneVQxdXlfSFNySVRkdzhBIiwidGl0bGUiOiLmj5DphpI0Iiwic3RhcnQiOiIyMDE4LTA0LTI5IDExOjMwIiwiZW5kIjoiMjAxOC0wNC0yOSAxMjowMCIsImFsbERheSI6ZmFsc2UsImNsYXNzTmFtZSI6ImxhYmVsLXN1Y2Nlc3MiLCJ0ZXh0Q29sb3IiOiJ3aGl0ZSJ9LHsiaWQiOiJXaFpsVWZxelRsQ3oxTDg2TFhiVzNRIiwidGl0bGUiOiLmj5DphpIzIiwic3RhcnQiOiIyMDE4LTA0LTI5IDEwOjAwIiwiZW5kIjoiMjAxOC0wNC0yOSAxMDozMCIsImFsbERheSI6ZmFsc2UsImNsYXNzTmFtZSI6ImxhYmVsLWdyZXkiLCJ0ZXh0Q29sb3IiOiJ3aGl0ZSJ9LHsiaWQiOiJfRjBTcXNraVNuQzdsWm1WVWhaUEJ3IiwidGl0bGUiOiLmj5DphpIyIiwic3RhcnQiOiIyMDE4LTA0LTI5IDA5OjAwIiwiZW5kIjoiMjAxOC0wNC0yOSAwOTozMCIsImFsbERheSI6ZmFsc2UsImNsYXNzTmFtZSI6ImxhYmVsLXB1cnBsZSIsInRleHRDb2xvciI6IndoaXRlIn0seyJpZCI6Ii15X0h1ejhQUl9xaFYxSHNLLTBUMHciLCJ0aXRsZSI6IuaPkOmGkjEiLCJzdGFydCI6IjIwMTgtMDQtMjkgMDg6MzAiLCJlbmQiOiIyMDE4LTA0LTI5IDA5OjAwIiwiYWxsRGF5IjpmYWxzZSwiY2xhc3NOYW1lIjoibGFiZWwtcGluayIsInRleHRDb2xvciI6IndoaXRlIn0seyJpZCI6IlpQTjF4UzZEUmR1dUVTQWJ0a3JMTGciLCJ0aXRsZSI6IuiwgeeUn-aXpe-8nyIsInN0YXJ0IjoiMjAxOC0wNC0yOSAwMDowMCIsImVuZCI6IjIwMTgtMDQtMzAgMDA6MDAiLCJhbGxEYXkiOmZhbHNlLCJjbGFzc05hbWUiOiJsYWJlbC1pbmZvIiwidGV4dENvbG9yIjoid2hpdGUifSx7ImlkIjoiNWJXYkMxdEdRTEtuTGtJZ0J5djZ2QSIsInRpdGxlIjoi56ys5LqM5Liq5rWL6K-V5p2l5LqG5ZWmIiwic3RhcnQiOiIyMDE4LTA0LTE3IDE0OjAwIiwiZW5kIjoiMjAxOC0wNC0xNyAxNDozMCIsImFsbERheSI6ZmFsc2UsImNsYXNzTmFtZSI6ImxhYmVsLXN1Y2Nlc3MiLCJ0ZXh0Q29sb3IiOiJ3aGl0ZSJ9XQ";
+        try {
+          Object o=  BytesUtil.bytesToObject(EncodeUtils.base64Decode(json));
+            System.out.println(o);
+//           Collection<HashMap> l= JsonUtil.fromJsonToCollection(o.toString(), HashMap.class);
+            Collection l=  JacksonMapper.nonEmptyMapper().fromJson(o.toString(), Collection.class);
+            System.out.println(l);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+
+    }
 }

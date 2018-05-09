@@ -3,11 +3,9 @@
  */
 package cn.wuxia.common.util.reflection;
 
-import cn.wuxia.common.util.*;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import jodd.bean.BeanCopy;
-import jodd.typeconverter.TypeConverterManager;
+import java.lang.reflect.*;
+import java.util.*;
+
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.lang3.StringUtils;
@@ -15,13 +13,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import java.beans.IntrospectionException;
-import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
+import cn.wuxia.common.util.*;
+import jodd.bean.BeanCopy;
+import jodd.typeconverter.TypeConverterManager;
 
 public class BeanUtil extends BeanUtils {
     private static Logger logger = LoggerFactory.getLogger(BeanUtil.class);
@@ -86,17 +83,45 @@ public class BeanUtil extends BeanUtils {
     public static void copyPropertiesWithoutNullValues(Object dest, Object orig) {
         List<Field> methods = ReflectionUtil.getAccessibleFields(orig);
         for (Field field : methods) {
-            if (field.getName().equals("serialVersionUID"))
+            if (Modifier.isStatic(field.getModifiers()) || Modifier.isFinal(field.getModifiers()))
                 continue;
+            String propertyName = field.getName();
+            Object value = null;
             try {
-                Object value = ReflectionUtil.invokeGetterMethod(orig, field.getName());
-                if (value == null) {
-                    continue;
-                } else {
-                    ReflectionUtil.invokeSetterMethod(dest, field.getName(), value, field.getType());
-                }
+                value = BeanUtils.getProperty(orig, propertyName);
             } catch (Exception e) {
-                // logger.warn(e.getMessage());
+                logger.warn(e.getMessage());
+                logger.debug(" try invokeGetterMethod {}", propertyName);
+                try {
+                    ReflectionUtil.invokeGetterMethod(orig, propertyName);
+                } catch (Exception e1) {
+                    logger.warn(e.getMessage());
+                    logger.debug("try getFieldValue ");
+                    try {
+                        value = ReflectionUtil.getFieldValue(orig, propertyName);
+                    } catch (Exception e2) {
+                        logger.warn(e.getMessage());
+                    }
+                }
+            }
+            if (value != null) {
+                try {
+                    BeanUtils.setProperty(dest, propertyName, value);
+                } catch (Exception e) {
+                    logger.warn(e.getMessage());
+                    logger.debug("try invokeSetterMethod {}", propertyName);
+                    try {
+                        ReflectionUtil.invokeSetterMethod(dest, propertyName, value, field.getType());
+                    } catch (Exception e1) {
+                        logger.warn(e.getMessage());
+                        logger.debug("try setFieldValue {}", propertyName);
+                        try {
+                            ReflectionUtil.setFieldValue(dest, propertyName, value);
+                        } catch (Exception e2) {
+                            logger.warn(e2.getMessage());
+                        }
+                    }
+                }
             }
         }
     }
@@ -186,7 +211,7 @@ public class BeanUtil extends BeanUtils {
             logger.debug("invoke {} set{}({} {}) and value is {} and type is {}", type.getName(), StringUtil.capitalize(propertyName),
                     propertyType.getName(), propertyName, value, value.getClass().getName());
             try {
-                if (propertyType.isAssignableFrom(List.class)) {
+                if (List.class.isAssignableFrom(propertyType)) {
                     Type genericType = field.getGenericType();
                     /**
                      * 拿到泛型的类型
@@ -210,7 +235,7 @@ public class BeanUtil extends BeanUtils {
                         logger.warn("泛型类型为<{}>", genericName);
                         value = TypeConverterManager.convertType(value, propertyType);
                     }
-                } else if (propertyType.isAssignableFrom(Map.class)) {
+                } else if (Map.class.isAssignableFrom(propertyType)) {
                     // 如果还是一个Map，则尝试将map复制到obj的对象中
                     if (value instanceof Map) {
 
@@ -218,9 +243,17 @@ public class BeanUtil extends BeanUtils {
                         value = beanToMap(value);
                     }
                 } else if (propertyType.isEnum()) {
-                    logger.warn("暂不支持枚举转换，解决方法为：" + type.getName() + "请增加set" + StringUtil.capitalize(propertyName) + "(" + value.getClass().getName()
-                            + " " + propertyName + ") 方法");
-                    ReflectionUtil.invokeSetterMethod(obj, propertyName, value, value.getClass());
+                    try {
+                        ReflectionUtil.invokeSetterMethod(obj, propertyName, value, value.getClass());
+                    } catch (Exception e) {
+                        logger.warn("暂不支持枚举转换，解决方法为：" + type.getName() + "请增加set" + StringUtil.capitalize(propertyName) + "("
+                                + value.getClass().getName() + " " + propertyName + ") 方法");
+                        try {
+                            BeanUtils.setProperty(obj, propertyName, value);
+                        } catch (Exception e1) {
+                            logger.warn(e1.getMessage());
+                        }
+                    }
                     continue;
                 } /* else if (StringUtil.equals(propertyType.getName(), "java.lang.String") && !(value instanceof String)) {
                      value = value.toString();
@@ -236,7 +269,8 @@ public class BeanUtil extends BeanUtils {
                      value = NumberUtil.toShort(value.toString());
                   } else if (StringUtil.equals(propertyType.getName(), "java.lang.Long") && !(value instanceof Long)) {
                      value = NumberUtil.toLong(value);
-                  }*/ else if (value instanceof Map) {
+                  }*/
+                else if (value instanceof Map) {
                     value = mapToBean((Map) value, propertyType);
                 } else {
                     //                    value = ConvertUtil.convert(value, propertyType);
@@ -247,7 +281,20 @@ public class BeanUtil extends BeanUtils {
                 /**
                  * value 不能为空
                  */
-                ReflectionUtil.invokeSetterMethod(obj, propertyName, value, propertyType);
+
+                try {
+                    ReflectionUtil.invokeSetterMethod(obj, propertyName, value, propertyType);
+                } catch (Exception e) {
+                    logger.warn(e.getMessage());
+                    logger.debug("try setFieldValue");
+                    try {
+                        ReflectionUtil.setFieldValue(obj, propertyName, value);
+                    } catch (Exception e1) {
+                        logger.warn(e1.getMessage());
+                        logger.debug("try setProperty");
+                        BeanUtils.setProperty(obj, propertyName, value);
+                    }
+                }
             } catch (Exception e) {
                 String msg = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
                 logger.warn("invoke fail ： {} set{}({} {}) but value type is {}, error msg:", type.getName(), StringUtil.capitalize(propertyName),
@@ -261,7 +308,7 @@ public class BeanUtil extends BeanUtils {
 
     /**
      * Converts a JavaBean to a map.
-     *
+     *  简单的转换，暂时没有对属性值为bean的转为
      * @param bean JavaBean to convert
      * @return map converted
      */
@@ -273,15 +320,38 @@ public class BeanUtil extends BeanUtils {
 
         List<Field> fields = ReflectionUtil.getAccessibleFields(bean);
         for (Field field : fields) {
-            if (field.getName().equals("serialVersionUID"))
+            if (Modifier.isStatic(field.getModifiers()) || Modifier.isFinal(field.getModifiers()))
                 continue;
+            Object value = null;
             try {
-                Object value = ReflectionUtil.invokeGetterMethod(bean, field.getName());
-                if (value != null) {
-                    returnMap.put(field.getName(), value);
-                }
+                value = ReflectionUtil.invokeGetterMethod(bean, field.getName());
             } catch (Exception e) {
-                logger.debug(e.getMessage());
+                logger.warn(e.getMessage());
+                logger.debug("try getFieldValue");
+                try {
+                    value = ReflectionUtil.getFieldValue(bean, field.getName());
+                } catch (Exception e2) {
+                    logger.warn(e2.getMessage());
+                    logger.debug("try getProperty");
+                    try {
+                        value = BeanUtils.getProperty(bean, field.getName());
+                    } catch (Exception e4) {
+                        logger.warn(e4.getMessage());
+                    }
+                    try {
+                        Class fieldType = field.getType();
+                        if (fieldType.isAssignableFrom(Boolean.class) && value == null) {
+                            String getterMethodName = "is" + StringUtils.capitalize(field.getName());
+                            value = ReflectionUtil.invokeMethod(bean, getterMethodName, new Class[] {}, new Object[] {});
+                        }
+                    } catch (Exception e3) {
+
+                    }
+                }
+                logger.warn(e.getMessage());
+            }
+            if (value != null) {
+                returnMap.put(field.getName(), value);
             }
         }
         return returnMap;
@@ -411,6 +481,14 @@ public class BeanUtil extends BeanUtils {
         System.out.println(p2.getTestDate());
         System.out.println(p1.getNumber());
         System.out.println(p2.number);
+
+        System.out.println(HashMap.class.isAssignableFrom(Map.class));
+        System.out.println(Map.class.isAssignableFrom(HashMap.class));
+        List l = new ArrayList();
+        System.out.println(l.getClass().isAssignableFrom(List.class));
+        System.out.println(List.class.isAssignableFrom(l.getClass()));
+        System.out.println(List.class.isAssignableFrom(List.class));
+
     }
 }
 

@@ -1035,7 +1035,7 @@ public class DateUtil extends DateUtils {
 
     public static void main(String[] args) {
         System.out.println(newInstanceDateBegin());
-        System.out.println(newInstanceDateEnd());
+        System.out.println(DateUtil.addDays(DateUtil.addSeconds(newInstanceDateEnd(), 1), -1));
         Date d = newInstanceDate();
         System.out.println(dateToString(d, DateFormatter.FORMAT_YYYY_MM_DD));
 
@@ -1045,5 +1045,8 @@ public class DateUtil extends DateUtils {
         c.set(Calendar.DAY_OF_YEAR, c.getActualMinimum(Calendar.DAY_OF_MONTH));
         System.out.println(dateToString(c.getTime(), DateFormatter.FORMAT_YYYY_MM_DD_HH_MM_SS));
         System.out.println(DateUtil.firstDayOfMonth());
+
+        System.out.println(DateUtil.addDays(DateUtil.addSeconds(newInstanceDateEnd(), 1), -1).after(newInstanceDateBegin()));
+
     }
 }

@@ -57,6 +57,10 @@ public class Conditions implements Serializable {
         this.groupType = AND;
     }
 
+    public static Conditions where(String name, Object value) {
+        return new Conditions(name, value);
+    }
+
     /**
      * @return the property
      */

@@ -229,7 +229,51 @@ public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends S
     public Pages<T> findPage(Pages<T> page) {
         Query query = new Query();
         for (Conditions cond : page.getConditions()) {
-            query.addCriteria(Criteria.where(cond.getProperty()).is(cond.getValue()));
+            switch (cond.getMatchType()){
+
+                case EQ:
+                    query.addCriteria(Criteria.where(cond.getProperty()).is(cond.getValue()));
+                    break;
+                case NE:
+                    query.addCriteria(Criteria.where(cond.getProperty()).ne(cond.getValue()));
+                    break;
+                case ISN:
+                    query.addCriteria(Criteria.where(cond.getProperty()).is(null));
+                    break;
+                case INN:
+                    query.addCriteria(Criteria.where(cond.getProperty()).ne(null));
+                    break;
+                case LL:
+                    break;
+                case RL:
+                    break;
+                case FL:
+                    break;
+                case NL:
+                    break;
+                case LT:
+                    query.addCriteria(Criteria.where(cond.getProperty()).lt(cond.getValue()));
+                    break;
+                case GT:
+                    query.addCriteria(Criteria.where(cond.getProperty()).gt(cond.getValue()));
+                    break;
+                case GTE:
+                    query.addCriteria(Criteria.where(cond.getProperty()).gte(cond.getValue()));
+                    break;
+                case LTE:
+                    query.addCriteria(Criteria.where(cond.getProperty()).lte(cond.getValue()));
+                    break;
+                case IN:
+                    query.addCriteria(Criteria.where(cond.getProperty()).in(cond.getValue()));
+                    break;
+                case NIN:
+                    query.addCriteria(Criteria.where(cond.getProperty()).nin(cond.getValue()));
+                    break;
+                case BW:
+                    query.addCriteria(Criteria.where(cond.getProperty()).gte(cond.getValue()).lte(cond.getAnotherValue()));
+                    break;
+            }
+
         }
         long count = this.count(query);
         page.setTotalCount(count);
