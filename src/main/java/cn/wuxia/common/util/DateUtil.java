@@ -12,12 +12,10 @@ package cn.wuxia.common.util;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
-import java.util.StringTokenizer;
+import java.util.*;
 
+import cn.wuxia.common.exception.AppWebException;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.nutz.castor.Castors;
@@ -1046,6 +1044,17 @@ public class DateUtil extends DateUtils {
         System.out.println(dateToString(c.getTime(), DateFormatter.FORMAT_YYYY_MM_DD_HH_MM_SS));
         System.out.println(DateUtil.firstDayOfMonth());
 
+
+        Date begindate = DateUtil.stringToDate("2018-05-16", "yyyy-MM-dd");
+        Date enddate = DateUtil.stringToDate("2018-5-18", "yyyy-MM-dd");
+        if (begindate.after(enddate)) {
+            throw new AppWebException("截止日期应在开始日期之后。");
+        }
+        while (begindate.compareTo(enddate) <= 0) {
+            System.out.println(begindate);
+            begindate = DateUtil.addDays(begindate, 1);
+        }
+        System.out.println(newInstanceDateBegin().before(DateUtil.addMinutes(newInstanceDateBegin(),1)));
         System.out.println(DateUtil.addDays(DateUtil.addSeconds(newInstanceDateEnd(), 1), -1).after(newInstanceDateBegin()));
 
     }

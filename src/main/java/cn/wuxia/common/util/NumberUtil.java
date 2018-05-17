@@ -221,5 +221,15 @@ public class NumberUtil extends NumberUtils {
         System.out.println(formatFinancing(10110.123123));
         System.out.println(formatFinancing(new BigDecimal(0.10)));
         System.out.println(formatFinancing(8.010));
+
+
+        System.out.println(801/200);
+
+        int x = 100;
+        int y = 200;
+        if(x%y != 0)
+            System.out.println(x/y+1);
+        else
+            System.out.println(x/y);
     }
 }
