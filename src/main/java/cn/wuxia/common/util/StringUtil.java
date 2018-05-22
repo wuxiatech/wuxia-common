@@ -30,6 +30,7 @@ import com.google.common.collect.Maps;
 
 import cn.wuxia.common.util.DateUtil.DateFormatter;
 import cn.wuxia.common.util.reflection.BeanUtil;
+import org.springframework.util.Assert;
 
 /**
  * <h3>String handling.</h3> <h4>Description</h4> <h4>Special Notes</h4>
@@ -771,6 +772,8 @@ public class StringUtil extends StringUtils {
 
         System.out.println(Hex.encodeHexString(sql.getBytes()));
 
+        System.out.println("C180517222018051819001930".length());
+        Assert.isTrue("C180517222018051819001930".length() < 32, "订单号为空或长度超过32");
     }
 
     public static String parseValue(Object valueObj) {
