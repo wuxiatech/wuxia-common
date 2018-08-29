@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,7 @@ import org.springframework.data.mongodb.core.query.Update;
 
 import com.google.common.collect.Lists;
 import com.mongodb.WriteResult;
+import com.mongodb.client.result.DeleteResult;
 
 import cn.wuxia.common.entity.ValidationEntity;
 import cn.wuxia.common.hibernate.query.Conditions;
@@ -77,7 +79,6 @@ public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends S
     }
 
     /**
-     *
      * @param properties
      * @param value
      * @return
@@ -88,7 +89,6 @@ public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends S
     }
 
     /**
-     *
      * @param properties
      * @param value
      * @return
@@ -106,9 +106,22 @@ public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends S
      */
     public void update(Query query, Update update) {
         if (StringUtil.isBlank(collectionName)) {
-            getMongoTemplate().findAndModify(query, update, this.getEntityClass());
+            getMongoTemplate().updateMulti(query, update, this.getEntityClass());
         } else
-            getMongoTemplate().findAndModify(query, update, this.getEntityClass(), collectionName);
+            getMongoTemplate().updateMulti(query, update, this.getEntityClass(), collectionName);
+    }
+
+    /**
+     * 更新
+     *
+     * @param query
+     * @param update
+     */
+    public T updateFirst(Query query, Update update) {
+        if (StringUtil.isBlank(collectionName)) {
+            return getMongoTemplate().findAndModify(query, update, this.getEntityClass());
+        } else
+            return getMongoTemplate().findAndModify(query, update, this.getEntityClass(), collectionName);
     }
 
     /**
@@ -164,10 +177,10 @@ public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends S
      */
     public void delete(T entity) {
         if (StringUtil.isBlank(collectionName)) {
-            WriteResult res = getMongoTemplate().remove(entity);
+            DeleteResult res = getMongoTemplate().remove(entity);
             logger.info("", res);
         } else {
-            WriteResult res = getMongoTemplate().remove(entity, collectionName);
+            DeleteResult res = getMongoTemplate().remove(entity, collectionName);
             logger.info("", res);
         }
     }
@@ -229,7 +242,7 @@ public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends S
     public Pages<T> findPage(Pages<T> page) {
         Query query = new Query();
         for (Conditions cond : page.getConditions()) {
-            switch (cond.getMatchType()){
+            switch (cond.getMatchType()) {
 
                 case EQ:
                     query.addCriteria(Criteria.where(cond.getProperty()).is(cond.getValue()));
@@ -244,10 +257,20 @@ public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends S
                     query.addCriteria(Criteria.where(cond.getProperty()).ne(null));
                     break;
                 case LL:
+                    //左匹配
+                    query.addCriteria(
+                            Criteria.where(cond.getProperty()).regex(Pattern.compile("^.\"+cond.getValue()+\"*$", Pattern.CASE_INSENSITIVE)));
                     break;
                 case RL:
+                    //右匹配
+                    query.addCriteria(
+                            Criteria.where(cond.getProperty()).regex(Pattern.compile("^.*\"+cond.getValue()+\"$", Pattern.CASE_INSENSITIVE)));
                     break;
                 case FL:
+
+                    //模糊匹配
+                    query.addCriteria(
+                            Criteria.where(cond.getProperty()).regex(Pattern.compile("^.*" + cond.getValue() + ".*$", Pattern.CASE_INSENSITIVE)));
                     break;
                 case NL:
                     break;
@@ -279,7 +302,9 @@ public abstract class SpringDataMongoDao<T extends ValidationEntity, K extends S
         page.setTotalCount(count);
         int pageNumber = page.getPageNo();
         int pageSize = page.getPageSize();
-        query.skip((pageNumber - 1) * pageSize).limit(pageSize);
+        if (pageSize != -1) {
+            query.skip((pageNumber - 1) * pageSize).limit(pageSize);
+        }
         if (page.getSort() != null) {
             Iterator<Order> iterator = page.getSort().iterator();
             List<Sort.Order> orders = Lists.newLinkedList();

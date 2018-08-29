@@ -18,6 +18,7 @@ import java.util.Map;
 
 import cn.wuxia.common.excel.ExcelUtil;
 import cn.wuxia.common.excel.bean.ExcelBean;
+import cn.wuxia.common.util.reflection.ConvertUtil;
 import jodd.typeconverter.TypeConverterManager;
 
 public class ExcelTest {
@@ -62,15 +63,16 @@ public class ExcelTest {
     }
 
     public static void test() {
-        Object convertValue = TypeConverterManager.convertType("123", BigDecimal.class);
+        Object convertValue = TypeConverterManager.get().convertType("123", BigDecimal.class);
         System.out.println(convertValue + "" + convertValue.getClass());
         
-        
-         convertValue = TypeConverterManager.convertType("2017/10/20 22:22:22", Date.class);
+        convertValue =  ConvertUtil.convert("2017/10/20 22:22:22", Date.class);
+        System.out.println(convertValue + "" + convertValue.getClass());
+         convertValue = TypeConverterManager.get().convertType("2017/10/20 22:22:22", Date.class);
         System.out.println(convertValue + "" + convertValue.getClass());
         
          
-        convertValue = TypeConverterManager.convertType("2017-10-20", java.sql.Date.class);
+        convertValue = TypeConverterManager.get().convertType("2017-10-20", java.sql.Date.class);
         System.out.println(convertValue + "" + convertValue.getClass());
     }
 }

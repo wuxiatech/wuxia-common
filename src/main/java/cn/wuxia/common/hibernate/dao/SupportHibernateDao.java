@@ -744,13 +744,24 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
 
     /**
      * @param sql
-     * @param entityClass
+     * @param clazz
      * @param objs
      * @return
      * @author songlin.li
      */
-    public <X> List<X> query(String sql, Class<X> entityClass, Map<String, ?> objs) {
-        NativeQuery<X> query = this.createSQLQuery(sql, entityClass, objs);
+    public <X> List<X> query(String sql, Class<X> clazz, Map<String, ?> values) {
+        NativeQuery<X> query = null;
+        if (clazz == null) {
+            query = this.createSQLQuery(sql, values);
+        } else {
+            Entity entity = clazz.getAnnotation(Entity.class);
+            if (entity != null) {
+                query = this.createSQLQuery(sql, clazz, values);
+            } else {
+                query = this.createSQLQuery(sql, values);
+                query.setResultTransformer(Transformers.aliasToBean(clazz));
+            }
+        }
         List<X> result = query.list();
         logger.debug("size: " + result.size());
         return result;

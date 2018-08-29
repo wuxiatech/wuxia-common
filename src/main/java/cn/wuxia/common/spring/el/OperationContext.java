@@ -10,7 +10,7 @@ package cn.wuxia.common.spring.el;
 
 import java.lang.reflect.Method;
 
-import org.springframework.cache.interceptor.DefaultKeyGenerator;
+import org.springframework.cache.interceptor.SimpleKeyGenerator;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.util.StringUtils;
 
@@ -68,7 +68,7 @@ public class OperationContext {
             EvaluationContext evaluationContext = createEvaluationContext(ExpressionEvaluator.NO_RESULT);
             return evaluator.key(this.operation.getValue(), this.method, evaluationContext);
         }
-        return new DefaultKeyGenerator().generate(this.target, this.method, this.args);
+        return new SimpleKeyGenerator().generate(this.target, this.method, this.args);
     }
 
     private EvaluationContext createEvaluationContext(Object result) {

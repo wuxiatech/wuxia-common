@@ -77,7 +77,7 @@ public enum MatchType {
 
     String symbol;
 
-    private MatchType(String symbol) {
+    MatchType(String symbol) {
         this.symbol = symbol;
     }
 

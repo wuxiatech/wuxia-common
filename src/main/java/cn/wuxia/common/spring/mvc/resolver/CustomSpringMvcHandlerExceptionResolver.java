@@ -31,7 +31,6 @@ public class CustomSpringMvcHandlerExceptionResolver implements HandlerException
 
     public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         String messageVal = ex.getMessage();
-        String forwardPage = null;
         logger.info("Exception Type:{} , And Simple Message:{}", ex.getClass().getName(), ex.getMessage());
         if (ex instanceof ServiceException) {
             ServiceException serviceException = (ServiceException) ex;
@@ -47,14 +46,19 @@ public class CustomSpringMvcHandlerExceptionResolver implements HandlerException
         }
 
         request.setAttribute("message", messageVal);
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.addObject("message", messageVal);
         if (ex instanceof AppSecurityException) {
             response.setStatus(403);
+            modelAndView.setViewName("error/403");
         } else if (ex instanceof AppObjectNotFoundException) {
             response.setStatus(404);
+            modelAndView.setViewName("error/404");
         } else {
             response.setStatus(500);
+            modelAndView.setViewName("error/500");
         }
-        return new ModelAndView(forwardPage);
+        return modelAndView;
     }
 
     @Override

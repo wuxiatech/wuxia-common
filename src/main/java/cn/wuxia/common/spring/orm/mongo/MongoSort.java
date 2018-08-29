@@ -11,8 +11,7 @@ package cn.wuxia.common.spring.orm.mongo;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import org.bson.Document;
 
 public class MongoSort {
 
@@ -36,8 +35,8 @@ public class MongoSort {
         return this;
     }
 
-    public DBObject getSortObject() {
-        DBObject dbo = new BasicDBObject();
+    public Document getSortObject() {
+        Document dbo = new Document();
         for (String k : field.keySet()) {
             dbo.put(k, (field.get(k).equals(MongoOrder.ASC) ? 1 : -1));
         }

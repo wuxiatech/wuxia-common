@@ -307,6 +307,7 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
     }
 
     /**
+     * FIXME songlin.li add 调用executeUpdate方法如果service报错无法回滚
      * @param values A variable number of parameters, in order binding.
      * @return Updating the number of records.
      * @description : Execute HQL bulk modify / delete operations.
@@ -316,6 +317,7 @@ public class SimpleHibernateDao<T, PK extends Serializable> {
     }
 
     /**
+     * FIXME songlin.li add 调用executeUpdate方法如果service报错无法回滚
      * @param values Named parameters, bind by name.
      * @return Updating the number of records.
      * @description : Execute HQL bulk modify / delete operations.

@@ -42,16 +42,49 @@ public class BrowserUtils {
      * 判断是否是微信浏览器
      */
     public static boolean isWeiXin(HttpServletRequest request) {
-        logger.info(request.getHeader("USER-AGENT"));
-        return request.getHeader("USER-AGENT").toLowerCase().indexOf("micromessenger") > 0 ? true : false;
+        return isWeiXin(getUserAgent(request));
+    }
+
+    /**
+     * 判断是否是微信浏览器
+     */
+    public static boolean isWeiXin(String userAgent) {
+        logger.info(userAgent);
+        return userAgent.toLowerCase().indexOf("micromessenger") > 0 ? true : false;
+    }
+
+    /**
+     * 获取微信版本
+     *
+     * @param request
+     * @return
+     */
+    public static String getWeiXinVersion(HttpServletRequest request) {
+        return getWeiXinVersion(getUserAgent(request));
+    }
+
+    /**
+     * 获取微信版本
+     *
+     * @param request
+     * @return
+     */
+    public static String getWeiXinVersion(String userAgent) {
+        return StringUtil.substringBetween(userAgent + " ", "MicroMessenger/", " ");
     }
 
     /**
      * 判断是否是IE
      */
     public static boolean isIE(HttpServletRequest request) {
-        logger.info(request.getHeader("USER-AGENT"));
-        return request.getHeader("USER-AGENT").toLowerCase().indexOf("msie") > 0 ? true : false;
+        return isIE(getUserAgent(request));
+    }
+
+    /**
+     * 判断是否是IE
+     */
+    public static boolean isIE(String userAgent) {
+        return userAgent.toLowerCase().indexOf("msie") > 0 ? true : false;
     }
 
     /**
@@ -84,11 +117,11 @@ public class BrowserUtils {
     }
 
     private static boolean getBrowserType(HttpServletRequest request, String brosertype) {
-        return request.getHeader("USER-AGENT").toLowerCase().indexOf(brosertype.toLowerCase()) > 0 ? true : false;
+        return getUserAgent(request).toLowerCase().indexOf(brosertype.toLowerCase()) > 0 ? true : false;
     }
 
-    public static String checkBrowse(HttpServletRequest request) {
-        String userAgent = request.getHeader("USER-AGENT");
+    public static String checkBrowse(final HttpServletRequest request) {
+        String userAgent = getUserAgent(request);
         if (StringUtil.isBlank(userAgent))
             return BrowserType.Other.bname;
 
@@ -114,4 +147,48 @@ public class BrowserUtils {
         return m.find();
     }
 
+    public static String getUserAgent(final HttpServletRequest request) {
+        //获取浏览器信息
+        return request.getHeader("User-Agent") == null ? "" : request.getHeader("User-Agent");
+    }
+
+    /**
+     * 获取网络类型
+     *
+     * @param request
+     * @return
+     */
+    public static String getNetType(final HttpServletRequest request) {
+        return getNetType(getUserAgent(request));
+    }
+
+    /**
+     * 获取网络类型
+     *
+     * @param userAgent
+     * @return
+     */
+    public static String getNetType(String userAgent) {
+        return StringUtil.substringBetween(userAgent + " ", "NetType/", " ");
+    }
+
+    /**
+     * 获取浏览器语言
+     *
+     * @param request
+     * @return
+     */
+    public static String getLanguage(final HttpServletRequest request) {
+        return getLanguage(getUserAgent(request));
+    }
+
+    /**
+     * 获取浏览器语言
+     *
+     * @param userAgent
+     * @return
+     */
+    public static String getLanguage(String userAgent) {
+        return StringUtil.substringBetween(userAgent + " ", "Language/", " ");
+    }
 }

@@ -7,9 +7,9 @@ import javax.persistence.EntityManager;
 
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactory;
-import org.springframework.data.jpa.repository.support.QueryDslJpaRepository;
+import org.springframework.data.jpa.repository.support.QuerydslJpaRepository;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
-import org.springframework.data.querydsl.QueryDslUtils;
+import org.springframework.data.querydsl.QuerydslUtils;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 
@@ -31,7 +31,7 @@ public class BasicJpaRepositoryFactory extends JpaRepositoryFactory {
 
 	private boolean isQueryDslExecutor(Class<?> repositoryInterface) {
 
-		return QueryDslUtils.QUERY_DSL_PRESENT && QueryDslJpaRepository.class.isAssignableFrom(repositoryInterface);
+		return QuerydslUtils.QUERY_DSL_PRESENT && QuerydslJpaRepository.class.isAssignableFrom(repositoryInterface);
 	}
 
 	@Override
@@ -43,7 +43,7 @@ public class BasicJpaRepositoryFactory extends JpaRepositoryFactory {
 		SimpleJpaRepository<T, ID> repo = null;
 
 		if (isQueryDslExecutor(repositoryInterface)) {
-			repo = new QueryDslJpaRepository(entityInformation, entityManager);
+			repo = new QuerydslJpaRepository(entityInformation, entityManager);
 		} else {
 			repo = new JpaSupportRepository(entityInformation, entityManager);
 		}
@@ -53,7 +53,7 @@ public class BasicJpaRepositoryFactory extends JpaRepositoryFactory {
 	@Override
 	protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
 		if (isQueryDslExecutor(metadata.getRepositoryInterface())) {
-			return QueryDslJpaRepository.class;
+			return QuerydslJpaRepository.class;
 		} else {
 			return JpaSupportRepository.class;
 		}

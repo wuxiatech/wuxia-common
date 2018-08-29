@@ -1057,5 +1057,7 @@ public class DateUtil extends DateUtils {
         System.out.println(newInstanceDateBegin().before(DateUtil.addMinutes(newInstanceDateBegin(),1)));
         System.out.println(DateUtil.addDays(DateUtil.addSeconds(newInstanceDateEnd(), 1), -1).after(newInstanceDateBegin()));
 
+
+        System.out.println(DateUtil.getHour(begindate));
     }
 }

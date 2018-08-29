@@ -1,13 +1,19 @@
 package cn.wuxia.common.spring.orm.core.jpa.repository.support;
 
-import java.io.Serializable;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.persistence.EntityManager;
-
-import cn.wuxia.common.entity.ValidationEntity;
+import cn.wuxia.common.hibernate.query.Conditions;
+import cn.wuxia.common.hibernate.query.Pages;
 import cn.wuxia.common.hibernate.query.PropertyType;
+import cn.wuxia.common.spring.orm.annotation.StateDelete;
+import cn.wuxia.common.spring.orm.core.PropertyFilter;
+import cn.wuxia.common.spring.orm.core.RestrictionNames;
+import cn.wuxia.common.spring.orm.core.jpa.repository.BasicJpaRepository;
+import cn.wuxia.common.spring.orm.core.jpa.specification.Specifications;
+import cn.wuxia.common.spring.orm.enumeration.ExecuteMehtod;
+import cn.wuxia.common.spring.orm.strategy.utils.ConvertCodeUtils;
+import cn.wuxia.common.util.NumberUtil;
+import cn.wuxia.common.util.reflection.ConvertUtil;
+import cn.wuxia.common.util.reflection.ReflectionUtil;
+import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.hibernate.Session;
 import org.slf4j.Logger;
@@ -24,21 +30,10 @@ import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import com.google.common.collect.Lists;
-
-import cn.wuxia.common.hibernate.query.Conditions;
-import cn.wuxia.common.hibernate.query.MatchType;
-import cn.wuxia.common.hibernate.query.Pages;
-import cn.wuxia.common.spring.orm.annotation.StateDelete;
-import cn.wuxia.common.spring.orm.core.PropertyFilter;
-import cn.wuxia.common.spring.orm.core.RestrictionNames;
-import cn.wuxia.common.spring.orm.core.jpa.repository.BasicJpaRepository;
-import cn.wuxia.common.spring.orm.core.jpa.specification.Specifications;
-import cn.wuxia.common.spring.orm.enumeration.ExecuteMehtod;
-import cn.wuxia.common.spring.orm.strategy.utils.ConvertCodeUtils;
-import cn.wuxia.common.util.NumberUtil;
-import cn.wuxia.common.util.reflection.ConvertUtil;
-import cn.wuxia.common.util.reflection.ReflectionUtil;
+import javax.persistence.EntityManager;
+import java.io.Serializable;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * {@link BasicJpaRepository}接口实现类，并在{@link SimpleJpaRepository}基础上扩展,包含对
@@ -46,10 +41,10 @@ import cn.wuxia.common.util.reflection.ReflectionUtil;
  * {@link SimpleJpaRepository#save(Object)}和
  * {@link SimpleJpaRepository#delete(Object)}
  * 方法，支持@StateDelete注解和@ConvertProperty注解
- * 
- * @author songlin.li
- * @param <T> ORM对象
+ *
+ * @param <T>  ORM对象
  * @param <ID> 主键Id类型
+ * @author songlin.li
  */
 @SuppressWarnings("unchecked")
 public class JpaSupportRepository<T, ID extends Serializable> extends SimpleJpaRepository<T, ID> implements BasicJpaRepository<T, ID> {
@@ -80,7 +75,7 @@ public class JpaSupportRepository<T, ID extends Serializable> extends SimpleJpaR
 
     /**
      * return org.hibernate.Session;
-     * 
+     *
      * @return
      */
     public Session getSession() {
@@ -142,7 +137,7 @@ public class JpaSupportRepository<T, ID extends Serializable> extends SimpleJpaR
     /*
      * (non-Javadoc)
      * @see
-     * cn.ishare.common.spring.orm.core.jpa.repository.BasicJpaRepository#findBy
+     * cn.wuxia.common.spring.orm.core.jpa.repository.BasicJpaRepository#findBy
      * (java.util.List)
      */
     @Override
@@ -153,7 +148,7 @@ public class JpaSupportRepository<T, ID extends Serializable> extends SimpleJpaR
     /*
      * (non-Javadoc)
      * @see
-     * cn.ishare.common.spring.orm.core.jpa.repository.BasicJpaRepository#findBy
+     * cn.wuxia.common.spring.orm.core.jpa.repository.BasicJpaRepository#findBy
      * (java.util.List, org.springframework.data.domain.Sort)
      */
     @Override
@@ -164,7 +159,7 @@ public class JpaSupportRepository<T, ID extends Serializable> extends SimpleJpaR
     /*
      * (non-Javadoc)
      * @see
-     * cn.ishare.common.spring.orm.core.jpa.repository.BasicJpaRepository#findPage
+     * cn.wuxia.common.spring.orm.core.jpa.repository.BasicJpaRepository#findPage
      * (org.springframework.data.domain.Pageable, java.util.List)
      */
     @Override
@@ -178,7 +173,7 @@ public class JpaSupportRepository<T, ID extends Serializable> extends SimpleJpaR
     /*
      * (non-Javadoc)
      * @see
-     * cn.ishare.common.spring.orm.core.jpa.repository.BasicJpaRepository#findBy
+     * cn.wuxia.common.spring.orm.core.jpa.repository.BasicJpaRepository#findBy
      * (java.lang.String, java.lang.Object)
      */
     @Override
@@ -189,7 +184,7 @@ public class JpaSupportRepository<T, ID extends Serializable> extends SimpleJpaR
     /*
      * (non-Javadoc)
      * @see
-     * cn.ishare.common.spring.orm.core.jpa.repository.BasicJpaRepository#findBy
+     * cn.wuxia.common.spring.orm.core.jpa.repository.BasicJpaRepository#findBy
      * (java.lang.String, java.lang.Object,
      * org.springframework.data.domain.Sort)
      */
@@ -201,7 +196,7 @@ public class JpaSupportRepository<T, ID extends Serializable> extends SimpleJpaR
     /*
      * (non-Javadoc)
      * @see
-     * cn.ishare.common.spring.orm.core.jpa.repository.BasicJpaRepository#findBy
+     * cn.wuxia.common.spring.orm.core.jpa.repository.BasicJpaRepository#findBy
      * (java.lang.String, java.lang.Object, java.lang.String)
      */
     @Override
@@ -212,7 +207,7 @@ public class JpaSupportRepository<T, ID extends Serializable> extends SimpleJpaR
     /*
      * (non-Javadoc)
      * @see
-     * cn.ishare.common.spring.orm.core.jpa.repository.BasicJpaRepository#findBy
+     * cn.wuxia.common.spring.orm.core.jpa.repository.BasicJpaRepository#findBy
      * (java.lang.String, java.lang.Object,
      * org.springframework.data.domain.Sort, java.lang.String)
      */
@@ -224,7 +219,7 @@ public class JpaSupportRepository<T, ID extends Serializable> extends SimpleJpaR
     /*
      * (non-Javadoc)
      * @see
-     * cn.ishare.common.spring.orm.core.jpa.repository.BasicJpaRepository#findOneBy
+     * cn.wuxia.common.spring.orm.core.jpa.repository.BasicJpaRepository#findOneBy
      * (java.util.List)
      */
     @Override
@@ -235,7 +230,7 @@ public class JpaSupportRepository<T, ID extends Serializable> extends SimpleJpaR
     /*
      * (non-Javadoc)
      * @see
-     * cn.ishare.common.spring.orm.core.jpa.repository.BasicJpaRepository#findOneBy
+     * cn.wuxia.common.spring.orm.core.jpa.repository.BasicJpaRepository#findOneBy
      * (java.lang.String, java.lang.Object)
      */
     @Override
@@ -246,7 +241,7 @@ public class JpaSupportRepository<T, ID extends Serializable> extends SimpleJpaR
     /*
      * (non-Javadoc)
      * @see
-     * cn.ishare.common.spring.orm.core.jpa.repository.BasicJpaRepository#findOne
+     * cn.wuxia.common.spring.orm.core.jpa.repository.BasicJpaRepository#findOne
      * (java.lang.String, java.lang.Object, java.lang.String)
      */
     @Override
@@ -256,10 +251,10 @@ public class JpaSupportRepository<T, ID extends Serializable> extends SimpleJpaR
 
     @Override
     public Pages<T> findPage(Pages<T> pages) {
-        PageRequest pageRequest = null;
+
+        List<Order> orders = Lists.newArrayList();
         if (null != pages.getSort()) {
             Iterator<cn.wuxia.common.hibernate.query.Sort.Order> it = pages.getSort().iterator();
-            List<Order> orders = Lists.newArrayList();
             while (it.hasNext()) {
                 cn.wuxia.common.hibernate.query.Sort.Order order = it.next();
                 if (order.isAscending())
@@ -267,14 +262,11 @@ public class JpaSupportRepository<T, ID extends Serializable> extends SimpleJpaR
                 else
                     orders.add(new Order(Direction.DESC, order.getProperty()));
             }
-            pageRequest = new PageRequest(pages.getPageNo() - 1, pages.getPageSize(), new Sort(orders));
-        } else {
-            pageRequest = new PageRequest(pages.getPageNo() - 1, pages.getPageSize());
         }
         List<PropertyFilter> filters = Lists.newArrayList();
         for (Conditions condition : pages.getConditions()) {
             PropertyFilter filter = new PropertyFilter();
-            
+
             switch (condition.getMatchType()) {
                 case LL:
                     filter.setRestrictionName(RestrictionNames.LLIKE);
@@ -301,15 +293,23 @@ public class JpaSupportRepository<T, ID extends Serializable> extends SimpleJpaR
                     break;
             }
             filter.setPropertyType(PropertyType.S.getValue());
-            filter.setPropertyNames(new String[] { condition.getProperty() });
+            filter.setPropertyNames(new String[]{condition.getProperty()});
             filter.setMatchValue((String) condition.getValue());
             filters.add(filter);
         }
-        Page<T> page = findPage(pageRequest, filters);
-        pages.setResult(page.getContent());
-        pages.setPageNo(page.getNumber() + 1);
-        pages.setPageSize(page.getSize());
-        pages.setTotalCount(NumberUtil.toInteger(page.getTotalElements()));
+
+        if (pages.getPageSize() == -1) {
+            List<T> result = findBy(filters, new Sort(orders));
+            pages.setResult(result);
+            pages.setTotalCount(result.size());
+        } else {
+            PageRequest pageRequest = new PageRequest(pages.getPageNo() - 1, pages.getPageSize(), new Sort(orders));
+            Page<T> page = findPage(pageRequest, filters);
+            pages.setResult(page.getContent());
+            pages.setPageNo(page.getNumber() + 1);
+            pages.setPageSize(page.getSize());
+            pages.setTotalCount(NumberUtil.toInteger(page.getTotalElements()));
+        }
         return pages;
     }
 }

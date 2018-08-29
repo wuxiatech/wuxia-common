@@ -10,11 +10,12 @@ import java.io.ObjectOutputStream;
 public class BytesUtil {
     /**
      * 对象转byte[]
-     *
+     * @see {@link SerializeUtils#serialize(Object, Class)}
      * @param obj
      * @return
      * @throws IOException
      */
+    @Deprecated
     public static byte[] objectToBytes(Object obj) throws IOException {
         if (obj == null) {
             return null;
@@ -30,11 +31,12 @@ public class BytesUtil {
 
     /**
      * byte[]转对象
-     *
+     * @see {@link SerializeUtils#deSerialize(byte[], Class)}
      * @param bytes
      * @return
      * @throws Exception
      */
+    @Deprecated
     public static Object bytesToObject(byte[] bytes) throws IOException, ClassNotFoundException {
         if (bytes == null) {
             return null;

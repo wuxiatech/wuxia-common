@@ -76,8 +76,9 @@ public class MessageInterceptor implements HandlerInterceptor {
         List<Map<String, Object>> all = (List<Map<String, Object>>) request.getSession().getAttribute(Msg.ALLMESSAGESKEY);
         if (ListUtil.isEmpty(all)) {
             all = new ArrayList<Map<String, Object>>();
+        }else {
+            logger.warn("message:-------------------------{}", all);
         }
-        logger.info("message:-------------------------{}", all);
         if (ListUtil.isNotEmpty(infos)) {
             Map<String, Object> map = new HashMap<String, Object>();
             map.put(TYPEKEY, Msg.INFOMESSAGESKEY);
@@ -116,7 +117,6 @@ public class MessageInterceptor implements HandlerInterceptor {
             modelAndView.addObject(Msg.SUCCESSMESSAGESKEY, succes);
             modelAndView.addObject(Msg.VALIDMESSAGESKEY, valids);
         }
-
     }
 
     @Override

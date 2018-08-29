@@ -57,6 +57,12 @@ public class Conditions implements Serializable {
         this.groupType = AND;
     }
 
+    public Conditions(String name, MatchType matchType) {
+        this.property = name;
+        this.conditionType = matchType.toString();
+        this.groupType = AND;
+    }
+
     public static Conditions where(String name, Object value) {
         return new Conditions(name, value);
     }
@@ -178,5 +184,13 @@ public class Conditions implements Serializable {
 
     public Conditions eq(String name, Object value) {
         return new Conditions(name, value);
+    }
+
+    public Conditions isnull(String name) {
+        return new Conditions(name, MatchType.ISN);
+    }
+
+    public Conditions notnull(String name) {
+        return new Conditions(name, MatchType.INN);
     }
 }

@@ -153,6 +153,7 @@ public class SensitiveWordInit {
                 while ((txt = bufferedReader.readLine()) != null) { //读取文件，将文件内容放入到set中
                     set.add(txt);
                 }
+                bufferedReader.close();
             } else { //不存在抛出异常信息
                 throw new Exception("敏感词库文件不存在");
             }

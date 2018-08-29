@@ -586,7 +586,7 @@ public class ExcelUtil {
         field.setAccessible(true);
         if (fieldValue != null) {
             try {
-                Object convertValue = TypeConverterManager.convertType(fieldValue, field.getType());
+                Object convertValue = TypeConverterManager.get().convertType(fieldValue, field.getType());
                 field.set(bean, convertValue);
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 logger.warn(e.getMessage());

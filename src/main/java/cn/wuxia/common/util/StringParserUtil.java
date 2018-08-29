@@ -1,6 +1,7 @@
 package cn.wuxia.common.util;
 
-import com.google.common.collect.Maps;
+import java.util.Map;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.expression.ExpressionParser;
@@ -8,9 +9,11 @@ import org.springframework.expression.common.TemplateParserContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
-import jodd.bean.BeanTemplateParser;
+import com.google.common.collect.Maps;
 
-import java.util.Map;
+import jodd.bean.BeanTemplateParser;
+import jodd.template.ContextTemplateParser;
+import jodd.template.MapTemplateParser;
 
 public class StringParserUtil {
 
@@ -26,8 +29,13 @@ public class StringParserUtil {
     public static String simpleParse(String template, Object bean) {
         if (StringUtils.isBlank(template) || bean == null)
             return template;
-        BeanTemplateParser btp = new BeanTemplateParser();
-        return btp.parse(template, bean);
+        if (bean instanceof Map) {
+            ContextTemplateParser btp = new MapTemplateParser().of((Map) bean);
+            return btp.parse(template);
+        } else {
+            ContextTemplateParser btp = new BeanTemplateParser().of(bean);
+            return btp.parse(template);
+        }
     }
 
     public static String simpleParse(String template, Object[] beans) {
@@ -53,7 +61,7 @@ public class StringParserUtil {
             return template;
         ExpressionParser parser = new SpelExpressionParser();
         //设置上下文
-//        StandardEvaluationContext context = new StandardEvaluationContext(bean);
+        //        StandardEvaluationContext context = new StandardEvaluationContext(bean);
         //设置变量
         //context.setVariable("变量名", "变量值");
         return parser.parseExpression(template, new TemplateParserContext()).getValue(bean, String.class);
@@ -94,22 +102,32 @@ public class StringParserUtil {
         m.put("a", 10);
         m.put("b", "hlya");
         m.put("c", "仲文");
-
         m.put("d", new Testtext("我是名字", "我是值"));
+        m.put("e", 1.25);
         String temp = "aafsaf 中文 #{[a]} , #{[d].name}  new Date()  ${b}   ${d.value}";
         System.out.println(spelParse(temp, m));
         System.out.println(simpleParse(temp, m));
-        System.out.println(spelParse("fsdaljflsakfjl#{name}, flasjfl#{value.name}  fasdfas#{value.value[c]}", new Testtext("我是名字", new Testtext2("我是名字2", m))));
+        System.out.println(
+                spelParse("fsdaljflsakfjl#{name}, flasjfl#{value.name}  fasdfas#{value.value[c]}", new Testtext("我是名字", new Testtext2("我是名字2", m))));
         ExpressionParser parser = new SpelExpressionParser();
         String t2 = "T(cn.wuxia.common.util.DateUtil).format(new java.util.Date(),'yyyy-MM-dd')";
         System.out.println(parser.parseExpression(t2).getValue(String.class));
 
-
         System.out.println(simpleParse("sdlfjaslkfjlsadkfjadls;f", m));
+
+        System.out.println(spelParse("abc: #{[a]*[e]*100}", m));
+        Testtext testtext = new Testtext("score", 50);
+        System.out.println(spelParse("总分是：#{value*1.25}", testtext));
+
+        m.put("context.mobile", 123123);
+        //System.out.println(spelParse("flsdkajfl#{[context.mobile]}", m));
+        System.out.println(simpleParse("flsdkajfl${context.mobile}", m));
+
     }
 
-    static class Testtext{
+    static class Testtext {
         String name;
+
         Object value;
 
         public Testtext(String name, Object value) {
@@ -134,8 +152,9 @@ public class StringParserUtil {
         }
     }
 
-    static class Testtext2{
+    static class Testtext2 {
         String name;
+
         Object value;
 
         public Testtext2(String name, Object value) {

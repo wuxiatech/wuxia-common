@@ -109,6 +109,7 @@ public class EncodeUtils {
      * @return
      * @description :Html escape
      */
+    @Deprecated
     public static String htmlEscape(String html) {
         return StringEscapeUtils.escapeHtml4(html);
     }
@@ -118,7 +119,7 @@ public class EncodeUtils {
      * @return
      * @description :html Unescape
      */
-    public static String htmlUnescape(String htmlEscaped) {
+    public static String xssEscape(String htmlEscaped) {
         String value = StringEscapeUtils.unescapeHtml4(htmlEscaped);
         value = value.replaceAll("eval\\((.*)\\)", "");
         value = value.replaceAll("[\\\"\\\'][\\s]*javascript:(.*)[\\\"\\\']", "\"j*\"s*");
@@ -132,6 +133,7 @@ public class EncodeUtils {
      * @return
      * @description :xml Escape
      */
+    @Deprecated
     public static String xmlEscape(String xml) {
         return StringEscapeUtils.escapeXml10(xml);
     }
@@ -141,6 +143,7 @@ public class EncodeUtils {
      * @return
      * @description : xml Unescape
      */
+    @Deprecated
     public static String xmlUnescape(String xmlEscaped) {
         return StringEscapeUtils.unescapeXml(xmlEscaped);
     }

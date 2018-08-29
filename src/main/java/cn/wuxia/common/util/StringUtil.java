@@ -774,6 +774,7 @@ public class StringUtil extends StringUtils {
 
         System.out.println("C180517222018051819001930".length());
         Assert.isTrue("C180517222018051819001930".length() < 32, "订单号为空或长度超过32");
+        System.out.println(substringBetween("http://gzzl.followup.doctorm.cn/form/wenjuan/setting?formId=tRCRYbBXSama-IGcg9-1Wg&formVersion=1", "//", "/"));
     }
 
     public static String parseValue(Object valueObj) {

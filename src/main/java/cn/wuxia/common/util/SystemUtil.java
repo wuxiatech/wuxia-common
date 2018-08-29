@@ -58,6 +58,18 @@ public class SystemUtil extends SystemUtils {
     }
 
     /**
+     * 获得内网IP
+     * @return 内网IP
+     */
+    public static String getIntranetIp() {
+        try {
+            return InetAddress.getLocalHost().getHostAddress();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * get OS ip Address
      * @author songlin.li
      * @return
@@ -77,14 +89,15 @@ public class SystemUtil extends SystemUtils {
             Enumeration<InetAddress> addresses = netInterface.getInetAddresses();
             while (addresses.hasMoreElements()) {
                 ip = (InetAddress) addresses.nextElement();
-                if (ip != null && ip instanceof Inet4Address && ip.getHostAddress().indexOf(".") != -1 && !ip.getHostAddress().equals(defaultIp)) {
+                if (ip != null && ip instanceof Inet4Address && ip.getHostAddress().indexOf(".") != -1 && !ip.getHostAddress().equals(defaultIp)
+                        && !ip.getHostAddress().equals(getIntranetIp())) {
                     resultIp.add(ip.getHostAddress());
                 }
             }
         }
         if (ListUtil.isNotEmpty(resultIp))
             return StringUtil.join(resultIp, " ");
-        return defaultIp;
+        return getIntranetIp();
     }
 
     public static void main(String args[]) {

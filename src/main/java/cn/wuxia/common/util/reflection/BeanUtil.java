@@ -233,7 +233,7 @@ public class BeanUtil extends BeanUtils {
                         }
                     } catch (Exception e) {
                         logger.warn("泛型类型为<{}>", genericName);
-                        value = TypeConverterManager.convertType(value, propertyType);
+                        value = TypeConverterManager.get().convertType(value, propertyType);
                     }
                 } else if (Map.class.isAssignableFrom(propertyType)) {
                     // 如果还是一个Map，则尝试将map复制到obj的对象中
@@ -274,7 +274,7 @@ public class BeanUtil extends BeanUtils {
                     value = mapToBean((Map) value, propertyType);
                 } else {
                     //                    value = ConvertUtil.convert(value, propertyType);
-                    value = TypeConverterManager.convertType(value, propertyType);
+                    value = TypeConverterManager.get().convertType(value, propertyType);
                 }
                 if (value == null)
                     continue;

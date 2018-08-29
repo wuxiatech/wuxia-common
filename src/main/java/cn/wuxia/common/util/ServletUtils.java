@@ -1,19 +1,24 @@
 package cn.wuxia.common.util;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
+
+import eu.bitwalker.useragentutils.Browser;
+import eu.bitwalker.useragentutils.OperatingSystem;
+import eu.bitwalker.useragentutils.UserAgent;
 
 /**
  * Http and Servlet utility class.
@@ -41,7 +46,6 @@ public class ServletUtils {
 
     // -- common value defined --//
     public static final long ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
-
 
     /**
      * @param response
@@ -152,7 +156,6 @@ public class ServletUtils {
         }
     }
 
-
     public static Map<String, Object> getParametersMap(final HttpServletRequest req) {
         Map<String, Object> params = new HashMap<>();
         Enumeration<String> emu = req.getParameterNames();
@@ -219,7 +222,6 @@ public class ServletUtils {
         }
         return Collections.unmodifiableMap(params);
     }
-
 
     /**
      * Convenience method for deleting a cookie by name
@@ -350,7 +352,7 @@ public class ServletUtils {
                 if (map.containsKey(p[0])) {
                     Object v = map.get(p[0]);
                     if (v instanceof String) {
-                        String[] v2 = {v.toString(), p[1]};
+                        String[] v2 = { v.toString(), p[1] };
                         map.put(p[0], v2);
                     } else if (v instanceof String[]) {
                         String[] v2 = (String[]) v;
@@ -440,11 +442,16 @@ public class ServletUtils {
         fileUtil.close();
         logger.debug("destUrl：[" + requestUrl + "]， save to ：[" + savePath + fileName + "]");
     }
+    //获取浏览器信息
+    public static UserAgent getUserAgent(final HttpServletRequest request) {
+        //转成UserAgent对象
+        return UserAgent.parseUserAgentString(request.getHeader("User-Agent"));
+    }
 
     public static void main(String[] args) {
         Map<String, Object> m = new HashMap<>();
         Map<String, String[]> m2 = new HashMap<>();
-        m2.put("abc", new String[]{"a", "b"});
+        m2.put("abc", new String[] { "a", "b" });
         m.putAll(m2);
         System.out.println(getUrlParamsByMap(m));
 
@@ -454,5 +461,27 @@ public class ServletUtils {
         a = "http://afsfsdflas.com/fasfa?abc=a&abc=b?fafsadf";
         Map m4 = getUrlParams(a);
         System.out.println(m4.get("abc"));
+
+        String ua ="Mozilla/5.0 &#40;iPhone; CPU iPhone OS 11_4 like Mac OS X&#41; AppleWebKit/605.1.15 &#40;KHTML, like Gecko&#41; Mobile/15F79 MicroMessenger/6.7.0 NetType/WIFI Language/zh_CN";
+        UserAgent userAgent = UserAgent.parseUserAgentString(
+                ua);
+
+        //获取浏览器信息
+        Browser browser = userAgent.getBrowser();
+        //获取系统信息
+        OperatingSystem os = userAgent.getOperatingSystem();
+
+        //系统名称
+        String system = os.getName();
+        System.out.println(system);
+        System.out.println(os.getDeviceType().getName());
+        //浏览器名称
+        String browserName = browser.getName();
+        System.out.println(browserName);
+
+
+        System.out.println(BrowserUtils.getWeiXinVersion(ua));
+        System.out.println(BrowserUtils.getNetType(ua));
+        System.out.println(BrowserUtils.getLanguage(ua));
     }
 }

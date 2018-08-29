@@ -1,12 +1,12 @@
 package cn.wuxia.common.exception;
 
-import cn.wuxia.common.spring.SpringContextHolder;
-import cn.wuxia.common.spring.support.MessageSourceHandler;
-
 import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import cn.wuxia.common.spring.SpringContextHolder;
+import cn.wuxia.common.spring.support.MessageSourceHandler;
 
 /**
  * Service Exception. business error message, not rollback
@@ -30,14 +30,14 @@ public class ServiceException extends RuntimeException {
 
     public ServiceException(String message, String... args) {
         super(message);
-        logger.error(getMessage());
         this.value = args;
+        logger.error(getI18nMessage());
     }
 
     public ServiceException(String message, Throwable cause, String... args) {
         super(message, cause);
-        logger.error(getMessage(), cause);
         this.value = args;
+        logger.error(getI18nMessage(), cause);
     }
 
     public String[] getValue() {
@@ -46,6 +46,11 @@ public class ServiceException extends RuntimeException {
 
     public void setValue(String[] value) {
         this.value = value;
+    }
+
+    @Override
+    public String getMessage() {
+        return getI18nMessage();
     }
 
     /**
@@ -75,6 +80,7 @@ public class ServiceException extends RuntimeException {
         }
         return super.getMessage();
     }
+
     /**
      * 返回系统语言
      * <pre>
