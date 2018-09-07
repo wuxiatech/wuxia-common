@@ -2,6 +2,12 @@ package cn.wuxia.common.hibernate.query;
 
 import java.io.Serializable;
 
+import cn.wuxia.common.util.ClassLoaderUtil;
+import cn.wuxia.common.util.DateUtil;
+import cn.wuxia.common.util.NumberUtil;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jodd.typeconverter.TypeConverterManager;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import cn.wuxia.common.util.StringUtil;
@@ -34,6 +40,8 @@ public class Conditions implements Serializable {
     private Object anotherValue;
 
     private String groupType;
+
+    private String propertyType;
 
     /**
      * default
@@ -88,7 +96,7 @@ public class Conditions implements Serializable {
      * @return
      */
     public Object getValue() {
-        return value;
+        return getPropertyValue();
     }
 
     /**
@@ -120,7 +128,7 @@ public class Conditions implements Serializable {
     }
 
     public Object getAnotherValue() {
-        return anotherValue;
+        return getPropertyValue(anotherValue);
     }
 
     public void setAnotherValue(Object anotherValue) {
@@ -166,6 +174,49 @@ public class Conditions implements Serializable {
         groupType = StringUtil.startsWith(groupType, " ") ? groupType : " " + groupType;
         groupType = StringUtil.endsWith(groupType, " ") ? groupType : groupType + " ";
         this.groupType = groupType;
+    }
+
+    @JsonIgnore
+    public Class getPropertyTypeClass() {
+        return ClassLoaderUtil.loadClass(this.propertyType);
+    }
+
+    public Object getPropertyValue(Object value) {
+        if (StringUtil.equals(propertyType, "java.lang.String") || StringUtil.equalsIgnoreCase(propertyType, "String")) {
+            return value.toString();
+        } else if (StringUtil.equals(propertyType, "java.util.Date") || StringUtil.equalsIgnoreCase(propertyType, "Date")) {
+            return DateUtil.stringToDate(value.toString());
+        } else if (StringUtil.equals(propertyType, "java.lang.Float") || StringUtil.equalsIgnoreCase(propertyType, "Float")) {
+            return value.toString();
+        } else if (StringUtil.equals(propertyType, "java.lang.Integer") || StringUtil.equalsIgnoreCase(propertyType, "Integer")) {
+            return NumberUtil.toInteger(value);
+        } else if (StringUtil.equals(propertyType, "java.lang.Double") || StringUtil.equalsIgnoreCase(propertyType, "Double")) {
+            return NumberUtil.toDouble(value);
+        } else if (StringUtil.equals(propertyType, "java.lang.Short") || StringUtil.equalsIgnoreCase(propertyType, "Short")) {
+            return NumberUtil.toShort(value.toString());
+        } else if (StringUtil.equals(propertyType, "java.lang.Long") || StringUtil.equalsIgnoreCase(propertyType, "Long")) {
+            return NumberUtil.toLong(value);
+        } else if (StringUtil.equalsIgnoreCase(propertyType, "java.lang.Enum") || StringUtil.equalsIgnoreCase(propertyType, "Enum")) {
+
+        } else {
+            try {
+                return TypeConverterManager.get().convertType(value, getPropertyTypeClass());
+            } catch (Exception e) {
+            }
+        }
+        return value;
+    }
+
+    public Object getPropertyValue() {
+        return getPropertyValue(value);
+    }
+
+    public String getPropertyType() {
+        return propertyType;
+    }
+
+    public void setPropertyType(String propertyType) {
+        this.propertyType = propertyType;
     }
 
     /**

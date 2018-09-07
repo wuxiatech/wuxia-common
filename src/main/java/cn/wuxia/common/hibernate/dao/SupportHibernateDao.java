@@ -917,9 +917,9 @@ public class SupportHibernateDao<T, PK extends Serializable> extends SimpleHiber
             }
             int groupByIndexof = StringUtil.lastIndexOfIgnoreCase(sql, "group by");
             int orderByIndexof = StringUtil.lastIndexOfIgnoreCase(sql, "order by");
-            if (groupByIndexof > 0) {
+            if (groupByIndexof > 0 && whereIndexof < groupByIndexof) {
                 sql = StringUtil.insert(sql, conditionSql, groupByIndexof);
-            } else if (orderByIndexof > 0) {
+            } else if (orderByIndexof > 0 && orderByIndexof > whereIndexof) {
                 sql = StringUtil.insert(sql, conditionSql, orderByIndexof);
             } else {
                 sql += conditionSql;

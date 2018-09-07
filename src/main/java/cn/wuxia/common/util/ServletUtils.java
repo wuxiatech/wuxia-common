@@ -303,6 +303,9 @@ public class ServletUtils {
      * 获得远程IP,经过代理后也可获取真实访问者ip
      */
     public static String getRemoteIP(HttpServletRequest request) {
+        if(request == null){
+            return null;
+        }
         String ip = request.getHeader("x-forwarded-for");
         if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getHeader("Proxy-Client-IP");
