@@ -5,12 +5,13 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Map;
 
+import cn.wuxia.common.exception.ValidateException;
 import cn.wuxia.common.util.SerializeUtils;
 import com.baidu.bjf.remoting.protobuf.Codec;
 import com.baidu.bjf.remoting.protobuf.ProtobufProxy;
 import com.google.common.collect.Lists;
 
-import cn.wuxia.common.hibernate.query.Pages;
+import cn.wuxia.common.orm.query.Pages;
 import cn.wuxia.common.util.DateUtil;
 import com.google.common.collect.Maps;
 import io.protostuff.*;
@@ -40,6 +41,11 @@ public class SerializeTest {
         Pages page = SerializeUtils.deSerialize(seria, Pages.class);
         System.out.println(page.getResult().get(0));
 
+        try {
+            testSerialize.validate();
+        } catch (ValidateException e) {
+            e.printStackTrace();
+        }
 //        Codec<TestSerializeBean> simpleTypeCodec = ProtobufProxy.create(TestSerializeBean.class);
 //
 //        try {

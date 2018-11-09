@@ -1,16 +1,19 @@
 package cn.wuxia.common.test;
 
+import cn.wuxia.common.entity.ValidationEntity;
 import com.baidu.bjf.remoting.protobuf.annotation.ProtobufClass;
 
+import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 @ProtobufClass
-public class TestSerializeBean {
+public class TestSerializeBean extends ValidationEntity {
     Timestamp timestamp;
 
+    @NotNull
     String a;
 
     Date date;

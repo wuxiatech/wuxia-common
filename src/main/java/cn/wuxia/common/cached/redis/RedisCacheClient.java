@@ -1,30 +1,34 @@
 /*
-* Created on :2016年4月13日
-* Author     :songlin
-* Change History
-* Version       Date         Author           Reason
-* <Ver.No>     <date>        <who modify>       <reason>
-* Copyright 2014-2020 武侠科技 All right reserved.
-*/
+ * Created on :2016年4月13日
+ * Author     :songlin
+ * Change History
+ * Version       Date         Author           Reason
+ * <Ver.No>     <date>        <who modify>       <reason>
+ * Copyright 2014-2020 武侠科技 All right reserved.
+ */
 package cn.wuxia.common.cached.redis;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.wuxia.common.cached.CacheClient;
-import cn.wuxia.common.cached.memcached.XMemcachedClient;
 import cn.wuxia.common.util.StringUtil;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPool;
 
+/**
+ * 简单的操作，复杂的操作需要直接操作jedis
+ * songlin.li
+ */
 public class RedisCacheClient implements CacheClient {
-    private static Logger logger = LoggerFactory.getLogger(XMemcachedClient.class);
+    private static Logger logger = LoggerFactory.getLogger(RedisCacheClient.class);
 
     private ShardedJedis jedis;
 
@@ -46,16 +50,30 @@ public class RedisCacheClient implements CacheClient {
         jedis = sjp.getResource();
     }
 
+    public ShardedJedis getJedis() {
+        return jedis;
+    }
+
+    public void setJedis(ShardedJedis jedis) {
+        this.jedis = jedis;
+    }
+
+    public int getExpiredTime() {
+        return expiredTime;
+    }
+
+    public void setExpiredTime(int expiredTime) {
+        this.expiredTime = expiredTime;
+    }
+
     @Override
     public boolean containKey(String key) {
-        // TODO Auto-generated method stub
-        return false;
+        return BooleanUtils.toBooleanDefaultIfNull(jedis.exists(key), false);
     }
 
     @Override
     public void add(String key, Object value, int expiredTime) {
         set(key, value, expiredTime);
-
     }
 
     @Override
@@ -70,7 +88,7 @@ public class RedisCacheClient implements CacheClient {
             return;
         final byte[] keyf = key.getBytes();
         final byte[] valuef = new ObjectsTranscoder().serialize(value);
-        jedis.set(keyf, valuef);
+        jedis.setex(keyf, expiredTime, valuef);
     }
 
     @Override
@@ -89,12 +107,12 @@ public class RedisCacheClient implements CacheClient {
 
     @Override
     public void replace(String key, Object value, int expiredTime) {
-        // TODO Auto-generated method stub
+        set(key, value, expiredTime);
     }
 
     @Override
     public void replace(String key, Object value) {
-        // TODO Auto-generated method stub
+        set(key, value);
     }
 
     @Override
@@ -104,15 +122,37 @@ public class RedisCacheClient implements CacheClient {
     }
 
     @Override
-    public long incr(String key, int by, long defaultValue) {
-        // TODO Auto-generated method stub
-        return 0;
+    public long incr(String key) {
+        return jedis.incr(key);
     }
 
     @Override
-    public long decr(String key, int by, long defaultValue) {
-        // TODO Auto-generated method stub
-        return 0;
+    public long incr(String key, long by) {
+        return jedis.incrBy(key, by);
+    }
+
+    @Override
+    public long incr(String key, long by, long defaultValue) {
+        Long r = jedis.incrBy(key, by);
+        if (r == null) return defaultValue;
+        return r;
+    }
+
+    @Override
+    public long decr(String key) {
+        return jedis.decr(key);
+    }
+
+    @Override
+    public long decr(String key, long by) {
+        return jedis.incrBy(key, by);
+    }
+
+    @Override
+    public long decr(String key, long by, long defaultValue) {
+        Long r = jedis.decrBy(key, by);
+        if (r == null) return defaultValue;
+        return r;
     }
 
     @Override
@@ -123,6 +163,7 @@ public class RedisCacheClient implements CacheClient {
 
     @Override
     public void flushAll() {
+
     }
 
     @Override
@@ -134,43 +175,39 @@ public class RedisCacheClient implements CacheClient {
     public void shutdown() {
         jedis.close();
         jedis.disconnect();
-
     }
 
     @Override
     public void add(String key, Object value, int expiredTime, String namespace) {
-        // TODO Auto-generated method stub
-
+        set(key, value, expiredTime);
     }
 
     @Override
     public void set(String key, Object value, int expiredTime, String namespace) {
-        // TODO Auto-generated method stub
+        set(key, value, expiredTime);
 
     }
 
     @Override
     public void replace(String key, Object value, int expiredTime, String namespace) {
-        // TODO Auto-generated method stub
+        set(key, value, expiredTime);
 
     }
 
     @Override
     public <T> T get(String key, String namespace) {
-        // TODO Auto-generated method stub
-        return null;
+        return get(key);
     }
 
     @Override
     public void delete(String key, String namespace) {
-        // TODO Auto-generated method stub
-
+        delete(key);
     }
 
     @Override
     public void flush(String namespace) {
         // TODO Auto-generated method stub
-
+        //jedis.fl
     }
 
 }

@@ -21,9 +21,9 @@ import net.rubyeye.xmemcached.XMemcachedClientBuilder;
 import net.rubyeye.xmemcached.utils.AddrUtil;
 
 /**
- * 
  * [ticket id]
- * Description of the class 
+ * Description of the class
+ *
  * @author songlin.li
  * @ Version : V<Ver.No> <2012年8月30日>
  */
@@ -64,10 +64,10 @@ public class XMemcachedClient implements CacheClient {
 
     /**
      * 添加到缓存，不允许重复key，如重复则报错
-     * 
+     *
      * @param key
      * @param value
-     * @param expiredTime  缓存失效时间单位秒
+     * @param expiredTime 缓存失效时间单位秒
      * @return
      */
     public void add(String key, Object value, int expiredTime) {
@@ -102,7 +102,7 @@ public class XMemcachedClient implements CacheClient {
 
     /**
      * 增加一个缓存，如key存在则替换原来的值
-     * 
+     *
      * @param key
      * @param value
      * @param expiredTime 缓存失效时间单位秒
@@ -141,6 +141,7 @@ public class XMemcachedClient implements CacheClient {
 
     /**
      * 替换一个缓存，如果缓存key存在则替换并返回true，如果不存在则不替换并返回false
+     *
      * @param key
      * @param value
      * @param expiredTime
@@ -201,6 +202,7 @@ public class XMemcachedClient implements CacheClient {
         }
     }
 
+
     /**
      * Get with the Check and Set methods, the result of the conversion type and
      * shielding exception.
@@ -252,41 +254,72 @@ public class XMemcachedClient implements CacheClient {
         }
     }
 
-    /**
-     * Incr method.
-     */
-    public long incr(String key, int by, long defaultValue) {
-        try {
-            MemcachedUtils.validateKey(key);
-            return memcachedClient.incr(key, by, defaultValue);
-        } catch (TimeoutException e) {
-            logger.warn("incr from memcached server fail,key is" + key, e);
-            return -1;
-        } catch (InterruptedException e) {
-            logger.warn("incr from memcached server fail,key is" + key, e);
-            return -1;
-        } catch (Exception e) {
-            logger.warn("incr from memcached server fail,key is" + key, e);
-            return -1;
-        }
+    @Override
+    public long incr(String key) {
+        return incr(key, 1, 0);
+    }
+
+    @Override
+    public long incr(String key, long by) {
+        return incr(key, by, 0);
     }
 
     /**
-     * Decr method.
+     * 自增长
      */
-    public long decr(String key, int by, long defaultValue) {
+    @Override
+    public long incr(String key, long by, long defaultValue) {
         try {
             MemcachedUtils.validateKey(key);
-            return memcachedClient.decr(key, by, defaultValue);
+            Object v = memcachedClient.get(key);
+            if (v == null) {
+                memcachedClient.add(key, expiredTime, "" + defaultValue);
+                return defaultValue;
+            }
+            return memcachedClient.incr(key, by);
         } catch (TimeoutException e) {
-            logger.warn("Decr from memcached server fail,key is" + key, e);
-            return -1;
+            logger.warn("incr from memcached server fail,key is " + key, e);
+            return defaultValue;
         } catch (InterruptedException e) {
-            logger.warn("Decr from memcached server fail,key is" + key, e);
-            return -1;
+            logger.warn("incr from memcached server fail,key is " + key, e);
+            return defaultValue;
         } catch (Exception e) {
-            logger.warn("Decr from memcached server fail,key is" + key, e);
-            return -1;
+            logger.warn("incr from memcached server fail,key is " + key, e);
+            return defaultValue;
+        }
+    }
+
+    @Override
+    public long decr(String key) {
+        return decr(key, 1, 0);
+    }
+
+    @Override
+    public long decr(String key, long by) {
+        return decr(key, by, 0);
+    }
+
+    /**
+     * 递减
+     */
+    public long decr(String key, long by, long defaultValue) {
+        try {
+            MemcachedUtils.validateKey(key);
+            Object v = memcachedClient.get(key);
+            if (v == null) {
+                memcachedClient.add(key, expiredTime, "" + defaultValue);
+                return defaultValue;
+            }
+            return memcachedClient.decr(key, by);
+        } catch (TimeoutException e) {
+            logger.warn("Decr from memcached server fail,key is " + key, e);
+            return defaultValue;
+        } catch (InterruptedException e) {
+            logger.warn("Decr from memcached server fail,key is " + key, e);
+            return defaultValue;
+        } catch (Exception e) {
+            logger.warn("Decr from memcached server fail,key is " + key, e);
+            return defaultValue;
         }
     }
 
@@ -350,7 +383,7 @@ public class XMemcachedClient implements CacheClient {
     }
 
     /**
-     * @param MemcachedClient
+     * @param memcachedClient
      */
     public void setMemcachedClient(net.rubyeye.xmemcached.MemcachedClient memcachedClient) {
         this.memcachedClient = memcachedClient;

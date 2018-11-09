@@ -49,6 +49,10 @@ public class CustomSpringMvcHandlerExceptionResolver implements HandlerException
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.addObject("message", messageVal);
         if (ex instanceof AppSecurityException) {
+            response.setStatus(401);
+            modelAndView.setViewName("error/401");
+        }
+        else if (ex instanceof AppSecurityException) {
             response.setStatus(403);
             modelAndView.setViewName("error/403");
         } else if (ex instanceof AppObjectNotFoundException) {

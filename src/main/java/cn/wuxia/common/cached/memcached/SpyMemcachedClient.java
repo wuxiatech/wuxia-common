@@ -112,6 +112,36 @@ public class SpyMemcachedClient implements CacheClient, DisposableBean {
         }
     }
 
+    @Override
+    public long incr(String key) {
+        return 0;
+    }
+
+    @Override
+    public long incr(String key, long by) {
+        return 0;
+    }
+
+    @Override
+    public long incr(String key, long by, long defaultValue) {
+        return 0;
+    }
+
+    @Override
+    public long decr(String key) {
+        return 0;
+    }
+
+    @Override
+    public long decr(String key, long by) {
+        return 0;
+    }
+
+    @Override
+    public long decr(String key, long by, long defaultValue) {
+        return 0;
+    }
+
     /**
      * Secure Delete method, updateTimeout seconds to return results, and false otherwise cancel.
      */
@@ -131,6 +161,7 @@ public class SpyMemcachedClient implements CacheClient, DisposableBean {
     public long incr(String key, int by, long defaultValue) {
         try {
             MemcachedUtils.validateKey(key);
+           return memcachedClient.incr(key, by, defaultValue);
         } catch (Exception e) {
             logger.warn(e.getMessage());
         }

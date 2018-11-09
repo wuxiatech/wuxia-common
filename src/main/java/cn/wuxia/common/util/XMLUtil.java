@@ -1,21 +1,5 @@
 package cn.wuxia.common.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -23,18 +7,26 @@ import org.dom4j.io.SAXReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Maps;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import java.io.*;
+import java.util.*;
 
+/**
+ * @see {@link cn.wuxia.common.xml.Dom4jXmlUtil} {@link cn.wuxia.common.xml.XStreamXmlUtil}
+ */
 public class XMLUtil {
     private static Logger logger = LoggerFactory.getLogger(XMLUtil.class);
 
     /**
      * get xml tag's text by tagName
-     * 
-     * @author songlin.li
+     *
      * @param inputStr
      * @param tagName
      * @return
+     * @author songlin.li
      */
     public static String getTagText(String inputStr) {
         if (StringUtil.isBlank(inputStr)) {
@@ -57,11 +49,11 @@ public class XMLUtil {
 
     /**
      * get children tag's text
-     * 
-     * @author songlin.li
+     *
      * @param inputStr
      * @param tagName
      * @return
+     * @author songlin.li
      */
     public static String getChildTagText(String inputStr, String tagName) {
         if (StringUtil.isBlank(inputStr)) {
@@ -84,11 +76,11 @@ public class XMLUtil {
 
     /**
      * Description of the method
-     * 
-     * @author songlin.li
+     *
      * @param inputStr
      * @param tagName
      * @return
+     * @author songlin.li
      */
     public static String getChildTagXML(String inputStr, String tagName) {
         if (StringUtil.isBlank(inputStr)) {
@@ -111,11 +103,11 @@ public class XMLUtil {
 
     /**
      * path is /WEB-INF/classes + fileName
-     * 
-     * @author songlin.li
+     *
      * @param fileName fileName
-     * @param tagName second level tagName
+     * @param tagName  second level tagName
      * @return
+     * @author songlin.li
      */
     public static Map<String, String> getXML(String fileName, String tagName) {
         Map<String, String> map = new HashMap<String, String>();
@@ -140,11 +132,11 @@ public class XMLUtil {
 
     /**
      * Description of the method
-     * 
-     * @author songlin.li
+     *
      * @param inputStr
      * @param tagName
      * @return
+     * @author songlin.li
      */
     public static List<Map<String, String>> getTagNameMap(String inputStr, String tagName) {
         StringReader read = new StringReader(inputStr);
@@ -192,124 +184,29 @@ public class XMLUtil {
         return "";
     }
 
-    /**
-     * 解析xml,返回第一级元素键值对。如果第一级元素有子节点，则此节点的值是子节点的xml数据。
-     * @param strxml
-     * @return
-     * @throws org.jdom2.JDOMException
-     * @throws IOException
-     */
-    public static Map<String, String> doXMLParse(String strxml) throws org.jdom2.JDOMException, IOException {
-        strxml = strxml.replaceFirst("encoding=\".*\"", "encoding=\"UTF-8\"");
-
-        if (null == strxml || "".equals(strxml)) {
-            return null;
-        }
-
-        Map<String, String> m = Maps.newHashMap();
-
-        InputStream in = new ByteArrayInputStream(strxml.getBytes("UTF-8"));
-        org.jdom2.input.SAXBuilder builder = new org.jdom2.input.SAXBuilder();
-        org.jdom2.Document doc = builder.build(in);
-        org.jdom2.Element root = doc.getRootElement();
-        List<org.jdom2.Element> list = root.getChildren();
-        Iterator<org.jdom2.Element> it = list.iterator();
-        while (it.hasNext()) {
-            org.jdom2.Element e = (org.jdom2.Element) it.next();
-            String k = e.getName();
-            String v = "";
-            List<org.jdom2.Element> children = e.getChildren();
-            if (children.isEmpty()) {
-                v = e.getTextNormalize();
-            } else {
-                v = XMLUtil.getChildrenText(children);
-            }
-
-            m.put(k, v);
-        }
-
-        //关闭流
-        in.close();
-
-        return m;
-    }
-
-    /**
-     * 获取子结点的xml
-     * @param children
-     * @return String
-     */
-    public static String getChildrenText(List<org.jdom2.Element> children) {
-        StringBuffer sb = new StringBuffer();
-        if (!children.isEmpty()) {
-            Iterator<org.jdom2.Element> it = children.iterator();
-            while (it.hasNext()) {
-                org.jdom2.Element e = (org.jdom2.Element) it.next();
-                String name = e.getName();
-                String value = e.getTextNormalize();
-                List<org.jdom2.Element> list = e.getChildren();
-                sb.append("<" + name + ">");
-                if (!list.isEmpty()) {
-                    sb.append(XMLUtil.getChildrenText(list));
-                }
-                sb.append(value);
-                sb.append("</" + name + ">");
-            }
-        }
-
-        return sb.toString();
-    }
-
-    /**
-     * 获取xml编码字符集
-     * @param strxml
-     * @return
-     * @throws IOException 
-     * @throws org.jdom2.JDOMException 
-     */
-    public static String getXMLEncoding(String strxml) throws org.jdom2.JDOMException, IOException {
-        InputStream in = String2Inputstream(strxml);
-        org.jdom2.input.SAXBuilder builder = new org.jdom2.input.SAXBuilder();
-        org.jdom2.Document doc = builder.build(in);
-        in.close();
-        return (String) doc.getProperty("encoding");
-    }
-
-    public static void main(String[] args) {
-        String template = XMLFileToXMLString("/template/contact.xml");
-
-        template = template.replaceFirst("<\\?.*?>", "");
-        // logger.debug(template);
-
-        // System.out.println(HTMLUtil.parseHTML(template));
-
-        // getXML("E:\\Crown\\workspace\\ServicePartner\\src\\main\\webapp\\common\\template.xml");
-        Map m = getXML("/template/contact.xml", "DataSet");
-        for (Object l : m.values()) {
-            System.out.println(getTagNameMap(l.toString(), "Contracts"));
-        }
-    }
 
     public static InputStream String2Inputstream(String str) {
         return new ByteArrayInputStream(str.getBytes());
     }
 
-    /** 
-     * JavaBean转换成xml 
-     * 默认编码UTF-8 
-     * @param obj 
-     * @param writer 
-     * @return  
+    /**
+     * JavaBean转换成xml
+     * 默认编码UTF-8
+     *
+     * @param obj
+     * @param writer
+     * @return
      */
     public static String convertToXml(Object obj) {
         return convertToXml(obj, "UTF-8");
     }
 
-    /** 
-     * JavaBean转换成xml 
-     * @param obj 
-     * @param encoding  
-     * @return  
+    /**
+     * JavaBean转换成xml
+     *
+     * @param obj
+     * @param encoding
+     * @return
      */
     public static String convertToXml(Object obj, String encoding) {
         String result = null;
@@ -329,23 +226,18 @@ public class XMLUtil {
         return result;
     }
 
-    /** 
-     * xml转换成JavaBean 
-     * @param xml 
-     * @param c 
-     * @return 
+    /**
+     * xml转换成JavaBean
+     *
+     * @param xml
+     * @param c
+     * @return
      */
     @SuppressWarnings("unchecked")
-    public static <T> T converyToJavaBean(String xml, Class<T> c) {
-        T t = null;
-        try {
-            JAXBContext context = JAXBContext.newInstance(c);
-            Unmarshaller unmarshaller = context.createUnmarshaller();
-            t = (T) unmarshaller.unmarshal(new StringReader(xml));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return t;
+    public static <T> T converyToJavaBean(String xml, Class<T> c) throws JAXBException {
+        JAXBContext context = JAXBContext.newInstance(c);
+        Unmarshaller unmarshaller = context.createUnmarshaller();
+        return (T) unmarshaller.unmarshal(new StringReader(xml));
     }
+
 }

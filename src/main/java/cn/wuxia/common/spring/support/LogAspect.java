@@ -3,6 +3,7 @@
  */
 package cn.wuxia.common.spring.support;
 
+import cn.wuxia.common.util.StringUtil;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,7 @@ public abstract class LogAspect {
 
     public Object invoke(ProceedingJoinPoint joinPoint) throws Throwable {
         String ip = "";//getIp();
-        logger.debug("$$$" + ip + " Beginning invoke method: " + joinPoint.toLongString());
+        logger.debug("$$$" + ip + " Beginning invoke method: " + joinPoint.toLongString()+" -> ({})", StringUtil.join(joinPoint.getArgs(), ","));
         long startTime = System.currentTimeMillis();
         Object result;
         try {

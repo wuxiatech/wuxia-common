@@ -54,18 +54,16 @@ public class UploadFile {
     }
 
 
-    private String upload(String key) throws FileNotFoundException {
+    private String upload(String key,  File content) throws FileNotFoundException {
         // 新建一个 Bucket
         //client.createBucket(bucketName);
 
         // 获取指定文件的输入流
-        File file = new File("/app/uploadfile/def/abc.xlsx");
-        InputStream content = new FileInputStream(file);
-        //         创建上传 Object 的 Metadata 
+        //         创建上传 Object 的 Metadata
         ObjectMetadata meta = new ObjectMetadata();
         //         必须设置 ContentLength 
-        meta.setContentLength(FileUtil.sizeOf(file));
-        meta.setContentType(new MimetypesFileTypeMap().getContentType(file));
+        meta.setContentLength(FileUtil.sizeOf(content));
+        meta.setContentType(new MimetypesFileTypeMap().getContentType(content));
         // 上传 Object.
         PutObjectResult result = client.putObject(bucketName, key, content, meta);
         // 打印 ETag

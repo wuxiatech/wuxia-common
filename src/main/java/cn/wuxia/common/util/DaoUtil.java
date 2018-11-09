@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 
 import cn.wuxia.common.spring.SpringContextHolder;
-import cn.wuxia.common.sql.SqlParser;
+import cn.wuxia.common.orm.sql.SqlParser;
 
 /**
  * Dao Tools

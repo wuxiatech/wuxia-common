@@ -502,7 +502,7 @@ public class DateUtil extends DateUtils {
      * @description : default format is yyyy-MM-dd
      * @author songlin.li
      * @param dDate
-     * @param nFormat FORMAT_1 TO FORMAT_7
+     * @param format FORMAT_1 TO FORMAT_7
      * @return
      */
     public static String dateToString(Date dDate, DateFormatter format) {
@@ -513,7 +513,7 @@ public class DateUtil extends DateUtils {
      * @description : default format is yyyy-MM-dd
      * @author songlin.li
      * @param dDate
-     * @param nFormat FORMAT_1 TO FORMAT_7
+     * @param format FORMAT_1 TO FORMAT_7
      * @return
      */
     public static String dateToString(Date dDate, String format) {
@@ -878,49 +878,7 @@ public class DateUtil extends DateUtils {
         return c.getTime();
     }
 
-    /** 
-     * Java Calender类获得指定日期加几天 
-     *  
-     * @param specifiedDay 
-     * @param d  day 
-     * @return 
-     */
-    public static String getSpecifiedDayAfter(String specified, int d) {
-        Calendar c = Calendar.getInstance();
-        Date date = null;
-        try {
-            date = new SimpleDateFormat("yy-MM-dd").parse(specified);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        c.setTime(date);
-        int day = c.get(Calendar.DATE);
-        c.set(Calendar.DATE, day + d);
-        String dayAfter = new SimpleDateFormat("yyyy-MM-dd").format(c.getTime());
-        return dayAfter;
-    }
 
-    /** 
-     * Java Calender类获得指定日期加N月 
-     *  
-     * @param specifiedDay 
-     * @return 
-     */
-    public static String getSpecifiedMonthAfter(String specified, int month) {
-        Calendar c = Calendar.getInstance();
-        Date date = null;
-        try {
-            date = new SimpleDateFormat("yyyy-MM-dd").parse(specified);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        c.setTime(date);
-        c.add(Calendar.MONTH, month);
-        //      int day = c.get(Calendar.DATE);  
-        //      c.set(Calendar.DATE, day - 1);  
-        String dayAfter = new SimpleDateFormat("yyyy-MM-dd").format(c.getTime());
-        return dayAfter;
-    }
 
     /**
      * 返回day_of_week 文字形式
@@ -1031,6 +989,27 @@ public class DateUtil extends DateUtils {
             return day + "天" + hour + "小时" + min + "分" + sec + "秒";
     }
 
+
+    public static boolean isSameHour(Date date1, Date date2) {
+        if (date1 != null && date2 != null) {
+            Calendar cal1 = Calendar.getInstance();
+            cal1.setTime(date1);
+            Calendar cal2 = Calendar.getInstance();
+            cal2.setTime(date2);
+            return isSameHour(cal1, cal2);
+        } else {
+            throw new IllegalArgumentException("The date must not be null");
+        }
+    }
+
+    public static boolean isSameHour(Calendar cal1, Calendar cal2) {
+        if (cal1 != null && cal2 != null) {
+            return cal1.get(0) == cal2.get(0) && cal1.get(1) == cal2.get(1) && cal1.get(6) == cal2.get(6) && cal1.get(Calendar.HOUR_OF_DAY) == cal2.get(Calendar.HOUR_OF_DAY);
+        } else {
+            throw new IllegalArgumentException("The date must not be null");
+        }
+    }
+
     public static void main(String[] args) {
         System.out.println(newInstanceDateBegin());
         System.out.println(DateUtil.addDays(DateUtil.addSeconds(newInstanceDateEnd(), 1), -1));
@@ -1059,5 +1038,9 @@ public class DateUtil extends DateUtils {
 
 
         System.out.println(DateUtil.getHour(begindate));
+
+        
+        System.out.println(getWeekDay(new Date()));
+        System.out.println(getWeekOfDate(DateUtil.addDays(new Date(), -1)));
     }
 }

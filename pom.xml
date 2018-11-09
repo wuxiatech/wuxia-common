@@ -5,7 +5,7 @@
     <parent>
         <groupId>cn.wuxia.parent</groupId>
         <artifactId>parent2018</artifactId>
-        <version>2.1.0</version>
+        <version>2.1.1</version>
         <!--<artifactId>parent2017</artifactId>-->
         <!--<version>1.5.3</version>-->
         <relativePath>../wuxia-parent</relativePath>
@@ -14,7 +14,7 @@
     <artifactId>wuxia-common</artifactId>
     <name>WUXIA Common</name>
     <description>WUXIA Common Project</description>
-    <version>2.1.1-SNAPSHOT</version>
+    <version>2.2.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <url>https://github.com/wuxiatech/wuxia-common</url>
     <properties>
@@ -25,40 +25,16 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
         </dependency>
-        <!-- PERSISTENCE begin -->
-        <!-- hibernate，如果使用到common.hibernate.dao包相关方法则需要引入该依赖 -->
+        <!-- https://mvnrepository.com/artifact/javax.persistence/javax.persistence-api -->
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <optional>true</optional>
+            <groupId>javax.persistence</groupId>
+            <artifactId>javax.persistence-api</artifactId>
+            <version>2.2</version>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <!-- hibernate search 如果使用到hibernate-search包相关方法则需要引入该依赖 -->
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-engine</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-orm</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <!-- spring data jpa 如果使用到common.spring.orm包相关方法则需要引入该依赖 -->
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-jpa</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <!-- spring data mongodb 如果使用到common.spring.orm包相关方法则需要引入该依赖 -->
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-mongodb</artifactId>
-            <optional>true</optional>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <scope>compile</scope>
         </dependency>
         <!-- WEB begin 如果使用到common.spring.mvc包相关方法则需要引入该依赖 -->
         <dependency>
@@ -128,6 +104,11 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
         </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.11</version>
+        </dependency>
         <!-- 如果使用httpclent则需要引入 -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -192,11 +173,6 @@
             </exclusions>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>org.jdom</groupId>
-            <artifactId>jdom2</artifactId>
-            <optional>true</optional>
-        </dependency>
         <!-- xml utils -->
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
@@ -209,6 +185,17 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
         </dependency>
+        <dependency>
+            <groupId>javax.el</groupId>
+            <artifactId>javax.el-api</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.glassfish/javax.el -->
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
 
         <!-- google java library -->
         <dependency>
@@ -269,11 +256,6 @@
         </dependency>
         <!-- redis cache begin -->
         <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-redis</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
             <optional>true</optional>
@@ -324,9 +306,9 @@
             </dependency> -->
         <!-- image process start 如果使用到common.util.ImageUtil包相关方法则需要引入该依赖 -->
         <dependency>
-            <groupId>com.jhlibs</groupId>
-            <artifactId>Filters</artifactId>
-            <version>1.0</version>
+            <groupId>com.jhlabs</groupId>
+            <artifactId>filters</artifactId>
+            <version>2.0.235-1</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -391,10 +373,10 @@
             <optional>true</optional>
         </dependency>
         <!--<dependency>-->
-            <!--<groupId>com.aliyun</groupId>-->
-            <!--<artifactId>alicom-mns-receive-sdk</artifactId>-->
-            <!--<version>1.0.0</version>-->
-            <!--<optional>true</optional>-->
+        <!--<groupId>com.aliyun</groupId>-->
+        <!--<artifactId>alicom-mns-receive-sdk</artifactId>-->
+        <!--<version>1.0.0</version>-->
+        <!--<optional>true</optional>-->
         <!--</dependency>-->
         <!-- https://mvnrepository.com/artifact/com.alibaba/QLExpress -->
         <!-- 自定义规则引擎的扩张 -->

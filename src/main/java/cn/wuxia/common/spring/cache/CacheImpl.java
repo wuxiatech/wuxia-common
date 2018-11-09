@@ -1,45 +1,44 @@
 /*
-* Created on :31 Aug, 2015
-* Author     :songlin
-* Change History
-* Version       Date         Author           Reason
-* <Ver.No>     <date>        <who modify>       <reason>
-* Copyright 2014-2020 武侠科技 All right reserved.
-*/
-package cn.wuxia.common.cached.memcached;
+ * Created on :31 Aug, 2015
+ * Author     :songlin
+ * Change History
+ * Version       Date         Author           Reason
+ * <Ver.No>     <date>        <who modify>       <reason>
+ * Copyright 2014-2020 武侠科技 All right reserved.
+ */
+package cn.wuxia.common.spring.cache;
 
-import java.util.concurrent.Callable;
-
+import cn.wuxia.common.cached.CacheClient;
+import cn.wuxia.common.cached.memcached.MemcachedUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
 import org.springframework.cache.support.SimpleValueWrapper;
 
-import cn.wuxia.common.cached.CacheClient;
+import java.util.concurrent.Callable;
 
 /**
- * 
  * [ticket id]
- * 重写实现spring @Cacheable 支持 Memcache
+ * 重写实现spring @Cacheable 支持 Memcache, Redis等
+ *
  * @author songlin
  * @ Version : V<Ver.No> <31 Aug, 2015>
  */
-@Deprecated
-public class MemcachedCache implements Cache {
-    private static Logger logger = LoggerFactory.getLogger(MemcachedCache.class);
+public class CacheImpl implements Cache {
+    private static Logger logger = LoggerFactory.getLogger(CacheImpl.class);
 
-    private CacheClient memcachedClient;
+    private CacheClient cacheClient;
 
     private String cacheName;
 
     private int expiredTime = 0;
 
-    public CacheClient getMemcachedClient() {
-        return memcachedClient;
+    public CacheClient getCacheClient() {
+        return cacheClient;
     }
 
-    public void setMemcachedClient(CacheClient memcachedClient) {
-        this.memcachedClient = memcachedClient;
+    public void setCacheClient(CacheClient cacheClient) {
+        this.cacheClient = cacheClient;
     }
 
     @Override
@@ -49,7 +48,7 @@ public class MemcachedCache implements Cache {
 
     @Override
     public Object getNativeCache() {
-        return this.memcachedClient;
+        return this.cacheClient;
     }
 
     @Override
@@ -59,7 +58,7 @@ public class MemcachedCache implements Cache {
         }
         logger.debug("get:{}, cachename:{}", key, this.cacheName);
 
-        Object object = this.memcachedClient.get((String) key, this.cacheName);
+        Object object = this.cacheClient.get((String) key, this.cacheName);
         return (object != null ? new SimpleValueWrapper(object) : null);
     }
 
@@ -71,7 +70,7 @@ public class MemcachedCache implements Cache {
             key = key.toString().replaceAll("\\s*", "");
         }
         logger.debug("set:{}, cachename:{}", key, this.cacheName);
-        this.memcachedClient.set((String) key, value, this.expiredTime, this.cacheName);
+        this.cacheClient.set((String) key, value, this.expiredTime, this.cacheName);
     }
 
     @Override
@@ -80,12 +79,12 @@ public class MemcachedCache implements Cache {
             key = key.toString().replaceAll("\\s*", "");
         }
         logger.debug("delete:{}, cachename:{}", key, this.cacheName);
-        this.memcachedClient.delete((String) key, this.cacheName);
+        this.cacheClient.delete((String) key, this.cacheName);
     }
 
     @Override
     public void clear() {
-        this.memcachedClient.flush(this.cacheName);
+        this.cacheClient.flush(this.cacheName);
     }
 
     public String getCacheName() {

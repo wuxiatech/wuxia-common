@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @author lhl
  * @since 2011-2-24
  */
-@ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "安全性检查")
+@ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "安全性检查")
 public class AppSecurityException extends ServiceException {
     /**
      * 
