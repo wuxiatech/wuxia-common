@@ -26,6 +26,7 @@ import com.aliyun.oss.model.PutObjectResult;
 import cn.wuxia.common.util.FileUtil;
 import cn.wuxia.common.util.StringUtil;
 
+@Deprecated
 public class UploadFile {
     String accessKeyId;
 

@@ -3,9 +3,11 @@
  */
 package cn.wuxia.common.util.reflection;
 
-import java.lang.reflect.*;
-import java.util.*;
-
+import cn.wuxia.common.util.*;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import jodd.bean.BeanCopy;
+import jodd.typeconverter.TypeConverterManager;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.lang3.StringUtils;
@@ -13,12 +15,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
-import cn.wuxia.common.util.*;
-import jodd.bean.BeanCopy;
-import jodd.typeconverter.TypeConverterManager;
+import java.lang.reflect.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class BeanUtil extends BeanUtils {
     private static Logger logger = LoggerFactory.getLogger(BeanUtil.class);
@@ -88,17 +89,18 @@ public class BeanUtil extends BeanUtils {
             String propertyName = field.getName();
             Object value = null;
             try {
-                value = BeanUtils.getProperty(orig, propertyName);
+                logger.debug(" try invokeGetterMethod property={}, property type={}", propertyName, field.getType().getName());
+                value = ReflectionUtil.invokeGetterMethod(orig, propertyName);
             } catch (Exception e) {
                 logger.warn(e.getMessage());
-                logger.debug(" try invokeGetterMethod {}", propertyName);
                 try {
-                    ReflectionUtil.invokeGetterMethod(orig, propertyName);
+                    logger.debug(" try getFieldValue property={}, property type={}", propertyName, field.getType().getName());
+                    value = ReflectionUtil.getFieldValue(orig, propertyName);
                 } catch (Exception e1) {
                     logger.warn(e.getMessage());
-                    logger.debug("try getFieldValue ");
                     try {
-                        value = ReflectionUtil.getFieldValue(orig, propertyName);
+                        logger.debug(" try getProperty property={}, property type={}", propertyName, field.getType().getName());
+                        value = BeanUtils.getProperty(orig, propertyName);
                     } catch (Exception e2) {
                         logger.warn(e.getMessage());
                     }
@@ -106,17 +108,18 @@ public class BeanUtil extends BeanUtils {
             }
             if (value != null) {
                 try {
-                    BeanUtils.setProperty(dest, propertyName, value);
+                    logger.debug("try invokeSetterMethod property={}, value type = {}, property type={}", propertyName, value.getClass().getName(), field.getType().getName());
+                    ReflectionUtil.invokeSetterMethod(dest, propertyName, value, field.getType());
                 } catch (Exception e) {
                     logger.warn(e.getMessage());
-                    logger.debug("try invokeSetterMethod {}", propertyName);
                     try {
-                        ReflectionUtil.invokeSetterMethod(dest, propertyName, value, field.getType());
+                        logger.debug("try setFieldValue property={}, value type = {}, property type={}", propertyName, value.getClass().getName(), field.getType().getName());
+                        ReflectionUtil.setFieldValue(dest, propertyName, value);
                     } catch (Exception e1) {
                         logger.warn(e.getMessage());
-                        logger.debug("try setFieldValue {}", propertyName);
                         try {
-                            ReflectionUtil.setFieldValue(dest, propertyName, value);
+                            logger.debug("try setProperty property={}, value type = {}, property type={}", propertyName, value.getClass().getName(), field.getType().getName());
+                            BeanUtils.setProperty(dest, propertyName, value);
                         } catch (Exception e2) {
                             logger.warn(e2.getMessage());
                         }
@@ -269,8 +272,7 @@ public class BeanUtil extends BeanUtils {
                      value = NumberUtil.toShort(value.toString());
                   } else if (StringUtil.equals(propertyType.getName(), "java.lang.Long") && !(value instanceof Long)) {
                      value = NumberUtil.toLong(value);
-                  }*/
-                else if (value instanceof Map) {
+                  }*/ else if (value instanceof Map) {
                     value = mapToBean((Map) value, propertyType);
                 } else {
                     //                    value = ConvertUtil.convert(value, propertyType);
@@ -308,7 +310,8 @@ public class BeanUtil extends BeanUtils {
 
     /**
      * Converts a JavaBean to a map.
-     *  简单的转换，暂时没有对属性值为bean的转为
+     * 简单的转换，暂时没有对属性值为bean的转为
+     *
      * @param bean JavaBean to convert
      * @return map converted
      */
@@ -342,7 +345,7 @@ public class BeanUtil extends BeanUtils {
                         Class fieldType = field.getType();
                         if (fieldType.isAssignableFrom(Boolean.class) && value == null) {
                             String getterMethodName = "is" + StringUtils.capitalize(field.getName());
-                            value = ReflectionUtil.invokeMethod(bean, getterMethodName, new Class[] {}, new Object[] {});
+                            value = ReflectionUtil.invokeMethod(bean, getterMethodName, new Class[]{}, new Object[]{});
                         }
                     } catch (Exception e3) {
 
@@ -472,30 +475,40 @@ public class BeanUtil extends BeanUtils {
         //         p2.setNumber(2);
         p1.setTestDate("2017-12-30");
         p1.setNumber("2");
+        p2.setCopyEnum(CopyEnum.test2);
         // copyProperties(p2, p1);
         //        copyProperties(p1, p2);
         //        org.apache.commons.beanutils.PropertyUtils.copyProperties(p2, p1);
         //         org.springframework.beans.BeanUtils.copyProperties(p1, p2);
-        BeanCopy.beans(p1, p2).copy();
+//        BeanCopy.beans(p1, p2).copy();
+        copyPropertiesWithoutNullValues(p2, p1);
         System.out.println(p1.getTestDate());
         System.out.println(p2.getTestDate());
         System.out.println(p1.getNumber());
         System.out.println(p2.number);
-
-        System.out.println(HashMap.class.isAssignableFrom(Map.class));
-        System.out.println(Map.class.isAssignableFrom(HashMap.class));
-        List l = new ArrayList();
-        System.out.println(l.getClass().isAssignableFrom(List.class));
-        System.out.println(List.class.isAssignableFrom(l.getClass()));
-        System.out.println(List.class.isAssignableFrom(List.class));
+        System.out.println(p1.getCopyEnum());
+        System.out.println(p2.getCopyEnum());
+//
+//        System.out.println(HashMap.class.isAssignableFrom(Map.class));
+//        System.out.println(Map.class.isAssignableFrom(HashMap.class));
+//        List l = new ArrayList();
+//        System.out.println(l.getClass().isAssignableFrom(List.class));
+//        System.out.println(List.class.isAssignableFrom(l.getClass()));
+//        System.out.println(List.class.isAssignableFrom(List.class));
 
     }
+}
+
+enum CopyEnum {
+    test1, test2;
 }
 
 class CopyBean1 {
     String testDate;
 
     String number;
+
+    CopyEnum copyEnum;
 
     public String getTestDate() {
         return testDate;
@@ -512,12 +525,22 @@ class CopyBean1 {
     public void setNumber(String number) {
         this.number = number;
     }
+
+    public CopyEnum getCopyEnum() {
+        return copyEnum;
+    }
+
+    public void setCopyEnum(CopyEnum copyEnum) {
+        this.copyEnum = copyEnum;
+    }
 }
 
 class CopyBean2 {
     Date testDate;
 
     Integer number;
+
+    CopyEnum copyEnum;
 
     public Date getTestDate() {
         return testDate;
@@ -533,5 +556,13 @@ class CopyBean2 {
 
     public void setNumber(Integer number) {
         this.number = number;
+    }
+
+    public CopyEnum getCopyEnum() {
+        return copyEnum;
+    }
+
+    public void setCopyEnum(CopyEnum copyEnum) {
+        this.copyEnum = copyEnum;
     }
 }

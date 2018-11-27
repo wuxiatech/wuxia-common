@@ -1,11 +1,11 @@
 /*
-* Created on :May 18, 2015
-* Author     :Wind.ZHao
-* Change History
-* Version       Date         Author           Reason
-* <Ver.No>     <date>        <who modify>       <reason>
-* Copyright 2014-2020 武侠科技 All right reserved.
-*/
+ * Created on :May 18, 2015
+ * Author     :Wind.ZHao
+ * Change History
+ * Version       Date         Author           Reason
+ * <Ver.No>     <date>        <who modify>       <reason>
+ * Copyright 2014-2020 武侠科技 All right reserved.
+ */
 
 package cn.wuxia.aliyun.api.oss;
 
@@ -20,7 +20,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -196,84 +199,6 @@ public class OSSUtils {
         return retMap;
     }
 
-    /**
-     * 在bucket上创建文件夹，oss没有文件夹的概念，所有元素都是以Object来存储，
-     * 但给用户提供了创建模拟文件夹的方式，创建后会有个文件夹下面默认的文件
-     *
-     * @param bucketName 文件夹所在的bucket名字
-     * @param folderName 文件夹名称
-     * @return Map对象
-     * 1）code：00000为成功代码，其他为失败代码；
-     * 2）msg：失败信息，code不为00000的时候存在；
-     * 3）folder：把创建后的bucket对象返回，当code为00000的时候才有。
-     * @author Wind.Zhao
-     * @date 2015/05/18
-     */
-    public Map<String, Object> createFolder(String bucketName, String folderName) {
-        Map<String, Object> retMap = Maps.newHashMap();
-
-        if (checkClientIsExist()) {
-            ObjectMetadata objectMeta = new ObjectMetadata();
-            /*这里的size为0,注意OSS本身没有文件夹的概念,
-             * 这里创建的文件夹本质上是一个size为0的Object,dataStream仍然可以有数据
-             */
-            byte[] buffer = new byte[0];
-            ByteArrayInputStream in = new ByteArrayInputStream(buffer);
-            objectMeta.setContentLength(0);
-            try {
-                retMap.put("code", "00000");
-                retMap.put("folder", client.putObject(bucketName, folderName, in, objectMeta));
-            } catch (Exception ex) {
-                retMap.put("code", "00001");
-                retMap.put("msg", "创建文件夹对象异常：" + ex.getMessage());
-                logger.error("创建文件夹对象异常：" + ex.getMessage());
-            } finally {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    retMap.put("code", "00001");
-                    retMap.put("msg", "创建文件夹失败，关闭字节流异常：" + e.getMessage());
-                    logger.error("创建文件夹失败，关闭字节流异常：" + e.getMessage());
-                }
-            }
-        } else {
-            retMap.put("code", "00001");
-            retMap.put("msg", "创建文件夹失败，oss client 不存在，请先进行实例化！");
-        }
-
-        return retMap;
-    }
-
-    /**
-     * 在bucket上创建对象，如果当前路径有相同名字则会进行替换<br>
-     * bucketName和filePath一定不能为空<br>
-     * 1）key和fileName同时为空，则在bucket下面创建对象，对象名称为<br>
-     * filePath中的文件名，如bucketName为'testBucket'，filePath<br>
-     * 为'c:/test/a.jpg'则在testBucket下创建a.jpg的对象；
-     * 2）key不为空，fileName为空，如key为a/b/c，bucketName<br>
-     * 为'test'，filePath为'c:/test/a.jpg'，则在testBucket<br>
-     * 创建'a/b/c/a.jpg'的文件
-     * 3）key为空，fileName不为空，如fileName为b,bucketName<br>
-     * 为'testBucket'，filePath为'c:/test/a.jpg'，则在<br>
-     * testBucket下创建b.jpg的对象
-     *
-     * @param bucketName 文件夹所在的bucket名字
-     * @param key        所在bucket的路径，最后一个为"/"后面的为上传对象的名字<br>
-     *                   如果路径不存在则会自动创建，如果key的第一位为"/"，则去除"/"
-     * @param fileName   文件名，上传到oss的文件名
-     * @param filePath   需要上传文件的路径
-     * @return Map对象
-     * 1）code：00000为成功代码，其他为失败代码；
-     * 2）msg：失败信息，code不为00000的时候存在；
-     * 3）object：创建后的对象（PutObjectResult）；
-     * 4）url：文件路径；
-     * 5）key：文件的具体路径，格式如：/app/test。
-     * @author Wind.Zhao
-     * @date 2015/05/18
-     */
-    public Map<String, Object> putObject(String bucketName, String key, String fileName, String filePath) {
-        return putObject(bucketName, key, null, fileName, filePath);
-    }
 
     /**
      * 在bucket上创建对象，如果当前路径有相同名字则会进行替换<br>
@@ -344,7 +269,7 @@ public class OSSUtils {
      * @param key        所在bucket的路径，最后一个为"/"后面的为上传对象的名字<br>
      *                   如果路径不存在则会自动创建，如果key的第一位为"/"，则去除"/"
      * @param fileName   文件名，上传到oss的文件名，不包括后缀
-     * @param filePath   需要上传文件
+     * @param file       需要上传文件
      * @return Map对象
      * 1）code：00000为成功代码，其他为失败代码；
      * 2）msg：失败信息，code不为00000的时候存在；
@@ -356,6 +281,37 @@ public class OSSUtils {
      */
     public Map<String, Object> putObject(String bucketName, String key, String fileName, File file) {
         return putObject(bucketName, key, null, fileName, file);
+    }
+
+    /**
+     * 在bucket上创建对象，如果当前路径有相同名字则会进行替换<br>
+     * bucketName和file一定不能为空<br>
+     * 1）key和fileName同时为空，则在bucket下面创建对象，对象名称为<br>
+     * file的文件名，如bucketName为'testBucket'，filePath<br>
+     * 为'c:/test/a.jpg'则在testBucket下创建a.jpg的对象；
+     * 2）key不为空，fileName为空，如key为a/b/c，bucketName<br>
+     * 为'test'，filePath为'c:/test/a.jpg'，则在testBucket<br>
+     * 创建'a/b/c/a.jpg'的文件
+     * 3）key为空，fileName不为空，如fileName为b,bucketName<br>
+     * 为'testBucket'，filePath为'c:/test/a.jpg'，则在<br>
+     * testBucket下创建b.jpg的对象
+     *
+     * @param bucketName  文件夹所在的bucket名字
+     * @param key         所在bucket的路径，最后一个为"/"后面的为上传对象的名字<br>
+     *                    如果路径不存在则会自动创建，如果key的第一位为"/"，则去除"/"
+     * @param fileName    文件名，上传到oss的文件名，不包括后缀
+     * @param inputStream 需要上传文件
+     * @return Map对象
+     * 1）code：00000为成功代码，其他为失败代码；
+     * 2）msg：失败信息，code不为00000的时候存在；
+     * 3）object：创建后的对象（PutObjectResult）；
+     * 4）url：文件路径；
+     * 5）key：文件的具体路径，格式如：/app/test。
+     * @author Wind.Zhao
+     * @date 2015/05/18
+     */
+    public Map<String, Object> putObject(String bucketName, String key, String fileName, InputStream inputStream) {
+        return putObject(bucketName, key, null, fileName, inputStream);
     }
 
     /**
@@ -424,31 +380,71 @@ public class OSSUtils {
         }
         if (checkClientIsExist()) {
             // 获取指定文件的输入流
-            InputStream content;
+            if (null == meta) {
+                // 创建上传Object的Metadata
+                meta = new ObjectMetadata();
+            }
+            //必须设置ContentLength
+            meta.setContentLength(file.length());
+            // 上传Object.
+            PutObjectResult result = client.putObject(bucketName, key + fileName, file, meta);
+            String url = uri.getScheme() + "://" + bucketName + "." + uri.getAuthority();
+            retMap.put("code", "00000");
+            retMap.put("object", result);
             try {
-                content = new FileInputStream(file);
-                if (null == meta) {
-                    // 创建上传Object的Metadata
-                    meta = new ObjectMetadata();
-                }
-                //必须设置ContentLength
-                meta.setContentLength(file.length());
-                // 上传Object.
-                PutObjectResult result = client.putObject(bucketName, key + fileName, content, meta);
-                String url = uri.getScheme() + "://" + bucketName + "." + uri.getAuthority();
-                retMap.put("code", "00000");
-                retMap.put("object", result);
-                try {
-                    retMap.put("url", URLDecoder.decode(url, "utf-8"));
-                    retMap.put("key", URLDecoder.decode("/" + key + fileName, "utf-8"));
-                } catch (UnsupportedEncodingException e) {
-                    // TODO Auto-generated catch block
-                    logger.error("创建文件对象成功，返回路径异常：" + e.getMessage());
-                }
-            } catch (FileNotFoundException e) {
+                retMap.put("url", URLDecoder.decode(url, "utf-8"));
+                retMap.put("key", URLDecoder.decode("/" + key + fileName, "utf-8"));
+            } catch (UnsupportedEncodingException e) {
+                // TODO Auto-generated catch block
+                logger.error("创建文件对象成功，返回路径异常：" + e.getMessage());
                 retMap.put("code", "00001");
-                retMap.put("msg", "创建文件对象失败，关闭字节流异常：" + e.getMessage());
-                logger.error("创建文件对象失败，关闭字节流异常：" + e.getMessage());
+                retMap.put("msg", "创建文件对象成功，返回路径异常：" + e.getMessage());
+            }
+        } else {
+            retMap.put("code", "00001");
+            retMap.put("msg", "创建文件对象失败，oss client 不存在，请先进行实例化！");
+        }
+        return retMap;
+    }
+
+
+    public Map<String, Object> putObject(String bucketName, String key, ObjectMetadata meta, String fileName, InputStream inputStream) {
+        Map<String, Object> retMap = Maps.newHashMap();
+        if (StringUtil.isBlank(bucketName)) {
+            retMap.put("code", "00001");
+            retMap.put("msg", "创建文件对象失败，bucketName不能为空！");
+            return retMap;
+        }
+        URI uri = client.getEndpoint();
+
+
+        //当key不为空的情况下需要判断key的最后一位是否为"/"，如果不是则追加"/"
+        if (StringUtil.isNotBlank(key)) {
+            if ("/".equals(key.subSequence(0, 1))) {
+                key = key.substring(1, key.length());
+            }
+            if ((key.length() - 1) != key.lastIndexOf("/")) {
+                key += "/";
+            }
+        }
+        //过滤以"/"开头的路径
+        if ("/".equals(key.subSequence(0, 1))) {
+            key = key.substring(1);
+        }
+        if (checkClientIsExist()) {
+            // 获取指定文件的输入流
+            // 上传Object.
+            PutObjectResult result = client.putObject(bucketName, key + fileName, inputStream);
+            String url = uri.getScheme() + "://" + bucketName + "." + uri.getAuthority();
+            retMap.put("code", "00000");
+            retMap.put("object", result);
+            try {
+                retMap.put("url", URLDecoder.decode(url, "utf-8"));
+                retMap.put("key", URLDecoder.decode("/" + key + fileName, "utf-8"));
+            } catch (UnsupportedEncodingException e) {
+                logger.error("创建文件对象成功，返回路径异常：" + e.getMessage());
+                retMap.put("code", "00001");
+                retMap.put("msg", "创建文件对象成功，返回路径异常：" + e.getMessage());
             }
         } else {
             retMap.put("code", "00001");

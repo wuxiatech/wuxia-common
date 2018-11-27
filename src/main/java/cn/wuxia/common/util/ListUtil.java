@@ -2,6 +2,7 @@ package cn.wuxia.common.util;
 
 import java.util.*;
 
+import com.google.common.collect.Maps;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.google.common.collect.Lists;
@@ -17,7 +18,7 @@ import cn.wuxia.common.util.reflection.BeanUtil;
  * @version 0.1
  * @see org.apache.commons.collections.ListUtils
  */
-@SuppressWarnings({ "unchecked", "rawtypes" })
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class ListUtil extends CollectionUtils {
 
     /**
@@ -45,7 +46,7 @@ public class ListUtil extends CollectionUtils {
         }
         Set set = new HashSet();
         List distinctResult = new ArrayList();
-        for (Iterator iter = source.iterator(); iter.hasNext();) {
+        for (Iterator iter = source.iterator(); iter.hasNext(); ) {
             Object element = iter.next();
             if (element instanceof String && StringUtil.isBlank(element)) {
                 continue;
@@ -130,8 +131,15 @@ public class ListUtil extends CollectionUtils {
                 List<T> list = Lists.newArrayList();
                 for (E e : sourceList) {
                     T newT = t.newInstance();
-                    if (e instanceof Map) {
+                    /**
+                     * 如果双方为Map
+                     */
+                    if (e instanceof Map && newT instanceof Map) {
+                        newT = (T) Maps.newHashMap((Map) e);
+                    } else if (e instanceof Map && !(newT instanceof Map)) {
                         newT = (T) BeanUtil.mapToBean((Map) e, t);
+                    } else if (!(e instanceof Map) && (newT instanceof Map)) {
+                        newT = (T) BeanUtil.beanToMap(e);
                     } else {
                         BeanUtil.copyProperties(newT, e);
                     }

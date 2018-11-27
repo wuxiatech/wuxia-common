@@ -10,7 +10,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.nutz.dao.Sqls;
 import org.apache.commons.lang3.ArrayUtils;
 
-/** @description : Type attribute comparison. */
+/**
+ * @description : Type attribute comparison.
+ */
 public enum MatchType {
     /**
      * equals
@@ -64,10 +66,9 @@ public enum MatchType {
      * in
      */
     IN(" in (%s)"),
-    
+
     /**
      * not in
-     * 
      */
     NIN(" not in (%s)"),
     /**
@@ -107,10 +108,10 @@ public enum MatchType {
                     v = "%" + Sqls.escapeSqlFieldValue(v.toString()) + "%";
                     break;
                 case LL:
-                    v = "%" + Sqls.escapeSqlFieldValue(v.toString());
+                    v = Sqls.escapeSqlFieldValue(v.toString()) + "%";
                     break;
                 case RL:
-                    v = Sqls.escapeSqlFieldValue(v.toString()) + "%";
+                    v = "%" + Sqls.escapeSqlFieldValue(v.toString());
                     break;
                 default:
                     break;
@@ -123,10 +124,10 @@ public enum MatchType {
 
     /**
      * object compare the name
-     * 
-     * @author string
+     *
      * @param object
      * @return
+     * @author string
      */
     public final boolean compare(String string) {
         return StringUtils.equalsIgnoreCase(this.name(), string);

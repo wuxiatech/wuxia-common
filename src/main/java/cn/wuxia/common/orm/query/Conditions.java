@@ -240,15 +240,53 @@ public class Conditions implements Serializable {
         this.isIgnoreCase = isIgnoreCase;
     }
 
-    public Conditions eq(String name, Object value) {
+    public static Conditions eq(String name, Object value) {
         return new Conditions(name, value);
     }
 
-    public Conditions isnull(String name) {
+    public static Conditions isNull(String name) {
         return new Conditions(name, MatchType.ISN);
     }
 
-    public Conditions notnull(String name) {
+    public static Conditions notNull(String name) {
         return new Conditions(name, MatchType.INN);
+    }
+
+    public static Conditions bw(String name, Object begin, Object end) {
+        Conditions condition = new Conditions(name, MatchType.BW, begin);
+        condition.setAnotherValue(end);
+        return condition;
+    }
+
+    public static Conditions llike(String name, String value) {
+        return new Conditions(name, MatchType.LL, value);
+    }
+
+    public static Conditions rlike(String name, String value) {
+        return new Conditions(name, MatchType.RL, value);
+    }
+
+    public static Conditions flike(String name, String value) {
+        return new Conditions(name, MatchType.FL, value);
+    }
+
+    public static Conditions ne(String name, Object value) {
+        return new Conditions(name, MatchType.NE, value);
+    }
+
+    public static Conditions lte(String name, Object value) {
+        return new Conditions(name, MatchType.LTE, value);
+    }
+
+    public static Conditions gte(String name, Object value) {
+        return new Conditions(name, MatchType.GTE, value);
+    }
+
+    public static Conditions lt(String name, Object value) {
+        return new Conditions(name, MatchType.LT, value);
+    }
+
+    public static Conditions gt(String name, Object value) {
+        return new Conditions(name, MatchType.GT, value);
     }
 }

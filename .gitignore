@@ -1,5 +1,6 @@
 *.class
 /target
+.idea
 .svn
 # Package Files #
 *.jar
@@ -10,3 +11,5 @@
 .settings
 .project
 rebel.xml
+.classpath
+*.bak

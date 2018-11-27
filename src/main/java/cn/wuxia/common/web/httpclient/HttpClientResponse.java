@@ -68,6 +68,15 @@ public class HttpClientResponse {
         return null;
     }
 
+    public String getStringResult(String charset) {
+        if (byteResult != null) {
+            try {
+                return new String(byteResult, charset);
+            } catch (UnsupportedEncodingException e) {
+            }
+        }
+        return null;
+    }
     public void setStringResult(String stringResult) {
         this.stringResult = stringResult;
     }
