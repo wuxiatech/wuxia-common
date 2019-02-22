@@ -23,6 +23,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.RandomStringGenerator;
+import org.nutz.lang.random.R;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,11 +50,14 @@ public class StringUtil extends StringUtils {
      * @author songlin.li
      * @see RandomStringGenerator
      */
-    @Deprecated
     public static String random(int count) {
         //        RandomStringGenerator generator = new RandomStringGenerator.Builder().withinRange('0', 'z').build();
         //        return generator.generate(count);
-        return RandomStringUtils.randomAlphanumeric(count);
+//        return RandomStringUtils.randomAlphanumeric(count);
+        /**
+         * 性能最好
+         */
+        return R.sg(count).next();
     }
 
     /**

@@ -77,8 +77,11 @@ public class QlExpressUtil {
 
 
 
+        String express8 = "location.indexOf('佛山')<0";
+        ((DefaultContext<String, Object>) context).put("location", "广东，佛山");
 
-
+        Object express8result = runner.execute(express8, context, null, false, false);
+        System.out.println(express8result);
 
     }
 }

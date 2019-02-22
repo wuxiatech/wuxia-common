@@ -1,6 +1,6 @@
 /**
  * <h3>Class description</h3> <h4>Date processing class</h4> <h4>Special Notes</h4>
- * 
+ *
  * @version 0.1
  * @author songlin.li 2008-8-11
  * @support by
@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 public class DateUtil extends DateUtils {
     protected static transient final Logger logger = LoggerFactory.getLogger(DateUtil.class);
 
-    private static final int[] dayArray = new int[] { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+    private static final int[] dayArray = new int[]{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
     public enum DateFormatter {
         /**
@@ -532,6 +532,7 @@ public class DateUtil extends DateUtils {
 
     /**
      * @description : Get the number of days between two date
+     * 注意，这里是非自然天数
      * @author songlin.li
      * @param date1
      * @param date2
@@ -540,7 +541,14 @@ public class DateUtil extends DateUtils {
     public static int getDay(Date date1, Date date2) {
         Long d2 = date2.getTime();
         Long d1 = date1.getTime();
-        return (int) ((d2 - d1) / millionSecondsOfDay);
+
+        Double days = 0D;
+        if (date1.before(date2)) {
+            days = Math.ceil((d2 - d1) / millionSecondsOfDay);
+        } else {
+            days = Math.ceil((d1 - d2) / millionSecondsOfDay);
+        }
+        return days.intValue();
     }
 
     /**
@@ -670,7 +678,7 @@ public class DateUtil extends DateUtils {
     /**
      * new Instance Date, the date begin.<br>
      * eg. Tue Feb 25 00:00:00 CST 2014
-     * 
+     *
      * @author songlin
      * @return
      */
@@ -683,7 +691,7 @@ public class DateUtil extends DateUtils {
     /**
      * new Instance Date,the date end.<br>
      * eg. Tue Feb 25 23:59:59 CST 2014
-     * 
+     *
      * @author songlin
      * @return
      */
@@ -696,7 +704,7 @@ public class DateUtil extends DateUtils {
     /**
      * new Instance Timestamp,the current datetime.<br>
      * eg. Tue Feb 25 21:29:50 CST 2014
-     * 
+     *
      * @author songlin
      * @return
      */
@@ -707,7 +715,7 @@ public class DateUtil extends DateUtils {
 
     /**
      * trim date time 00:00:00
-     * 
+     *
      * @author songlin
      * @param date
      * @return
@@ -719,7 +727,7 @@ public class DateUtil extends DateUtils {
 
     /**
      * add date time 23:59:59
-     * 
+     *
      * @author songlin
      * @param date
      * @return
@@ -839,9 +847,9 @@ public class DateUtil extends DateUtils {
      * @date 2014/08/19
      */
     private static int getQuarterInMonth(int month, boolean isQuarterStart) {
-        int months[] = { 1, 4, 7, 10 };
+        int months[] = {1, 4, 7, 10};
         if (!isQuarterStart) {
-            months = new int[] { 3, 6, 9, 12 };
+            months = new int[]{3, 6, 9, 12};
         }
         if (month >= 1 && month <= 3) {
             return months[0];
@@ -877,7 +885,6 @@ public class DateUtil extends DateUtils {
         c.set(Calendar.DAY_OF_MONTH, c.getActualMaximum(Calendar.DAY_OF_MONTH));
         return c.getTime();
     }
-
 
 
     /**
@@ -960,7 +967,7 @@ public class DateUtil extends DateUtils {
         return days;
     }
 
-    /** 
+    /**
      * 两个时间相差距离多少天多少小时多少分多少秒 
      * @param start 时间参数 1 格式：1990-01-01 12:00:00 
      * @param end 时间参数 2 格式：2009-01-01 12:00:00 
@@ -1033,13 +1040,13 @@ public class DateUtil extends DateUtils {
             System.out.println(begindate);
             begindate = DateUtil.addDays(begindate, 1);
         }
-        System.out.println(newInstanceDateBegin().before(DateUtil.addMinutes(newInstanceDateBegin(),1)));
+        System.out.println(newInstanceDateBegin().before(DateUtil.addMinutes(newInstanceDateBegin(), 1)));
         System.out.println(DateUtil.addDays(DateUtil.addSeconds(newInstanceDateEnd(), 1), -1).after(newInstanceDateBegin()));
 
 
         System.out.println(DateUtil.getHour(begindate));
 
-        
+
         System.out.println(getWeekDay(new Date()));
         System.out.println(getWeekOfDate(DateUtil.addDays(new Date(), -1)));
     }
