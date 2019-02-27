@@ -217,7 +217,7 @@ public class ClassLoaderUtil {
     /**
      * Through the constructor obtain examples
      * 
-     * @param className Kind of fully qualified name
+     * @param classObj Kind of fully qualified name
      * @param argsClass The constructor argument types
      * @param args The constructor parameter value
      * @return Object
@@ -240,7 +240,7 @@ public class ClassLoaderUtil {
 
     /** 
      * 从包package中获取所有的Class 
-     * @param pack 
+     * @param packageName
      * @return 
      */
     public static List<Class<?>> getAllClassesByPackage(String packageName) {

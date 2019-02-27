@@ -1,12 +1,13 @@
 /*
-* Created on :2015年10月30日
-* Author     :songlin
-* Change History
-* Version       Date         Author           Reason
-* <Ver.No>     <date>        <who modify>       <reason>
-* Copyright 2014-2020 武侠科技 All right reserved.
-*/
+ * Created on :2015年10月30日
+ * Author     :songlin
+ * Change History
+ * Version       Date         Author           Reason
+ * <Ver.No>     <date>        <who modify>       <reason>
+ * Copyright 2014-2020 武侠科技 All right reserved.
+ */
 package cn.wuxia.common.spring.el;
+
 
 import org.springframework.util.Assert;
 
@@ -53,6 +54,7 @@ public class OperationBean {
 
     /**
      * This implementation compares the {@code toString()} results.
+     *
      * @see #toString()
      */
     @Override
@@ -62,6 +64,7 @@ public class OperationBean {
 
     /**
      * This implementation returns {@code toString()}'s hash code.
+     *
      * @see #toString()
      */
     @Override

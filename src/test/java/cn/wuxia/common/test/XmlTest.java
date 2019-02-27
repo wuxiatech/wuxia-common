@@ -8,26 +8,15 @@
  */
 package cn.wuxia.common.test;
 
-import java.io.FileOutputStream;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import cn.wuxia.common.excel.ExcelUtil;
-import cn.wuxia.common.excel.bean.ExcelBean;
-import cn.wuxia.common.util.XMLUtil;
-import cn.wuxia.common.util.reflection.BeanUtil;
 import cn.wuxia.common.util.reflection.ConvertUtil;
 import cn.wuxia.common.xml.Dom4jXmlUtil;
-import cn.wuxia.common.xml.XStreamXmlUtil;
-import com.google.common.collect.Maps;
 import jodd.typeconverter.TypeConverterManager;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
-public class ExcelTest {
+import java.io.FileOutputStream;
+import java.math.BigDecimal;
+import java.util.*;
+
+public class XmlTest {
     public static void main(String[] args) throws Exception {
 //        test();
 
@@ -66,41 +55,6 @@ public class ExcelTest {
         //System.out.println(ToStringBuilder.reflectionToString(BeanUtil.mapToBean(m, GetRedPackInfoResult.class)));
     }
 
-    public static void testExport() throws Exception {
-        // System.out.println((MAX_ROWS + 1) / MAX_ROWS + 1);
-        // Write the output to a file
-        long start = System.currentTimeMillis();
-        FileOutputStream fileOut1 = new FileOutputStream("/app/workbook1.XLSx");
-        // FileOutputStream fileOut2 = new
-        // FileOutputStream("c:/workbook2.xls");
-        String[] selfields = new String[]{"apply_organ", "business_line", "name", "form_title", "undertake_date", "remark", "accept", "remark_date",
-                "user_name", "office_phone"};
-        String[] selfieldsName = new String[]{"提出机构", "业务条线", "承办部门名称", "创意名称", "转承办部门日期", "处理意见", "是否认可", "反馈意见日期", "联系人", "电话"};
-        List<Map<String, String>> dataList1 = new ArrayList<Map<String, String>>();
-        for (int i = 0; i < (16); i++) {
-            Map m = new HashMap();
-            for (String selfield : selfields) {
-                m.put(selfield, i + " 我是仲文中午呢访问访问了福建省辽");
-            }
-            dataList1.add(m);
-        }
-        List<Map<String, Object>> dataList2 = new ArrayList<Map<String, Object>>();
-        ExcelBean excelBean = new ExcelBean();
-        excelBean.setFileName("workbook1.XLSx");
-        excelBean.setDataList(dataList1);
-        excelBean.setSelfields(selfields);
-        excelBean.setSelfieldsName(selfieldsName);
-        excelBean.setSheetName("sheet");
-        ExcelUtil.createExcel(excelBean, fileOut1);
-
-        // excelBean.setDataList(dataList2);
-        // ExcelUtil.createExcel(excelBean, fileOut2);
-
-        fileOut1.close();
-        // fileOut2.close();
-        long end = System.currentTimeMillis();
-        System.out.println(("create Excel end, Used " + ((end - start) / 1000) + " s"));
-    }
 
     public static void test() {
         Object convertValue = TypeConverterManager.get().convertType("123", BigDecimal.class);
