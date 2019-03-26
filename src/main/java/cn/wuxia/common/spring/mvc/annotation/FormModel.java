@@ -31,6 +31,7 @@ import java.lang.annotation.Target;
 @Target({ ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+@Deprecated
 public @interface FormModel {
 
     /**

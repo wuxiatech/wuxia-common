@@ -50,6 +50,7 @@ import cn.wuxia.common.spring.support.ValidationHandler;
  * @author songlin.li
  * @since 3.1
  */
+@Deprecated
 public class FormModelMethodArgumentResolver implements HandlerMethodArgumentResolver {
     
     @Autowired

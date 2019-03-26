@@ -1,11 +1,14 @@
 package cn.wuxia.common.util;
 
+import java.io.Console;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -486,5 +489,15 @@ public class ServletUtils {
         System.out.println(BrowserUtils.getWeiXinVersion(ua));
         System.out.println(BrowserUtils.getNetType(ua));
         System.out.println(BrowserUtils.getLanguage(ua));
+
+
+
+        UserAgent userAgent1 = UserAgent.parseUserAgentString("Dalvik/2.1.0 (Linux; U; Android 7.0; HUAWEI CAZ-TL20 Build/HUAWEICAZ-TL20)");
+        OperatingSystem operatingSystem= userAgent1.getOperatingSystem();
+        System.out.println(operatingSystem);
+        //系统名称
+        System.out.println(operatingSystem.getName());
+        System.out.println(operatingSystem.getDeviceType().getName());
+
     }
 }
