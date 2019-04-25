@@ -129,7 +129,7 @@ public class RSAUtils {
      * 用私钥对信息生成数字签名
      * </p>
      * 
-     * @param data
+     * @param encryptedData
      *            已加密数据
      * @param privateKey
      *            私钥(BASE64编码)

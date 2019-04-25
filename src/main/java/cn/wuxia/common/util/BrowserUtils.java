@@ -46,11 +46,26 @@ public class BrowserUtils {
     }
 
     /**
+     * 判断是否是微信小程序
+     */
+    public static boolean isWeiXinApp(HttpServletRequest request) {
+        return isWeiXinApp(getUserAgent(request));
+    }
+
+    /**
      * 判断是否是微信浏览器
      */
     public static boolean isWeiXin(String userAgent) {
         logger.info(userAgent);
         return userAgent.toLowerCase().indexOf("micromessenger") > 0 ? true : false;
+    }
+
+    /**
+     * 判断是否是微信小程序
+     */
+    public static boolean isWeiXinApp(String userAgent) {
+        logger.info(userAgent);
+        return userAgent.toLowerCase().indexOf("miniProgram") > 0 ? true : false;
     }
 
     /**

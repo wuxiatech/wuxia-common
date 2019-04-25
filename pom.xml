@@ -14,7 +14,7 @@
     <artifactId>wuxia.common</artifactId>
     <name>WUXIA Common</name>
     <description>WUXIA Common Project</description>
-    <version>2.3.2</version>
+    <version>2.3.3-SNAPSHOT</version>
     <packaging>jar</packaging>
     <url>https://github.com/wuxiatech/wuxia-common</url>
     <properties>
@@ -337,11 +337,11 @@
         <!-- <dependency> <groupId>com.taobao.util</groupId> <artifactId>taobao-express</artifactId> <version>3.0.17</version>
             </dependency> -->
         <!-- image process end -->
-        <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk16 -->
+        <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on support jdk1.8 -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk16</artifactId>
-            <version>1.46</version>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.61</version>
             <optional>true</optional>
         </dependency>
 
