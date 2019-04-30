@@ -14,7 +14,7 @@ import cn.wuxia.common.spring.support.MessageSourceHandler;
  * @author songlin.li
  */
 public class ServiceException extends RuntimeException {
-    protected Logger logger = LoggerFactory.getLogger(ServiceException.class);
+    protected Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      *

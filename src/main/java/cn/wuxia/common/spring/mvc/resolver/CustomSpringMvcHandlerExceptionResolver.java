@@ -29,6 +29,13 @@ public class CustomSpringMvcHandlerExceptionResolver implements HandlerException
 
     public final Logger logger = LoggerFactory.getLogger(CustomSpringMvcHandlerExceptionResolver.class);
 
+    public CustomSpringMvcHandlerExceptionResolver() {
+    }
+
+    public CustomSpringMvcHandlerExceptionResolver(MessageSourceHandler messageSourceHandler) {
+        this.messageSourceHandler = messageSourceHandler;
+    }
+
     public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         String messageVal = ex.getMessage();
         logger.info("Exception Type:{} , And Simple Message:{}", ex.getClass().getName(), ex.getMessage());
@@ -51,8 +58,7 @@ public class CustomSpringMvcHandlerExceptionResolver implements HandlerException
         if (ex instanceof AppSecurityException) {
             response.setStatus(401);
             modelAndView.setViewName("error/401");
-        }
-        else if (ex instanceof AppSecurityException) {
+        } else if (ex instanceof AppSecurityException) {
             response.setStatus(403);
             modelAndView.setViewName("error/403");
         } else if (ex instanceof AppObjectNotFoundException) {

@@ -8,12 +8,15 @@
 */
 package cn.wuxia.common.security;
 
+import org.apache.commons.codec.binary.Base64;
+
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * 
@@ -50,6 +53,19 @@ public class DesUtils {
         return deskey;
     }
 
+    /**
+     * 创建密匙
+     *
+     * @param algorithm
+     *
+     * @return SecretKey 秘密（对称）密钥
+     */
+    public static SecretKey createKey(byte[] secret) {
+        // 声明KeyGenerator对象
+        SecretKeySpec keySpec = new SecretKeySpec(secret, ALGORITHM);
+     return keySpec;
+
+    }
     /**
      * 一个简单的加密字符串代码，可被解密
      * 根据密匙进行DES加密 
@@ -103,5 +119,14 @@ public class DesUtils {
         }
         // return byte2hex(cipherByte);  
         return new String(cipherByte);
+    }
+
+
+    public static void main(String[] args) {
+      byte[] bytes =  Base64.decodeBase64("V2GsLYDxpLHAB3Szg1ClXTgY7SMjtx4X");
+        System.out.println(new String(bytes));
+        SecretKey key = DesUtils.createKey(bytes);
+       String out = new DesUtils().decrypt(key, "NVfFBq1hnwtgEZhM4A4Q287PkGBtfSlY");
+        System.out.println(out);
     }
 }
