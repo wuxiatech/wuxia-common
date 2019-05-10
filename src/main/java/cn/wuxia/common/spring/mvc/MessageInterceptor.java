@@ -39,6 +39,7 @@ public class MessageInterceptor implements HandlerInterceptor {
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+        response.addHeader("x-frame-options","SAMEORIGIN");
         List<String> infos = new ArrayList<String>();
         List<String> warns = new ArrayList<String>();
         List<String> errors = new ArrayList<String>();
@@ -50,8 +51,9 @@ public class MessageInterceptor implements HandlerInterceptor {
             if (Boolean.TRUE.equals(customMessage.getTranslate())) {
                 String message = translateMessage(customMessage.getKey(), request.getLocale(), customMessage.getArgs());
 
-                if (StringUtil.isBlank(message))
+                if (StringUtil.isBlank(message)) {
                     continue;
+                }
                 if (CustomMessageTypeEnum.INFO.equals(customMessage.getType())) {
                     infos.add(message);
                 } else if (CustomMessageTypeEnum.WARN.equals(customMessage.getType())) {

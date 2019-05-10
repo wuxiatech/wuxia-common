@@ -36,6 +36,7 @@ public class CustomSpringMvcHandlerExceptionResolver implements HandlerException
         this.messageSourceHandler = messageSourceHandler;
     }
 
+    @Override
     public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         String messageVal = ex.getMessage();
         logger.info("Exception Type:{} , And Simple Message:{}", ex.getClass().getName(), ex.getMessage());
