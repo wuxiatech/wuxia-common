@@ -1,12 +1,8 @@
 package cn.wuxia.common.web.httpclient;
 
-import java.io.File;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
-
+import cn.wuxia.common.util.MapUtil;
+import com.google.common.collect.Lists;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.content.*;
@@ -14,10 +10,10 @@ import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
-import cn.wuxia.common.util.MapUtil;
+import java.io.File;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 
 /* *
  * 类名：HttpRequest功能：Http请求对象的封装详细：封装Http请求版本：3.3日期：2011-08-17说明：
@@ -52,7 +48,7 @@ public class HttpClientRequest {
     /**
      * Post 类型包括为 File, InputStream, byte[]， String时的参数
      */
-    private Map<String, ContentBody> content = Maps.newHashMap();
+    private ContentBody content;
 
     /**
      * Post String类型的参数
@@ -209,70 +205,91 @@ public class HttpClientRequest {
      * @author songlin
      */
     public HttpClientRequest addParam(String property, Object value) {
-        ContentBody body = null;
-        if (value instanceof File) {
-            body = new FileBody((File) value);
-        } else if (value instanceof byte[]) {
-            body = new ByteArrayBody((byte[]) value, ContentType.DEFAULT_BINARY, "");
-        } else if (value instanceof InputStream) {
-            body = new InputStreamBody((InputStream) value, "");
-        } else {
-            body = new StringBody(value.toString(), ContentType.DEFAULT_TEXT);
-            params.add(new BasicNameValuePair(property, value.toString()));
-        }
-        this.content.put(property, body);
+        params.add(new BasicNameValuePair(property, value.toString()));
         return this;
     }
 
     /**
      * 添加各类型参数
      *
-     * @param property
      * @param value
      * @author songlin
      */
-    public HttpClientRequest addFileParam(File value) {
-        ContentBody body = new FileBody((File) value);
-        this.content.put("", body);
+    public HttpClientRequest setFileContent(File value) {
+        this.content = new FileBody(value);
         return this;
     }
+
+//    /**
+//     * 添加各类型参数
+//     *
+//     * @param property
+//     * @param value
+//     * @author songlin
+//     */
+//    public HttpClientRequest addFileParam(String property, File file) {
+//        ContentBody body = new FileBody(file, ContentType.DEFAULT_BINARY);
+//        this.content.put(property, body);
+//        return this;
+//    }
 
     /**
      * 添加各类型参数
      *
-     * @param property
-     * @param value
+     * @param bytes
      * @author songlin
      */
-    public HttpClientRequest addFileParam(String property, File file) {
-        ContentBody body = new FileBody(file, ContentType.DEFAULT_BINARY);
-        this.content.put(property, body);
-        return this;
-    }
-
-    /**
-     * 添加各类型参数
-     *
-     * @param property
-     * @param value
-     * @author songlin
-     */
-    public HttpClientRequest addByteParam(byte[] bytes) {
+    public HttpClientRequest setByteContent(byte[] bytes) {
         ContentBody body = new ByteArrayBody(bytes, ContentType.DEFAULT_BINARY, null);
-        this.content.put("", body);
+        this.content = body;
         return this;
     }
 
     /**
      * 添加各类型参数
      *
-     * @param property
-     * @param value
+     * @param stream
      * @author songlin
      */
-    public HttpClientRequest addByteParam(InputStream stream) {
+    public HttpClientRequest setStreamContent(InputStream stream) {
         ContentBody body = new InputStreamBody(stream, ContentType.DEFAULT_BINARY);
-        this.content.put("", body);
+        this.content = body;
+        return this;
+    }
+
+    /**
+     * 添加各类型参数
+     *
+     * @param text
+     * @author songlin
+     */
+    public HttpClientRequest setStringContent(String text) {
+        ContentBody body = new StringBody(text, ContentType.TEXT_PLAIN);
+        this.content = body;
+        return this;
+    }
+
+    /**
+     * 添加各类型参数
+     *
+     * @param text
+     * @author songlin
+     */
+    public HttpClientRequest setJsonContent(String text) {
+        ContentBody body = new StringBody(text, ContentType.APPLICATION_JSON);
+        this.content = body;
+        return this;
+    }
+
+    /**
+     * 添加各类型参数
+     *
+     * @param text
+     * @author songlin
+     */
+    public HttpClientRequest setXmlContent(String text) {
+        ContentBody body = new StringBody(text, ContentType.APPLICATION_XML);
+        this.content = body;
         return this;
     }
 
@@ -302,15 +319,14 @@ public class HttpClientRequest {
         return this;
     }
 
-    /**
-     * 上传请求参数
-     *
-     * @return
-     * @author songlin
-     */
-    public Map<String, ContentBody> getContent() {
+    public void setContent(ContentBody content) {
+        this.content = content;
+    }
+
+    public ContentBody getContent() {
         return content;
     }
+
 
     /**
      * Post 请求参数
@@ -332,20 +348,6 @@ public class HttpClientRequest {
         return URLEncodedUtils.format(params, charset);
     }
 
-    /**
-     * 是否存在多媒体参数
-     *
-     * @return
-     * @author songlin
-     */
-    public boolean isMultipart() {
-        for (Map.Entry<String, ContentBody> c : content.entrySet()) {
-            if (!StringUtils.equalsIgnoreCase(c.getValue().getMediaType(), "text")) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     public static HttpClientRequest create() {
         return new HttpClientRequest();

@@ -48,11 +48,11 @@ public class ConvertUtil extends ConvertUtils {
      * @param collection Source collection.
      * @param propertyName Want to extract the attribute name.
      */
-    public static List convertElementPropertyToList(final Collection<?> collection, final String propertyName) {
-        List<Object> list = new ArrayList<Object>();
+    public static <T> List<T> convertElementPropertyToList(final Collection<?> collection, final String propertyName) {
+        List<T> list = new ArrayList<T>();
         try {
             for (Object obj : collection) {
-                list.add(PropertyUtils.getProperty(obj, propertyName));
+                list.add((T)PropertyUtils.getProperty(obj, propertyName));
             }
         } catch (Exception e) {
             throw ReflectionUtil.convertReflectionExceptionToUnchecked(e);
@@ -67,7 +67,7 @@ public class ConvertUtil extends ConvertUtils {
      * @param key
      * @return
      */
-    public static List<?> convertEntryKeyToList(final Collection<?> collection, final String key) {
+    public static List<Object> convertEntryKeyToList(final Collection<?> collection, final String key) {
         List<Object> list = new ArrayList<Object>();
         try {
             for (Object obj : collection) {
@@ -113,9 +113,9 @@ public class ConvertUtil extends ConvertUtils {
      * @param value To be converted string.
      * @param toType Convert the target type.
      */
-    public static Object convertToObject(String value, Class<?> toType) {
+    public static <T> T convertToObject(String value, Class<T> toType) {
         try {
-            return ConvertUtils.convert(value, toType);
+            return (T)ConvertUtils.convert(value, toType);
         } catch (Exception e) {
             throw ReflectionUtil.convertReflectionExceptionToUnchecked(e);
         }

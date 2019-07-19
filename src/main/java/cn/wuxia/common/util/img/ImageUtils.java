@@ -9,6 +9,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import javax.imageio.ImageIO;
 
@@ -27,7 +29,7 @@ import cn.wuxia.common.exception.ImgException;
 
 /**
  * 纯Java实现的图像处理
- * 
+ *
  * @author Winter Lau
  * @date 2010-4-26 上午09:45:56
  */
@@ -42,16 +44,17 @@ public class ImageUtils {
         //        System.out.print(a[0]+" "+a[1]);
         //ImageUtils.scale(img, new File("/app/uploadfile/Temp/1398245482931_200.png"), 200, 120);
         //scale(img, new File("/app/uploadfile/Temp/380.png"));
-        ImageUtil.scale2("/Users/songlin/Pictures/com.tencent.ScreenCapture/QQ20140424-1@2x.png", "/app/uploadfile/Temp/380_1.png", 360,360, false);
-        ImageUtil.scale2("/Users/songlin/Pictures/myAcount.png", "/app/uploadfile/Temp/380_2.png", 360,360, false);
+        ImageUtil.scale2("/Users/songlin/Pictures/com.tencent.ScreenCapture/QQ20140424-1@2x.png", "/app/uploadfile/Temp/380_1.png", 360, 360, false);
+        ImageUtil.scale2("/Users/songlin/Pictures/myAcount.png", "/app/uploadfile/Temp/380_2.png", 360, 360, false);
     }
 
     /**
      * 裁剪为正方形
-     * @author songlin
+     *
      * @param source
      * @param dest
      * @throws IOException
+     * @author songlin
      */
     public static void scale(File source, File dest) throws IOException {
         BufferedImage bi = (BufferedImage) ImageIO.read(source);
@@ -70,7 +73,7 @@ public class ImageUtils {
 
     /**
      * 图像自动根据比例缩小到指定的方框中
-     * 
+     *
      * @param src
      * @param dest
      * @param size
@@ -84,13 +87,13 @@ public class ImageUtils {
             int h = orig_portrait.getHeight();
             if (w <= size && h <= size) {
                 FileUtils.copyFile(src, dest);
-                return new int[] { w, h };
+                return new int[]{w, h};
             } else {
                 double ratio = (w > h) ? (double) size / w : (double) size / h;
                 int w2 = (int) (w * ratio);
                 int h2 = (int) (h * ratio);
                 scale(src, dest, w2, h2);
-                return new int[] { w2, h2 };
+                return new int[]{w2, h2};
             }
         } catch (IOException e) {
             throw new ImgException("Exception occur when shrink image.", e);
@@ -99,15 +102,15 @@ public class ImageUtils {
 
     /**
      * 进行图像剪裁
-     * 
-     * @param src 源文件
-     * @param dest 目标文件
-     * @param left 剪裁部分的左上角x轴
-     * @param top 剪裁部分的左上角y轴
-     * @param width 剪裁部分的宽度
+     *
+     * @param src    源文件
+     * @param dest   目标文件
+     * @param left   剪裁部分的左上角x轴
+     * @param top    剪裁部分的左上角y轴
+     * @param width  剪裁部分的宽度
      * @param height 剪裁部分的高度
-     * @param w 目标大小宽度
-     * @param h 目标大小高度
+     * @param w      目标大小宽度
+     * @param h      目标大小高度
      * @throws ImgException
      */
     public static void crop(File src, File dest, int left, int top, int width, int height, int w, int h) throws ImgException {
@@ -144,9 +147,9 @@ public class ImageUtils {
 
     /**
      * 图像旋转
-     * 
-     * @param src 源文件
-     * @param dest 目标文件
+     *
+     * @param src     源文件
+     * @param dest    目标文件
      * @param degrees 旋转度数
      * @throws ImgException
      */
@@ -173,14 +176,39 @@ public class ImageUtils {
         }
     }
 
+
+    /**
+     * 图像旋转
+     *
+     * @param src          源文件
+     * @param outputStream 目标文件
+     * @param degrees      旋转度数
+     * @throws ImgException
+     */
+    public static void rotate(InputStream src, String fileType, OutputStream outputStream, double degrees) throws ImgException {
+
+        try {
+            BufferedImage bi = (BufferedImage) ImageIO.read(src);
+            RotateFilter Rotate = new RotateFilter((float) Math.toRadians(degrees));
+            BufferedImage bi_rotate = new BufferedImage(bi.getHeight(), bi.getWidth(), (bi.getType() != 0) ? bi.getType()
+                    : BufferedImage.TYPE_INT_RGB);
+            Rotate.filter(bi, bi_rotate);
+
+            ImageIO.write(bi_rotate, fileType.equals("png") ? "png" : "jpeg", outputStream);
+
+        } catch (IOException e) {
+            throw new ImgException("Exception occur when scaling image.", e);
+        }
+    }
+
     /**
      * 图像缩放
-     * 
-     * @param src 源文件
+     *
+     * @param src  源文件
      * @param dest 目标文件
-     * @param w 缩放宽度
-     * @param h 缩放高度
-     * @exception
+     * @param w    缩放宽度
+     * @param h    缩放高度
+     * @throws
      */
     public static void scale(File src, File dest, int w, int h) throws ImgException {
         if (!dest.getParentFile().exists())
@@ -209,11 +237,11 @@ public class ImageUtils {
 
     /**
      * 将图像缩放到某个正方形框内
-     * 
-     * @param src 源文件
+     *
+     * @param src  源文件
      * @param dest 目标文件
      * @param size 正方形大小
-     * @exception
+     * @throws
      */
     public static void scale(File src, File dest, int size) throws ImgException {
 

@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
 import org.nutz.dao.Sqls;
+import org.nutz.lang.Lang;
 import org.springframework.util.Assert;
 
 import java.util.List;
@@ -34,7 +35,7 @@ public class PageSQLHandler {
             /**
              * 如果sql在xml中定义，则需要转换换行为空字符
              */
-            sql = StringUtil.replaceChars(StringUtil.replaceChars(sql, "\t", " "), "\n", "");
+            sql = StringUtil.replaceChars(StringUtil.replaceChars(sql, "\t", " "), "\n", " ");
             int whereIndexof = StringUtil.lastIndexOfIgnoreCase(sql, " where ");
             if (whereIndexof > 0) {
                 conditionSql = " " + Conditions.AND + conditionSql;
@@ -53,6 +54,7 @@ public class PageSQLHandler {
         }
         return sql;
     }
+
     /**
      * build the queryString to append condition
      *
@@ -67,24 +69,27 @@ public class PageSQLHandler {
         if (ListUtil.isNotEmpty(conditions)) {
             List<String> queryParameter = Lists.newArrayList();
             for (Conditions condition : conditions) {
+                /**
+                 * 除了is null or is not null 条件外，其他条件必须带值
+                 */
+                if (condition.getMatchType() != MatchType.ISN && condition.getMatchType() != MatchType.INN) {
+                    if (StringUtil.isBlank(condition.getValue())) {
+                        log.warn("condition: " + condition.getProperty() + " value is null, ignore this condition");
+                        continue;
+                    }
+                }
                 switch (condition.getMatchType()) {
                     case LL:
-                        if (StringUtil.isNotBlank(condition.getValue())) {
-                            queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
-                            appendValues.add(condition.getValue() + "%");
-                        }
+                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
+                        appendValues.add(condition.getValue() + "%");
                         break;
                     case RL:
-                        if (StringUtil.isNotBlank(condition.getValue())) {
-                            queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
-                            appendValues.add("%" + condition.getValue());
-                        }
+                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
+                        appendValues.add("%" + condition.getValue());
                         break;
                     case FL:
-                        if (StringUtil.isNotBlank(condition.getValue())) {
-                            queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
-                            appendValues.add("%" + condition.getValue() + "%");
-                        }
+                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
+                        appendValues.add("%" + condition.getValue() + "%");
                         break;
                     case BW:
                         queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
@@ -108,6 +113,10 @@ public class PageSQLHandler {
                         if (ListUtil.isNotEmpty(v1)) {
                             queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(StringUtil.join(v1, ",")));
                         }
+                        break;
+                    case ISN:
+                    case INN:
+                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
                         break;
                     default:
                         if (StringUtil.isNotBlank(condition.getValue())) {
@@ -141,39 +150,49 @@ public class PageSQLHandler {
             }
             List<String> queryParameter = Lists.newArrayList();
             for (Conditions condition : conditions) {
-                if (MatchType.LL.equals(condition.getMatchType())) {
-                    if (StringUtil.isNotBlank(condition.getValue())) {
-                        values.put(condition.getProperty(), "%" + condition.getValue());
-                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(":" + condition.getProperty()));
-                    }
-                } else if (MatchType.RL.equals(condition.getMatchType())) {
-                    if (StringUtil.isNotBlank(condition.getValue())) {
-                        values.put(condition.getProperty(), condition.getValue() + "%");
-                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(":" + condition.getProperty()));
-                    }
-                } else if (MatchType.FL.equals(condition.getMatchType())) {
-                    if (StringUtil.isNotBlank(condition.getValue())) {
-                        values.put(condition.getProperty(), "%" + condition.getValue() + "%");
-                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(":" + condition.getProperty()));
-                    }
-                } else if (MatchType.BW.equals(condition.getMatchType())) {
-                    queryParameter.add(condition.getProperty()
-                            + condition.getMatchType().getSymbol(":" + condition.getProperty(), ":" + condition.getProperty() + "2"));
-                    values.put(condition.getProperty(), condition.getValue());
-                    values.put(condition.getProperty() + "2", condition.getAnotherValue());
-                    queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(":" + condition.getProperty()));
-                    continue;
-                } else if (MatchType.ISN.equals(condition.getMatchType())) {
-                    if (StringUtil.isNotBlank(condition.getValue())) {
-                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
-                    }
-                } else {
-                    if (StringUtil.isNotBlank(condition.getValue())) {
-                        values.put(condition.getProperty(), condition.getValue());
-                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(":" + condition.getProperty()));
+                /**
+                 * 除了is null or is not null 条件外，其他条件必须带值
+                 */
+                if (condition.getMatchType() != MatchType.ISN && condition.getMatchType() != MatchType.INN) {
+                    if (StringUtil.isBlank(condition.getValue())) {
+                        log.warn("condition: " + condition.getProperty() + " value is null, ignore this condition");
+                        continue;
                     }
                 }
-
+                switch (condition.getMatchType()) {
+                    case LL: {
+                        values.put(condition.getProperty(), "%" + condition.getValue());
+                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(":" + condition.getProperty()));
+                        break;
+                    }
+                    case RL: {
+                        values.put(condition.getProperty(), condition.getValue() + "%");
+                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(":" + condition.getProperty()));
+                        break;
+                    }
+                    case FL: {
+                        values.put(condition.getProperty(), "%" + condition.getValue() + "%");
+                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(":" + condition.getProperty()));
+                        break;
+                    }
+                    case BW: {
+                        queryParameter.add(condition.getProperty()
+                                + condition.getMatchType().getSymbol(":" + condition.getProperty(), ":" + condition.getProperty() + "2"));
+                        values.put(condition.getProperty(), condition.getValue());
+                        values.put(condition.getProperty() + "2", condition.getAnotherValue());
+                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(":" + condition.getProperty()));
+                        break;
+                    }
+                    case ISN:
+                    case INN:
+                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol());
+                        break;
+                    default: {
+                        values.put(condition.getProperty(), condition.getValue());
+                        queryParameter.add(condition.getProperty() + condition.getMatchType().getSymbol(":" + condition.getProperty()));
+                        break;
+                    }
+                }
             }
             if (ListUtil.isEmpty(queryParameter)) {
                 return "";

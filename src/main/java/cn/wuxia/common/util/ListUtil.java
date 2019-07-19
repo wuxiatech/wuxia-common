@@ -35,7 +35,7 @@ public class ListUtil extends CollectionUtils {
     }
 
     /**
-     * @param list
+     * @param source
      * @return
      * @description :remove Collection Duplicate values
      * @author songlin.li
@@ -51,8 +51,9 @@ public class ListUtil extends CollectionUtils {
             if (element instanceof String && StringUtil.isBlank(element)) {
                 continue;
             }
-            if (element != null && set.add(element))
+            if (element != null && set.add(element)) {
                 distinctResult.add(element);
+            }
         }
         // source.clear();
         // source.addAll(distinctResult);
@@ -95,8 +96,9 @@ public class ListUtil extends CollectionUtils {
      * @author songlin.li
      */
     public static <T> List<T> arrayToList(T[] array) {
-        if (array == null)
+        if (array == null) {
             return Lists.newArrayList();
+        }
         return Lists.newArrayList(array);
     }
 

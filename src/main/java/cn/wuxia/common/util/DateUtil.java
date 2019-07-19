@@ -159,9 +159,9 @@ public class DateUtil extends DateUtils {
     public static long millionSecondsOfDay = 86400000;
 
     /**
-     * @description : convert java.util.Date to java.sql.Date
      * @param date -java.util.Date
      * @return
+     * @description : convert java.util.Date to java.sql.Date
      */
     public static java.sql.Date utilDateToSQLDate(java.util.Date date) {
         if (date == null)
@@ -174,9 +174,9 @@ public class DateUtil extends DateUtils {
     }
 
     /**
-     * @description :convert java.sql.Date to java.util.Date
      * @param date -java.sql.Date
      * @return
+     * @description :convert java.sql.Date to java.util.Date
      */
     public static java.util.Date sqlDateToUtilDate(java.sql.Date date) {
         if (date == null)
@@ -189,9 +189,9 @@ public class DateUtil extends DateUtils {
     }
 
     /**
-     * @description : convert java.sql.Timestamp to java.util.Date
      * @param timestamp -java.sql.Timestamp
      * @return
+     * @description : convert java.sql.Timestamp to java.util.Date
      */
     public static java.util.Date timestampToUtilDate(java.sql.Timestamp timestamp) {
         return Castors.me().castTo(timestamp, java.util.Date.class);
@@ -199,18 +199,19 @@ public class DateUtil extends DateUtils {
 
     /**
      * convert java.util.Date to  java.sql.Timestamp
-     * @author songlin
+     *
      * @param date -java.util.Date
      * @return
+     * @author songlin
      */
     public static Timestamp utilDateToTimestamp(Date date) {
         return Castors.me().castTo(date, Timestamp.class);
     }
 
     /**
-     * @description : Support Date Format:YYYY-MM-DD, YYYY:M:D, YYYY/M/DD
      * @param date
      * @return
+     * @description : Support Date Format:YYYY-MM-DD, YYYY:M:D, YYYY/M/DD
      * @author songlin.li
      */
     @Deprecated
@@ -260,25 +261,37 @@ public class DateUtil extends DateUtils {
     }
 
     /**
-     * @description : get First Date Of Month
      * @param date
      * @return
+     * @description : get First Date Of Month
      */
     public static Date getFirstDateOfMonth(String date) {
+        return getFirstDateOfMonth(stringToDate(date));
+    }
+
+    public static Date getFirstDateOfMonth(Date date) {
         Calendar cl = Calendar.getInstance();
-        cl.setTime(stringToDate(date));
+        cl.setTime(date);
         cl.set(Calendar.DAY_OF_MONTH, 1);
         return cl.getTime();
     }
 
     /**
-     * @description : get Last Date Of Month
-     * @param date
+     * 当前月份1号0点0分0秒
      * @return
      */
-    public static Date getLastDateOfMonth(String date) {
+    public static Date getFirstDateOfMonth() {
+        return getFirstDateOfMonth(newInstanceDateBegin());
+    }
+
+    /**
+     * @param date
+     * @return
+     * @description : get Last Date Of Month
+     */
+    public static Date getLastDateOfMonth(Date date) {
         Calendar cl = Calendar.getInstance();
-        cl.setTime(stringToDate(date));
+        cl.setTime(date);
         int year = cl.get(Calendar.YEAR);
         int month = cl.get(Calendar.MONTH) + 1;
         int day = 0;
@@ -298,6 +311,18 @@ public class DateUtil extends DateUtils {
         cl.set(Calendar.DAY_OF_MONTH, day);
 
         return cl.getTime();
+    }
+
+    public static Date getLastDateOfMonth(String date) {
+        return getLastDateOfMonth(stringToDate(date));
+    }
+
+    /**
+     * 当前月份23点59分59秒
+     * @return
+     */
+    public static Date getLastDateOfMonth() {
+        return getLastDateOfMonth(newInstanceDateEnd());
     }
 
     public static int getYear(Date date) {
@@ -325,9 +350,9 @@ public class DateUtil extends DateUtils {
     }
 
     /**
-     * @description : is LeapYear
      * @param year
      * @return
+     * @description : is LeapYear
      */
     public static boolean isLeapYear(int year) {
 
@@ -343,11 +368,11 @@ public class DateUtil extends DateUtils {
     }
 
     /**
-     * @description : Access to current time before time
-     * @author songlin.li 2007-07-03
-     * @param type DateUtil.DAY,DateUtil.HOUR...
+     * @param type  DateUtil.DAY,DateUtil.HOUR...
      * @param value
      * @return
+     * @description : Access to current time before time
+     * @author songlin.li 2007-07-03
      */
     public static Date getDateTimeBeforeNow(TypeEnum type, int value) {
         Calendar cd = Calendar.getInstance();
@@ -374,11 +399,11 @@ public class DateUtil extends DateUtils {
     }
 
     /**
-     * @description : Access to current time after time
      * @param date
      * @param type
      * @param value
      * @return
+     * @description : Access to current time after time
      */
     public static Date getDateTimeAfter(Date date, TypeEnum type, long value) {
         // Calendar cd = Calendar.getInstance();
@@ -458,9 +483,9 @@ public class DateUtil extends DateUtils {
     }
 
     /**
-     * @description :isToday
      * @param date
      * @return
+     * @description :isToday
      */
     public static boolean isToday(Date date) {
 
@@ -477,66 +502,66 @@ public class DateUtil extends DateUtils {
     }
 
     /**
-     * @description : default format is yyyy-MM-dd
-     * @author songlin.li
      * @param sDate
      * @param format FORMAT_1 TO FORMAT_7
      * @return
+     * @description : default format is yyyy-MM-dd
+     * @author songlin.li
      */
     public static Date stringToDate(String sDate, DateFormatter format) {
         return parse(sDate, format == null ? DateFormatter.FORMAT_YYYY_MM_DD : format);
     }
 
     /**
-     * @description : default format is yyyy-MM-dd
-     * @author songlin.li
      * @param sDate
      * @param format FORMAT_1 TO FORMAT_7
      * @return
+     * @description : default format is yyyy-MM-dd
+     * @author songlin.li
      */
     public static Date stringToDate(String sDate, String format) {
         return parse(sDate, format == null ? DateFormatter.FORMAT_YYYY_MM_DD.dateformat : format);
     }
 
     /**
-     * @description : default format is yyyy-MM-dd
-     * @author songlin.li
      * @param dDate
      * @param format FORMAT_1 TO FORMAT_7
      * @return
+     * @description : default format is yyyy-MM-dd
+     * @author songlin.li
      */
     public static String dateToString(Date dDate, DateFormatter format) {
         return format(dDate, format == null ? DateFormatter.FORMAT_YYYY_MM_DD : format);
     }
 
     /**
-     * @description : default format is yyyy-MM-dd
-     * @author songlin.li
      * @param dDate
      * @param format FORMAT_1 TO FORMAT_7
      * @return
+     * @description : default format is yyyy-MM-dd
+     * @author songlin.li
      */
     public static String dateToString(Date dDate, String format) {
         return format(dDate, StringUtil.isBlank(format) ? DateFormatter.FORMAT_YYYY_MM_DD.dateformat : format);
     }
 
     /**
-     * @description : default format yyyy-MM-dd HH:mm:ss
-     * @author songlin.li
      * @param date
      * @return
+     * @description : default format yyyy-MM-dd HH:mm:ss
+     * @author songlin.li
      */
     public static String defaultFormatTimeStamp(Date date) {
         return dateToString(date, DateFormatter.FORMAT_YYYY_MM_DD_HH_MM_SS);
     }
 
     /**
-     * @description : Get the number of days between two date
-     * 注意，这里是非自然天数
-     * @author songlin.li
      * @param date1
      * @param date2
      * @return
+     * @description : Get the number of days between two date
+     * 注意，这里是非自然天数
+     * @author songlin.li
      */
     public static int getDay(Date date1, Date date2) {
         Long d2 = date2.getTime();
@@ -552,10 +577,10 @@ public class DateUtil extends DateUtils {
     }
 
     /**
-     * @description : According to the date it's Thursday
-     * @author songlin.li
      * @param date Date
      * @return int return 1-7
+     * @description : According to the date it's Thursday
+     * @author songlin.li
      */
     public static int getWeekOfDate(Date date) {
         Calendar calendar = Calendar.getInstance();
@@ -564,11 +589,11 @@ public class DateUtil extends DateUtils {
     }
 
     /**
-     * @description : formater "yyyy-MM-dd HH:mm:ss","dd/MM/yyyy"....
-     * @author songlin.li
      * @param date
      * @param formater
      * @return
+     * @description : formater "yyyy-MM-dd HH:mm:ss","dd/MM/yyyy"....
+     * @author songlin.li
      */
     public static Date parse(String date, DateFormatter formater) {
         if (StringUtil.isBlank(date))
@@ -584,11 +609,11 @@ public class DateUtil extends DateUtils {
     }
 
     /**
-     * @description : formater "yyyy-MM-dd HH:mm:ss","dd/MM/yyyy"....
-     * @author songlin.li
      * @param date
      * @param formater
      * @return
+     * @description : formater "yyyy-MM-dd HH:mm:ss","dd/MM/yyyy"....
+     * @author songlin.li
      */
     public static Date parse(String date, String formater) {
         if (StringUtil.isBlank(date))
@@ -604,10 +629,10 @@ public class DateUtil extends DateUtils {
     }
 
     /**
-     * @description : format "yyyy-MM-dd HH:mm:ss","dd/MM/yyyy"....
      * @param date
      * @param formater
      * @return
+     * @description : format "yyyy-MM-dd HH:mm:ss","dd/MM/yyyy"....
      * @author songlin.li
      */
     public static String format(Date date, DateFormatter formater) {
@@ -618,10 +643,10 @@ public class DateUtil extends DateUtils {
     }
 
     /**
-     * @description : format "yyyy-MM-dd HH:mm:ss","dd/MM/yyyy"....
      * @param date
      * @param formater
      * @return
+     * @description : format "yyyy-MM-dd HH:mm:ss","dd/MM/yyyy"....
      * @author songlin.li
      */
     public static String format(Date date, String formater) {
@@ -679,8 +704,8 @@ public class DateUtil extends DateUtils {
      * new Instance Date, the date begin.<br>
      * eg. Tue Feb 25 00:00:00 CST 2014
      *
-     * @author songlin
      * @return
+     * @author songlin
      */
     public static Date newInstanceDateBegin() {
         Calendar date = Calendar.getInstance();
@@ -692,8 +717,8 @@ public class DateUtil extends DateUtils {
      * new Instance Date,the date end.<br>
      * eg. Tue Feb 25 23:59:59 CST 2014
      *
-     * @author songlin
      * @return
+     * @author songlin
      */
     public static Date newInstanceDateEnd() {
         Calendar date = Calendar.getInstance();
@@ -705,8 +730,8 @@ public class DateUtil extends DateUtils {
      * new Instance Timestamp,the current datetime.<br>
      * eg. Tue Feb 25 21:29:50 CST 2014
      *
-     * @author songlin
      * @return
+     * @author songlin
      */
     public static Timestamp newInstanceDate() {
         Calendar date = Calendar.getInstance();
@@ -716,9 +741,9 @@ public class DateUtil extends DateUtils {
     /**
      * trim date time 00:00:00
      *
-     * @author songlin
      * @param date
      * @return
+     * @author songlin
      */
     public static Date trimDateTime(Date date) {
         String source = format(date, DateFormatter.FORMAT_YYYY_MM_DD);
@@ -728,9 +753,9 @@ public class DateUtil extends DateUtils {
     /**
      * add date time 23:59:59
      *
-     * @author songlin
      * @param date
      * @return
+     * @author songlin
      */
     public static Date addDateTime(Date date) {
         String source = format(date, DateFormatter.FORMAT_YYYY_MM_DD);
@@ -739,6 +764,7 @@ public class DateUtil extends DateUtils {
 
     /**
      * 获取当前系统时间所在周的第一日
+     *
      * @return 当前系统时间所在周的第一日
      * @author Wind.Zhao
      * @date 2014/08/19
@@ -752,6 +778,7 @@ public class DateUtil extends DateUtils {
 
     /**
      * 获取当前系统时间所在周的最后一日
+     *
      * @return 当前系统时间所在周的最后一日
      * @author Wind.Zhao
      * @date 2014/08/19
@@ -764,6 +791,7 @@ public class DateUtil extends DateUtils {
 
     /**
      * 获取当前系统时间所在月的第一日
+     *
      * @return 当前系统时间所在月的第一日
      * @author Wind.Zhao
      * @date 2014/08/19
@@ -776,6 +804,7 @@ public class DateUtil extends DateUtils {
 
     /**
      * 获取当前系统时间所在月的最后一日
+     *
      * @return 当前系统时间所在月的最后一日
      * @author Wind.Zhao
      * @date 2014/08/19
@@ -788,9 +817,10 @@ public class DateUtil extends DateUtils {
 
     /**
      * 获取指定月份的第一日
-     * @author CaRson.Yan
+     *
      * @param amount 月份变量值，通过对当前系统月份的加减得到指定的月份
      * @return
+     * @author CaRson.Yan
      */
     public static Date firstDayOfSpecifiedMonth(Integer amount) {
         Calendar c = Calendar.getInstance();
@@ -801,9 +831,10 @@ public class DateUtil extends DateUtils {
 
     /**
      * 获取指定月份的最后一日
-     * @author CaRson.Yan
+     *
      * @param amount 月份变量值，通过对当前系统月份的加减得到指定的月份
      * @return
+     * @author CaRson.Yan
      */
     public static Date lastDayOfSpecifiedMonth(Integer amount) {
         Calendar c = Calendar.getInstance();
@@ -814,6 +845,7 @@ public class DateUtil extends DateUtils {
 
     /**
      * 获取当前系统时间所在季度的第一日
+     *
      * @return 当前系统时间所在季度的第一日
      * @author Wind.Zhao
      * @date 2014/08/19
@@ -828,6 +860,7 @@ public class DateUtil extends DateUtils {
 
     /**
      * 获取当前系统时间所在季度的最后一日
+     *
      * @return 当前系统时间所在季度的最后一日
      * @author Wind.Zhao
      * @date 2014/08/19
@@ -842,6 +875,7 @@ public class DateUtil extends DateUtils {
 
     /**
      * 获取当前系统时间所在季度的首月
+     *
      * @return 当前系统时间所在季度首月
      * @author Wind.Zhao
      * @date 2014/08/19
@@ -864,6 +898,7 @@ public class DateUtil extends DateUtils {
 
     /**
      * 获取当前系统时间所在年的第一日
+     *
      * @return 当前系统时间所在年的第一日
      * @author Wind.Zhao
      * @date 2014/08/19
@@ -876,6 +911,7 @@ public class DateUtil extends DateUtils {
 
     /**
      * 获取当前系统时间所在年的最后一日
+     *
      * @return 当前系统时间所在年的最后一日
      * @author Wind.Zhao
      * @date 2014/08/19
@@ -889,10 +925,11 @@ public class DateUtil extends DateUtils {
 
     /**
      * 返回day_of_week 文字形式
-     * @author guwen
-     * @param week 代表周几
-     * @param style 风格 0-星期日 1-周日 
+     *
+     * @param week  代表周几
+     * @param style 风格 0-星期日 1-周日
      * @return
+     * @author guwen
      */
     public static String getWeekStr(int week, int style) {
         String styleStr = "周";
@@ -929,6 +966,7 @@ public class DateUtil extends DateUtils {
 
     /**
      * 获取两个时间间相差的天数
+     *
      * @param date1
      * @param date2
      * @return
@@ -968,10 +1006,11 @@ public class DateUtil extends DateUtils {
     }
 
     /**
-     * 两个时间相差距离多少天多少小时多少分多少秒 
-     * @param start 时间参数 1 格式：1990-01-01 12:00:00 
-     * @param end 时间参数 2 格式：2009-01-01 12:00:00 
-     * @return String 返回值为：xx天xx小时xx分xx秒 
+     * 两个时间相差距离多少天多少小时多少分多少秒
+     *
+     * @param start 时间参数 1 格式：1990-01-01 12:00:00
+     * @param end   时间参数 2 格式：2009-01-01 12:00:00
+     * @return String 返回值为：xx天xx小时xx分xx秒
      */
     public static String getDistanceTime(Date start, Date end) {
         long day = 0;

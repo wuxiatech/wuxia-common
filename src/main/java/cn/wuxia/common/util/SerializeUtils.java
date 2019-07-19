@@ -11,6 +11,9 @@ import io.protostuff.runtime.Delegate;
 import io.protostuff.runtime.RuntimeEnv;
 import io.protostuff.runtime.RuntimeSchema;
 
+/**
+ * @author songlin
+ */
 public class SerializeUtils {
 
     /** 时间戳转换Delegate，解决时间戳转换后错误问题 @author jiujie 2016年7月20日 下午1:52:25 */

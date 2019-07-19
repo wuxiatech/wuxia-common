@@ -9,9 +9,12 @@
 package cn.wuxia.common.test;
 
 import cn.wuxia.common.util.reflection.ConvertUtil;
+import cn.wuxia.common.web.httpclient.*;
 import cn.wuxia.common.xml.Dom4jXmlUtil;
 import jodd.typeconverter.TypeConverterManager;
+import org.junit.Test;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.util.*;
@@ -68,5 +71,53 @@ public class XmlTest {
 
         convertValue = TypeConverterManager.get().convertType("2017-10-20", java.sql.Date.class);
         System.out.println(convertValue + "" + convertValue.getClass());
+    }
+
+    @Test
+    public void testHttpclient() throws HttpClientException {
+        HttpClientResponse response = null;
+        /**
+         * passed
+         */
+//        response = HttpClientRequest.post("http://127.0.0.1:8060/test/input").setFileContent(new File("/app/banban.log")).execute();
+        /**
+         * passed
+         */
+//        response =  HttpClientUtil.upload("http://127.0.0.1:8060/test/file", new File("/app/banban.log"), "imageFile");
+        /**
+         * passed
+         */
+//        response = HttpClientRequest.post("http://127.0.0.1:8060/test/form").addParam("name", "123").addParam("value", "789").execute();
+        /**
+         * passed
+         */
+//        response = HttpClientRequest.post("http://127.0.0.1:8060/test/form1").addParam("name", "123").addParam("value", "789").execute();
+//        response = HttpClientRequest.post("http://127.0.0.1:8060/test/json").setJsonContent("{\"code\":200,\"msg\":\"\",\"data\":\"789\",\"page\":null,\"elapsed\":0}").execute();
+
+//        response = HttpClientRequest.post("http://127.0.0.1:8060/test/json1").setJsonContent("{\"name\":200,\"value\":\"789\"}").execute();
+
+//        response = HttpClientRequest.post("http://127.0.0.1:8060/test/input").setByteContent("123123123".getBytes()).execute();
+
+//        response = HttpClientRequest.post("http://127.0.0.1:8060/test/text").setStringContent("{\"name\":200,\"value\":\"789\"}").execute();
+
+
+//        System.out.println(response.getStringResult());
+
+    }
+
+//    @Test
+    public void testAsync() throws Exception {
+        HttpClientRequest request = new HttpClientRequest("http://127.0.0.1:8060/test/text");
+        request.addParam("url", "http://fsdalfkjsadflkjsadlfkjasdlf");
+        long start = System.currentTimeMillis();
+        HttpClientRequest[] par = new HttpClientRequest[10];
+        for (int i = 0; i < 10; i++) {
+            //System.out.println("***********第" + i + "个***********");
+            //call(request);
+            //HttpClientUtil.get(request);
+            par[i] = request;
+        }
+        HttpAsyncClientUtil.call(par);
+        System.out.println("*************" + (System.currentTimeMillis() - start));
     }
 }
