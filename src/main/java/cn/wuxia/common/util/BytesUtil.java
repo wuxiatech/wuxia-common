@@ -1,19 +1,18 @@
 package cn.wuxia.common.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import org.apache.commons.io.IOUtils;
+
+import java.io.*;
 
 
 public class BytesUtil {
     /**
      * 对象转byte[]
-     * @see {@link SerializeUtils#serialize(Object, Class)}
+     *
      * @param obj
      * @return
      * @throws IOException
+     * @see {@link SerializeUtils#serialize(Object, Class)}
      */
     @Deprecated
     public static byte[] objectToBytes(Object obj) throws IOException {
@@ -31,10 +30,11 @@ public class BytesUtil {
 
     /**
      * byte[]转对象
-     * @see {@link SerializeUtils#deSerialize(byte[], Class)}
+     *
      * @param bytes
      * @return
      * @throws Exception
+     * @see {@link SerializeUtils#deSerialize(byte[], Class)}
      */
     @Deprecated
     public static Object bytesToObject(byte[] bytes) throws IOException, ClassNotFoundException {
@@ -46,4 +46,22 @@ public class BytesUtil {
         return sIn.readObject();
     }
 
+
+    public static ByteArrayOutputStream cloneInputStream(InputStream input) {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = input.read(buffer)) > -1) {
+                baos.write(buffer, 0, len);
+            }
+            baos.flush();
+            return baos;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            IOUtils.closeQuietly(input);
+        }
+    }
 }

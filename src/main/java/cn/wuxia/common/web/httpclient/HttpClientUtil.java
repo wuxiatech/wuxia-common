@@ -8,21 +8,11 @@
  */
 package cn.wuxia.common.web.httpclient;
 
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.CodingErrorAction;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Map;
-
-import javax.net.ssl.SSLContext;
-
+import cn.wuxia.common.util.FileUtil;
 import cn.wuxia.common.util.ListUtil;
+import cn.wuxia.common.util.StringUtil;
+import cn.wuxia.common.web.MediaTypes;
+import cn.wuxia.common.web.MessageDigestUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.*;
@@ -37,7 +27,6 @@ import org.apache.http.config.ConnectionConfig;
 import org.apache.http.config.MessageConstraints;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.*;
-import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.*;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -54,10 +43,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
-import cn.wuxia.common.util.FileUtil;
-import cn.wuxia.common.util.StringUtil;
-import cn.wuxia.common.web.MediaTypes;
-import cn.wuxia.common.web.MessageDigestUtil;
+import javax.net.ssl.SSLContext;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.CodingErrorAction;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Map;
 
 public class HttpClientUtil {
     public static Logger logger = LoggerFactory.getLogger("httpclient");
@@ -519,7 +516,7 @@ public class HttpClientUtil {
      * @throws IOException
      * @author songlin
      */
-    public static InputStream download(String url) throws IOException, HttpClientException {
+    public static InputStream download(String url) throws HttpClientException {
         return download(new HttpClientRequest(url));
     }
 
@@ -530,7 +527,7 @@ public class HttpClientUtil {
      * @return
      * @throws IOException
      */
-    public static InputStream download(HttpClientRequest param) throws IOException, HttpClientException {
+    public static InputStream download(HttpClientRequest param) throws HttpClientException {
         return execute(param).getContent();
     }
 
@@ -542,7 +539,7 @@ public class HttpClientUtil {
      * @return
      * @throws IOException
      */
-    public static File download(HttpClientRequest param, String filePath) throws IOException, HttpClientException {
+    public static File download(HttpClientRequest param, String filePath) throws HttpClientException {
         Assert.notNull(filePath, "filePath不能为空");
         HttpClientResponse response = execute(param);
         //        Header[] headers = response.getResponseHeaders();
@@ -552,12 +549,17 @@ public class HttpClientUtil {
         //            }
         //        }
         File file = new File(filePath);
-        FileUtil.forceMkdirParent(file);
-        FileOutputStream output = FileUtils.openOutputStream(file);
+        FileOutputStream output = null;
+        InputStream inputStream = null;
         try {
-            IOUtils.copy(response.getContent(), output);
+            FileUtil.forceMkdirParent(file);
+            output = FileUtils.openOutputStream(file);
+            inputStream = response.getContent();
+            IOUtils.copy(inputStream, output);
+        } catch (IOException e) {
+            throw new HttpClientException("", e);
         } finally {
-            IOUtils.closeQuietly(response.getContent());
+            IOUtils.closeQuietly(inputStream);
             IOUtils.closeQuietly(output);
             if (FileUtil.sizeOf(file) == 0) {
                 FileUtil.deleteQuietly(file);

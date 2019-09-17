@@ -8,6 +8,7 @@ import org.apache.commons.collections.CollectionUtils;
 import com.google.common.collect.Lists;
 
 import cn.wuxia.common.util.reflection.BeanUtil;
+import org.apache.commons.collections.ListUtils;
 
 /**
  * <h3>Class name</h3> Array Tools
@@ -90,7 +91,8 @@ public class ListUtil extends CollectionUtils {
      * <pre>
      * Arrays.asList() return java.util.Arrays$ArrayList are not return ArrayList,
      *  Arrays$ArrayList and ArrayList are extends AbstractList, remove,add Etc.
-     *   method at AbstractList is  defaults throw UnsupportedOperationException and not do and works return Arrays.asList(array);
+     *   method at AbstractList is  defaults throw UnsupportedOperationException and not do and works return Arrays
+     *   .asList(array);
      *   this method is return ArrayList
      *              </pre>
      * @author songlin.li
@@ -132,6 +134,9 @@ public class ListUtil extends CollectionUtils {
             try {
                 List<T> list = Lists.newArrayList();
                 for (E e : sourceList) {
+                    if (e.getClass().equals(t)) {
+                        return Lists.newArrayList((List<T>) sourceList);
+                    }
                     T newT = t.newInstance();
                     /**
                      * 如果双方为Map

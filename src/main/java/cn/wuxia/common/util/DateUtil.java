@@ -9,18 +9,17 @@
  */
 package cn.wuxia.common.util;
 
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
 import cn.wuxia.common.exception.AppWebException;
-import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.nutz.castor.Castors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class DateUtil extends DateUtils {
     protected static transient final Logger logger = LoggerFactory.getLogger(DateUtil.class);
@@ -278,6 +277,7 @@ public class DateUtil extends DateUtils {
 
     /**
      * 当前月份1号0点0分0秒
+     *
      * @return
      */
     public static Date getFirstDateOfMonth() {
@@ -319,6 +319,7 @@ public class DateUtil extends DateUtils {
 
     /**
      * 当前月份23点59分59秒
+     *
      * @return
      */
     public static Date getLastDateOfMonth() {
@@ -1001,7 +1002,7 @@ public class DateUtil extends DateUtils {
             //再计算下一年。
             can.add(Calendar.YEAR, 1);
         }
-        System.out.println("天数差：" + days);
+        System.out.println("天数差(自然天)：" + days);
         return days;
     }
 
@@ -1031,8 +1032,13 @@ public class DateUtil extends DateUtils {
         sec = (diff / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
         if (hour == 0 && day == 0) {
             return min + "分" + sec + "秒";
-        } else
-            return day + "天" + hour + "小时" + min + "分" + sec + "秒";
+        } else if (day == 0) {
+            return hour + "小时" + min + "分";
+        } else if (day <= 30) {
+            return day + "天" + hour + "小时";
+        } else {
+            return day + "天";
+        }
     }
 
 
@@ -1051,6 +1057,86 @@ public class DateUtil extends DateUtils {
     public static boolean isSameHour(Calendar cal1, Calendar cal2) {
         if (cal1 != null && cal2 != null) {
             return cal1.get(0) == cal2.get(0) && cal1.get(1) == cal2.get(1) && cal1.get(6) == cal2.get(6) && cal1.get(Calendar.HOUR_OF_DAY) == cal2.get(Calendar.HOUR_OF_DAY);
+        } else {
+            throw new IllegalArgumentException("The date must not be null");
+        }
+    }
+
+    public static boolean isSameDay(Date date1, Date date2) {
+        if (date1 != null && date2 != null) {
+            Calendar cal1 = Calendar.getInstance();
+            cal1.setTime(date1);
+            Calendar cal2 = Calendar.getInstance();
+            cal2.setTime(date2);
+            return isSameDay(cal1, cal2);
+        } else {
+            throw new IllegalArgumentException("The date must not be null");
+        }
+    }
+
+    public static boolean isSameDay(Calendar cal1, Calendar cal2) {
+        if (cal1 != null && cal2 != null) {
+            return cal1.get(0) == cal2.get(0) && cal1.get(1) == cal2.get(1) && cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR);
+        } else {
+            throw new IllegalArgumentException("The date must not be null");
+        }
+    }
+
+    public static boolean isSameWeek(Date date1, Date date2) {
+        if (date1 != null && date2 != null) {
+            Calendar cal1 = Calendar.getInstance();
+            cal1.setTime(date1);
+            Calendar cal2 = Calendar.getInstance();
+            cal2.setTime(date2);
+            return isSameWeek(cal1, cal2);
+        } else {
+            throw new IllegalArgumentException("The date must not be null");
+        }
+    }
+
+    public static boolean isSameWeek(Calendar cal1, Calendar cal2) {
+        if (cal1 != null && cal2 != null) {
+            return cal1.get(0) == cal2.get(0) && cal1.get(1) == cal2.get(1) && cal1.get(Calendar.WEEK_OF_YEAR) == cal2.get(Calendar.WEEK_OF_YEAR);
+        } else {
+            throw new IllegalArgumentException("The date must not be null");
+        }
+    }
+
+    public static boolean isSameMonth(Date date1, Date date2) {
+        if (date1 != null && date2 != null) {
+            Calendar cal1 = Calendar.getInstance();
+            cal1.setTime(date1);
+            Calendar cal2 = Calendar.getInstance();
+            cal2.setTime(date2);
+            return isSameMonth(cal1, cal2);
+        } else {
+            throw new IllegalArgumentException("The date must not be null");
+        }
+    }
+
+    public static boolean isSameMonth(Calendar cal1, Calendar cal2) {
+        if (cal1 != null && cal2 != null) {
+            return cal1.get(0) == cal2.get(0) && cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) && cal1.get(Calendar.MONTH) == cal2.get(Calendar.MONTH);
+        } else {
+            throw new IllegalArgumentException("The date must not be null");
+        }
+    }
+
+    public static boolean isSameYear(Date date1, Date date2) {
+        if (date1 != null && date2 != null) {
+            Calendar cal1 = Calendar.getInstance();
+            cal1.setTime(date1);
+            Calendar cal2 = Calendar.getInstance();
+            cal2.setTime(date2);
+            return isSameYear(cal1, cal2);
+        } else {
+            throw new IllegalArgumentException("The date must not be null");
+        }
+    }
+
+    public static boolean isSameYear(Calendar cal1, Calendar cal2) {
+        if (cal1 != null && cal2 != null) {
+            return cal1.get(0) == cal2.get(0) && cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR);
         } else {
             throw new IllegalArgumentException("The date must not be null");
         }

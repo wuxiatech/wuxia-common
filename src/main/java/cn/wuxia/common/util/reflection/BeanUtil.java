@@ -258,10 +258,10 @@ public class BeanUtil extends BeanUtils {
                         }
                     }
                     continue;
+                } else if (StringUtil.equals(propertyType.getName(), "java.util.Date") && value instanceof String) {
+                    value = DateUtil.stringToDate(value.toString());
                 } /* else if (StringUtil.equals(propertyType.getName(), "java.lang.String") && !(value instanceof String)) {
                      value = value.toString();
-                  } else if (StringUtil.equals(propertyType.getName(), "java.util.Date") && !(value instanceof Date)) {
-                     value = DateUtil.stringToDate(value.toString());
                   } else if (StringUtil.equals(propertyType.getName(), "java.lang.Float") && !(value instanceof Float)) {
                      value = value.toString();
                   } else if (StringUtil.equals(propertyType.getName(), "java.lang.Integer") && !(value instanceof Integer)) {

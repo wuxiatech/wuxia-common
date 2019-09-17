@@ -1,36 +1,34 @@
 package cn.wuxia.common.web.httpclient;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@AllArgsConstructor
 public class HttpAction {
     String url;
 
     HttpClientMethod method;
 
-    public HttpAction(String url, HttpClientMethod method) {
-        this.url = url;
-        this.method = method;
-    }
-
+    @Deprecated
     public static HttpAction Action(String url, HttpClientMethod method) {
         return new HttpAction(url, method);
     }
 
+    @Deprecated
     public static HttpAction Action(String url) {
         return new HttpAction(url, HttpClientMethod.GET);
     }
 
-    public String getUrl() {
-        return url;
+    public static HttpAction action(String url, HttpClientMethod method) {
+        return new HttpAction(url, method);
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public static HttpAction action(String url) {
+        return new HttpAction(url, HttpClientMethod.GET);
     }
 
-    public HttpClientMethod getMethod() {
-        return method;
-    }
 
-    public void setMethod(HttpClientMethod method) {
-        this.method = method;
-    }
 }

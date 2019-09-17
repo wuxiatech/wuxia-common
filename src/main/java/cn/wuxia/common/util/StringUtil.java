@@ -80,7 +80,7 @@ public class StringUtil extends StringUtils {
             sbf.append(content.substring(0, i)).append(value);
             int n = i + s_length;
             int m = k + e_length;
-            for (; ((i = (content.indexOf(s, n))) >= 0 && (k = (content.indexOf(e, m))) >= 0);) {
+            for (; ((i = (content.indexOf(s, n))) >= 0 && (k = (content.indexOf(e, m))) >= 0); ) {
                 sbf.append(content.substring(m, i)).append(value);
                 n = i + s_length;
                 m = k + e_length;
@@ -199,7 +199,7 @@ public class StringUtil extends StringUtils {
         }
 
 //        Pattern p = Pattern.compile("\\$+[{]+\\w+[}]");
-        Pattern p =  Pattern.compile("\\$+[{]+[\\w\\.]+[}]");
+        Pattern p = Pattern.compile("\\$+[{]+[\\w\\.]+[}]");
         Matcher m = p.matcher(destStr);
 
         while (m.find()) {
@@ -209,7 +209,7 @@ public class StringUtil extends StringUtils {
             try {
                 value = BeanUtil.getProperty(bean, key);
             } catch (Exception e) {
-                logger.warn("{}的{}为空，无法赋值！",bean.getClass().getName(), key);
+                logger.warn("{}的{}为空，无法赋值！", bean.getClass().getName(), key);
             }
             value = value == null ? "" : value;
             destStr = destStr.replace(k, value.toString());
@@ -224,8 +224,8 @@ public class StringUtil extends StringUtils {
      * @param repalcement
      * @return
      * @description : string support el tags <code>${contents} and ${bean.contents}</code>
-     * @see {@link StringParserUtil#spelParse(String, String, String)}
      * @author songlin.li
+     * @see {@link StringParserUtil#spelParse(String, String, String)}
      */
     public static String replaceKeysSimple(String destStr, String key, String repalcement) {
 
@@ -430,7 +430,7 @@ public class StringUtil extends StringUtils {
         if (classObj.equals(Date.class))
             return DateUtil.stringToDate(str, DateFormatter.FORMAT_DD_MMM_YYYY_HH_MM_SS);
 
-        return ClassLoaderUtil.newInstanceByConstructor(classObj, new Class<?>[] { String.class }, new Object[] { str });
+        return ClassLoaderUtil.newInstanceByConstructor(classObj, new Class<?>[]{String.class}, new Object[]{str});
     }
 
     public static boolean isBlank(Object value) {
@@ -673,7 +673,7 @@ public class StringUtil extends StringUtils {
             value.add(key);
         }
         if (ListUtil.isEmpty(value)) {
-            return new String[] {};
+            return new String[]{};
         }
         value = ListUtil.removeDuplicateBySet(value);
         return ListUtil.listToArray(value);
@@ -744,7 +744,7 @@ public class StringUtil extends StringUtils {
         //        System.out.println(RandomStringUtils.randomAscii(6));
         //        System.out.println(RandomStringUtils.randomNumeric(6));
         //        for (int i = 0; i < 6; i++)
-                    System.out.println(RandomStringUtils.randomAlphanumeric(32));
+        System.out.println(RandomStringUtils.randomAlphanumeric(32));
         //        System.out.println(random(6));
         String[] a = getTemplateKey("aaaaafasdfsadf${Abc}afsdfasd sadfasdfasdf");
         Map m = Maps.newHashMap();
@@ -839,5 +839,16 @@ public class StringUtil extends StringUtils {
         //            return s;
         //        else
         //            return (new StringBuilder()).append(Character.toUpperCase(s.charAt(0))).append(s.substring(1)).toString();
+    }
+
+
+    public static String replaceBlank(String str) {
+        String dest = "";
+        if (str != null) {
+            Pattern p = Pattern.compile("\\s*|\t|\r|\n");
+            Matcher m = p.matcher(str);
+            dest = m.replaceAll("");
+        }
+        return dest;
     }
 }
