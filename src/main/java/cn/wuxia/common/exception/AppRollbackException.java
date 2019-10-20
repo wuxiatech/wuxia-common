@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
  * @author songlin.li
  */
 public class AppRollbackException extends Exception {
-    protected Logger logger = LoggerFactory.getLogger(AppRollbackException.class);
+    protected Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * Comment for <code>serialVersionUID</code>
