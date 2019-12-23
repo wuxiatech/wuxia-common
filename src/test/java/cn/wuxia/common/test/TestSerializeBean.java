@@ -1,6 +1,6 @@
 package cn.wuxia.common.test;
 
-import cn.wuxia.common.entity.ValidationEntity;
+import cn.wuxia.common.validator.ValidationEntity;
 import com.baidu.bjf.remoting.protobuf.annotation.ProtobufClass;
 
 import javax.validation.constraints.NotNull;

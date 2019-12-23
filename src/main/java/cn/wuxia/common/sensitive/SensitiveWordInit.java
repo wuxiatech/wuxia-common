@@ -1,38 +1,35 @@
 package cn.wuxia.common.sensitive;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import org.apache.commons.io.FileUtils;
 import org.springframework.util.ClassUtils;
 
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.ConcurrentMap;
+
 /**
+ * @version 1.0
  * @Description: 初始化敏感词库，将敏感词加入到HashMap中，构建DFA算法模型
  * @Project：test
  * @Author : chenming
  * @Date ： 2014年4月20日 下午2:27:06
- * @version 1.0
  */
 public class SensitiveWordInit {
-    public static final String path = ClassUtils.getDefaultClassLoader().getResource("").getPath() + "words/word.txt";
+    public static final String path = ClassUtils.getDefaultClassLoader().getResource("").getPath() + "words/";
 
     private String ENCODING = "UTF-8"; //字符编码
 
     @SuppressWarnings("rawtypes")
-    public HashMap sensitiveWordMap;
+    public ConcurrentMap sensitiveWordMap;
 
     public SensitiveWordInit() {
         super();
     }
 
     /**
-     * @author chenming 
+     * @author chenming
      * @date 2014年4月20日 下午2:28:32
      * @version 1.0
      */
@@ -52,9 +49,10 @@ public class SensitiveWordInit {
 
     /**
      * 初始化传入set
-     * @author 金
-     * @param set
+     *
+     * @param keyWordSet
      * @return
+     * @author 金
      */
     @SuppressWarnings("rawtypes")
     public Map initKeyWord(Set<String> keyWordSet) {
@@ -70,40 +68,41 @@ public class SensitiveWordInit {
     /**
      * 读取敏感词库，将敏感词放入HashSet中，构建一个DFA算法模型：<br>
      * 中 = {
-     *      isEnd = 0
-     *      国 = {<br>
-     *      	 isEnd = 1
-     *           人 = {isEnd = 0
-     *                民 = {isEnd = 1}
-     *                }
-     *           男  = {
-     *           	   isEnd = 0
-     *           		人 = {
-     *           			 isEnd = 1
-     *           			}
-     *           	}
-     *           }
-     *      }
-     *  五 = {
-     *      isEnd = 0
-     *      星 = {
-     *      	isEnd = 0
-     *      	红 = {
-     *              isEnd = 0
-     *              旗 = {
-     *                   isEnd = 1
-     *                  }
-     *              }
-     *      	}
-     *      }
-     * @author chenming 
+     * isEnd = 0
+     * 国 = {<br>
+     * isEnd = 1
+     * 人 = {isEnd = 0
+     * 民 = {isEnd = 1}
+     * }
+     * 男  = {
+     * isEnd = 0
+     * 人 = {
+     * isEnd = 1
+     * }
+     * }
+     * }
+     * }
+     * 五 = {
+     * isEnd = 0
+     * 星 = {
+     * isEnd = 0
+     * 红 = {
+     * isEnd = 0
+     * 旗 = {
+     * isEnd = 1
+     * }
+     * }
+     * }
+     * }
+     *
+     * @param keyWordSet 敏感词库
+     * @author chenming
      * @date 2014年4月20日 下午3:04:20
-     * @param keyWordSet  敏感词库
      * @version 1.0
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private void addSensitiveWordToHashMap(Set<String> keyWordSet) {
-        sensitiveWordMap = new HashMap(keyWordSet.size()); //初始化敏感词容器，减少扩容操作
+        sensitiveWordMap = Maps.newConcurrentMap(); //初始化敏感词容器，减少扩容操作
         String key = null;
         Map nowMap = null;
         Map<String, String> newWorMap = null;
@@ -134,33 +133,44 @@ public class SensitiveWordInit {
 
     /**
      * 读取敏感词库中的内容，将内容添加到set集合中
-     * @author chenming 
-     * @date 2014年4月20日 下午2:31:18
+     *
      * @return
+     * @throws Exception
+     * @author chenming
+     * @date 2014年4月20日 下午2:31:18
      * @version 1.0
-     * @throws Exception 
      */
     private Set<String> readSensitiveWordFile() throws Exception {
-        Set<String> set = null;
+        Set<String> set = Sets.newHashSet();
         String wordPath = path;
-        File file = new File(wordPath); //读取文件
-        InputStreamReader read = new InputStreamReader(new FileInputStream(file), ENCODING);
-        try {
-            if (file.isFile() && file.exists()) { //文件流是否存在
-                set = new HashSet<String>();
-                BufferedReader bufferedReader = new BufferedReader(read);
-                String txt = null;
-                while ((txt = bufferedReader.readLine()) != null) { //读取文件，将文件内容放入到set中
-                    set.add(txt);
-                }
-                bufferedReader.close();
-            } else { //不存在抛出异常信息
-                throw new Exception("敏感词库文件不存在");
+        File file = new File(wordPath); //读取文件,或目录
+        if (file.isDirectory()) {
+            Collection<File> files = FileUtils.listFiles(file, null, false);
+            for (File f : files) {
+                set.addAll(readSensitiveWordFile(f));
             }
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            read.close(); //关闭文件流
+        } else {
+            set.addAll(readSensitiveWordFile(file));
+        }
+        return set;
+    }
+
+    private Set<String> readSensitiveWordFile(File file) {
+        if (file.isFile() && file.exists()) { //文件流是否存在
+
+        } else { //不存在抛出异常信息
+            throw new RuntimeException("敏感词库文件不存在");
+        }
+        Set<String> set = Sets.newHashSet();
+        try (InputStreamReader read = new InputStreamReader(new FileInputStream(file), ENCODING);) {
+            BufferedReader bufferedReader = new BufferedReader(read);
+            String txt = null;
+            while ((txt = bufferedReader.readLine()) != null) { //读取文件，将文件内容放入到set中
+                set.add(txt);
+            }
+            bufferedReader.close();
+        } catch (IOException e) {
+
         }
         return set;
     }
