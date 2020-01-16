@@ -5,18 +5,32 @@
     <parent>
         <groupId>cn.wuxia.parent</groupId>
         <artifactId>parent2020</artifactId>
-        <version>2.4.1</version>
+        <version>2.4.2</version>
     </parent>
 
     <artifactId>wuxia.common</artifactId>
     <name>WUXIA Common</name>
     <description>WUXIA Common Project</description>
-    <version>2.4.1</version>
+    <version>2.4.2</version>
     <packaging>jar</packaging>
     <url>https://github.com/wuxiatech/wuxia-common</url>
     <properties>
         <zxing.version>3.3.0</zxing.version>
     </properties>
+    <developers>
+        <developer>
+            <name>lisonglin</name>
+            <email>237550195@qq.com</email>
+            <id>songlin</id>
+            <organization>wuxia.tech</organization>
+        </developer>
+    </developers>
+    <licenses>
+        <license>
+            <name>Apache 2</name>
+            <url>https://github.com/wuxiatech/wuxia-common/blob/master/LICENSE</url>
+        </license>
+    </licenses>
     <dependencies>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -131,7 +145,7 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
         </dependency>
-        <!-- JSON begin -->
+        <!-- JSON begin, 未来在代码中将不再使用jackson,使用其它代替（减少工具包），jackson仅用于springmvc -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -149,7 +163,6 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <optional>true</optional>
         </dependency>
         <!-- JSON end -->
 
@@ -306,7 +319,13 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>QLExpress</artifactId>
-            <version>3.2.0</version>
+            <version>3.2.4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- 使用到SerializeUtils 需要引入-->
         <dependency>

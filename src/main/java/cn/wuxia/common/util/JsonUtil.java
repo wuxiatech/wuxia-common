@@ -21,6 +21,15 @@ import com.google.common.collect.Maps;
 import cn.wuxia.common.mapper.JacksonMapper;
 import cn.wuxia.common.util.DateUtil.DateFormatter;
 
+/**
+ * 未来会去掉
+ * 请使用其它json代替如
+ * nutz.Json @see {@link org.nutz.json.Json}
+ * FastJson @see {@link com.alibaba.fastjson.JSON}
+ * Gson @see
+ * @author songlin
+ */
+@Deprecated
 public class JsonUtil {
     private static final Logger logger = LoggerFactory.getLogger(JsonUtil.class);
 
