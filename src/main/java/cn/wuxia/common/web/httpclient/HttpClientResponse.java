@@ -8,14 +8,14 @@ import org.apache.http.Header;
 
 import cn.wuxia.common.util.StringUtil;
 
-/* *
+/**
  * 类名：HttpResponse功能：Http返回对象的封装详细：封装Http返回信息版本：3.3日期：2011-08-17说明：
  * 以下代码只是为了方便商户测试而提供的样例代码，商户可以根据自己网站的需要，按照技术文档编写,并非一定要使用该代码。
  * 该代码仅供学习和研究支付宝接口使用，只是提供一个参考。
+ *
+ * @author songlin
  */
-
 public class HttpClientResponse {
-
     /**
      * 返回中的Header信息
      */
@@ -35,6 +35,7 @@ public class HttpClientResponse {
      * 返回的数据编码
      */
     private String charset;
+
 
     public Header[] getResponseHeaders() {
         return responseHeaders;
@@ -77,6 +78,7 @@ public class HttpClientResponse {
         }
         return null;
     }
+
     public void setStringResult(String stringResult) {
         this.stringResult = stringResult;
     }

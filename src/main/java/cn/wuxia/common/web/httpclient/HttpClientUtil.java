@@ -29,10 +29,7 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.*;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.*;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.client.LaxRedirectStrategy;
+import org.apache.http.impl.client.*;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HTTP;
@@ -62,12 +59,16 @@ public class HttpClientUtil {
     /**
      * 连接超时时间，由bean factory设置，缺省为无限制
      */
-    private static int defaultConnectionTimeout = -1;
+    private static int defaultConnectionTimeout = 10000;
 
     /**
      * 回应超时时间, 由bean factory设置，缺省为无限制
      */
-    private static int defaultSocketTimeout = -1;
+    private static int defaultSocketTimeout = 30000;
+    /**
+     * 重连次数
+     */
+    private static int RETRY_COUNT = 1;
 
     public static final String HEADER_ACCEPT_ENCODING = "Accept-Encoding";
 
@@ -76,10 +77,12 @@ public class HttpClientUtil {
     //请求Header Content-Type
     private static final String HEADER_CONTENT_TYPE = "Content-Type";
 
+    private static PoolingHttpClientConnectionManager connectionManager;
+
     /**
      * HttpClient连接SSL
      */
-    public static HttpClientBuilder ssl() throws HttpClientException {
+    private static void setSsl(HttpClientBuilder builder) throws HttpClientException {
         try {
             SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy() {
                 //信任所有
@@ -88,14 +91,42 @@ public class HttpClientUtil {
                     return true;
                 }
             }).build();
-            HttpClientBuilder builder = HttpClients.custom();
             SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext);
             builder.setSSLSocketFactory(sslsf);
-            return builder;
         } catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
             logger.warn(e.getMessage());
             throw new HttpClientException(e.getMessage());
         }
+    }
+
+    /**
+     * @return
+     * @author songlin
+     */
+    private static PoolingHttpClientConnectionManager getConnetionManager() {
+//        if(connectionManager != null){
+//            return connectionManager;
+//        }
+        connectionManager = new PoolingHttpClientConnectionManager();
+        //每个路由最大连接数
+        connectionManager.setDefaultMaxPerRoute(200);
+        //连接池最大连接数
+        connectionManager.setMaxTotal(400);
+
+        MessageConstraints messageConstraints = MessageConstraints.custom().setMaxHeaderCount(200).setMaxLineLength(2000).build();
+
+        /**
+         * http连接设置
+         *
+         * //忽略不合法的输入
+         * //忽略不匹配的输入
+         */
+        ConnectionConfig connectionConfig = ConnectionConfig.custom().setMalformedInputAction(CodingErrorAction.IGNORE)
+                .setUnmappableInputAction(CodingErrorAction.IGNORE).setMessageConstraints(messageConstraints).setCharset(Consts.UTF_8).build();
+
+        connectionManager.setDefaultConnectionConfig(connectionConfig);
+
+        return connectionManager;
     }
 
     /**
@@ -110,7 +141,7 @@ public class HttpClientUtil {
 
         HttpClientBuilder builder = HttpClientBuilder.create();
         if (needssl) {
-            builder = ssl();
+            setSsl(builder);
         }
         // 设定自己需要的重定向策略
         switch (param.getMethod()) {
@@ -125,22 +156,6 @@ public class HttpClientUtil {
                 break;
         }
 
-        PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
-        //每个路由最大连接数
-        cm.setDefaultMaxPerRoute(200);
-        //连接池最大连接数
-        cm.setMaxTotal(400);
-
-        MessageConstraints messageConstraints = MessageConstraints.custom().setMaxHeaderCount(200).setMaxLineLength(2000).build();
-
-        /**
-         * http连接设置
-         *
-         * //忽略不合法的输入
-         * //忽略不匹配的输入
-         */
-        ConnectionConfig connectionConfig = ConnectionConfig.custom().setMalformedInputAction(CodingErrorAction.IGNORE)
-                .setUnmappableInputAction(CodingErrorAction.IGNORE).setMessageConstraints(messageConstraints).setCharset(Consts.UTF_8).build();
 
         /**
          * ConnectTimeout： 链接建立的超时时间；
@@ -152,12 +167,16 @@ public class HttpClientUtil {
         int socketTimeout = param.getSocketTimeout() > 0 ? param.getSocketTimeout() : defaultSocketTimeout;
         RequestConfig defaultRequestConfig = RequestConfig.custom().setSocketTimeout(socketTimeout).setConnectTimeout(connectionTimeout)
                 .setConnectionRequestTimeout(5000).build();
-
-        cm.setDefaultConnectionConfig(connectionConfig);
-        builder.setConnectionManager(cm);
+        builder.setConnectionManager(getConnetionManager());
         builder.setDefaultRequestConfig(defaultRequestConfig);
+        int retryCount = param.getRetryRequestTime() > 1 ? param.getRetryRequestTime() : RETRY_COUNT;
+        if (retryCount > 1) {
+            builder.setRetryHandler(new DefaultHttpRequestRetryHandler(retryCount, true));
+        }
+        builder.setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy());
         return builder.build();
     }
+
 
     /**
      * 简单的get方法，传参使用默认的UTF-8编码, 返回使用ISO-8859-1编码转为字符串
@@ -450,8 +469,8 @@ public class HttpClientUtil {
         } catch (Exception e) {
             throw new HttpClientException(e);
         } finally {
-            // 关闭连接,释放资源  
-            HttpClientUtils.closeQuietly(httpclient);
+            logger.info("完成请求，关闭连接");
+//            HttpClientUtils.closeQuietly(httpclient);
         }
         return result;
     }
@@ -482,8 +501,8 @@ public class HttpClientUtil {
         } catch (Exception e) {
             throw new HttpClientException(e);
         } finally {
-            // 关闭连接,释放资源 
-            HttpClientUtils.closeQuietly(httpclient);
+            logger.info("完成请求，关闭连接");
+//            HttpClientUtils.closeQuietly(httpclient);
         }
         return result;
     }

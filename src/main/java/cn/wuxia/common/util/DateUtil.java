@@ -269,10 +269,13 @@ public class DateUtil extends DateUtils {
     }
 
     public static Date getFirstDateOfMonth(Date date) {
-        Calendar cl = Calendar.getInstance();
-        cl.setTime(date);
-        cl.set(Calendar.DAY_OF_MONTH, 1);
-        return cl.getTime();
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        c.set(Calendar.DAY_OF_MONTH, 1);
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        return c.getTime();
     }
 
     /**
@@ -290,13 +293,14 @@ public class DateUtil extends DateUtils {
      * @description : get Last Date Of Month
      */
     public static Date getLastDateOfMonth(Date date) {
-        Calendar cl = Calendar.getInstance();
-        cl.setTime(date);
-        int year = cl.get(Calendar.YEAR);
-        int month = cl.get(Calendar.MONTH) + 1;
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        int year = c.get(Calendar.YEAR);
+        int month = c.get(Calendar.MONTH) + 1;
         int day = 0;
-        if (month < 1 || month > 12)
+        if (month < 1 || month > 12) {
             return null;
+        }
 
         if (month == 2) {
             if (isLeapYear(year)) {
@@ -308,9 +312,11 @@ public class DateUtil extends DateUtils {
             day = dayArray[month - 1];
         }
 
-        cl.set(Calendar.DAY_OF_MONTH, day);
-
-        return cl.getTime();
+        c.set(Calendar.DAY_OF_MONTH, day);
+        c.set(Calendar.HOUR_OF_DAY, 23);
+        c.set(Calendar.MINUTE, 59);
+        c.set(Calendar.SECOND, 59);
+        return c.getTime();
     }
 
     public static Date getLastDateOfMonth(String date) {
@@ -772,21 +778,27 @@ public class DateUtil extends DateUtils {
      */
     public static Date firstDayOfWeek() {
         Calendar c = Calendar.getInstance();
-        int weekday = c.get(7) - 1;
-        c.add(5, -weekday);
+        int weekday = c.get(Calendar.DAY_OF_WEEK) - 1;
+        c.add(Calendar.DAY_OF_MONTH, -weekday);
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
         return c.getTime();
     }
 
     /**
+     * FIXME
      * 获取当前系统时间所在周的最后一日
-     *
      * @return 当前系统时间所在周的最后一日
      * @author Wind.Zhao
      * @date 2014/08/19
      */
     public static Date lastDayOfWeek() {
         Calendar c = Calendar.getInstance();
-        c.add(5, 6);
+        c.add(Calendar.DATE, 6);
+        c.set(Calendar.HOUR_OF_DAY, 23);
+        c.set(Calendar.MINUTE, 59);
+        c.set(Calendar.SECOND, 59);
         return c.getTime();
     }
 
@@ -800,6 +812,9 @@ public class DateUtil extends DateUtils {
     public static Date firstDayOfMonth() {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.DAY_OF_MONTH, c.getActualMinimum(Calendar.DAY_OF_MONTH));
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
         return c.getTime();
     }
 
@@ -813,6 +828,9 @@ public class DateUtil extends DateUtils {
     public static Date lastDayOfMonth() {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.DAY_OF_MONTH, c.getActualMaximum(Calendar.DAY_OF_MONTH));
+        c.set(Calendar.HOUR_OF_DAY, 23);
+        c.set(Calendar.MINUTE, 59);
+        c.set(Calendar.SECOND, 59);
         return c.getTime();
     }
 
@@ -827,6 +845,9 @@ public class DateUtil extends DateUtils {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, amount);
         c.set(Calendar.DAY_OF_MONTH, c.getActualMinimum(Calendar.DAY_OF_MONTH));
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
         return c.getTime();
     }
 
@@ -841,6 +862,9 @@ public class DateUtil extends DateUtils {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, amount);
         c.set(Calendar.DAY_OF_MONTH, c.getActualMaximum(Calendar.DAY_OF_MONTH));
+        c.set(Calendar.HOUR_OF_DAY, 23);
+        c.set(Calendar.MINUTE, 59);
+        c.set(Calendar.SECOND, 59);
         return c.getTime();
     }
 
@@ -853,9 +877,12 @@ public class DateUtil extends DateUtils {
      */
     public static Date firstDayOfQuarter() {
         Calendar c = Calendar.getInstance();
-        int month = getQuarterInMonth(c.get(Calendar.MONTH), true);
+        int month = getQuarterInMonth(c.get(Calendar.MONTH) + 1, true);
         c.set(Calendar.MONTH, month - 1);
         c.set(Calendar.DAY_OF_MONTH, 1);
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
         return c.getTime();
     }
 
@@ -868,9 +895,12 @@ public class DateUtil extends DateUtils {
      */
     public static Date lastDayOfQuarter() {
         Calendar c = Calendar.getInstance();
-        int month = getQuarterInMonth(c.get(Calendar.MONTH), false);
+        int month = getQuarterInMonth(c.get(Calendar.MONTH) + 1, false);
         c.set(Calendar.MONTH, month);
         c.set(Calendar.DAY_OF_MONTH, 0);
+        c.set(Calendar.HOUR_OF_DAY, 23);
+        c.set(Calendar.MINUTE, 59);
+        c.set(Calendar.SECOND, 59);
         return c.getTime();
     }
 
@@ -907,6 +937,9 @@ public class DateUtil extends DateUtils {
     public static Date firstDayOfYear() {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.DAY_OF_YEAR, c.getActualMinimum(Calendar.DAY_OF_MONTH));
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
         return c.getTime();
     }
 
@@ -919,7 +952,11 @@ public class DateUtil extends DateUtils {
      */
     public static Date lastDayOfYear() {
         Calendar c = Calendar.getInstance();
+        c.set(Calendar.MONTH, c.getActualMaximum(Calendar.MONTH));
         c.set(Calendar.DAY_OF_MONTH, c.getActualMaximum(Calendar.DAY_OF_MONTH));
+        c.set(Calendar.HOUR_OF_DAY, 23);
+        c.set(Calendar.MINUTE, 59);
+        c.set(Calendar.SECOND, 59);
         return c.getTime();
     }
 

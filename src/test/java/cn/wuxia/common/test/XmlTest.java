@@ -106,18 +106,5 @@ public class XmlTest {
     }
 
 //    @Test
-    public void testAsync() throws Exception {
-        HttpClientRequest request = new HttpClientRequest("http://127.0.0.1:8060/test/text");
-        request.addParam("url", "http://fsdalfkjsadflkjsadlfkjasdlf");
-        long start = System.currentTimeMillis();
-        HttpClientRequest[] par = new HttpClientRequest[10];
-        for (int i = 0; i < 10; i++) {
-            //System.out.println("***********第" + i + "个***********");
-            //call(request);
-            //HttpClientUtil.get(request);
-            par[i] = request;
-        }
-        HttpAsyncClientUtil.call(par);
-        System.out.println("*************" + (System.currentTimeMillis() - start));
-    }
+
 }

@@ -185,7 +185,7 @@ public class StringUtil extends StringUtils {
     }
 
     /**
-     * @param paraMap
+     * @param bean
      * @param destStr
      * @return
      * @description : string support el tags <code>${contents}</code> and inner Object<code>${bean.contents}</code>
@@ -371,8 +371,9 @@ public class StringUtil extends StringUtils {
             count++;
         }
 
-        if (result == strSource.length())
+        if (result == strSource.length()) {
             return -1;
+        }
 
         return result;
     }
@@ -397,10 +398,11 @@ public class StringUtil extends StringUtils {
             }
         }
 
-        if (temp_int > limitLength)
+        if (temp_int > limitLength) {
             return false;
-        else
+        } else {
             return true;
+        }
     }
 
     /**
@@ -410,8 +412,9 @@ public class StringUtil extends StringUtils {
      */
     public static boolean isLetter(String s) {
         for (int i = 0; i < s.length(); i++) {
-            if (!((s.charAt(i) > 'a' && s.charAt(i) < 'z') || (s.charAt(i) > 'A' && s.charAt(i) < 'Z')))
+            if (!((s.charAt(i) > 'a' && s.charAt(i) < 'z') || (s.charAt(i) > 'A' && s.charAt(i) < 'Z'))) {
                 return false;
+            }
         }
 
         return true;
@@ -424,11 +427,13 @@ public class StringUtil extends StringUtils {
      * @description : string to object
      */
     public static Object string2Object(String str, Class<?> classObj) {
-        if (isEmpty(str))
+        if (isEmpty(str)) {
             return null;
+        }
 
-        if (classObj.equals(Date.class))
+        if (classObj.equals(Date.class)) {
             return DateUtil.stringToDate(str, DateFormatter.FORMAT_DD_MMM_YYYY_HH_MM_SS);
+        }
 
         return ClassLoaderUtil.newInstanceByConstructor(classObj, new Class<?>[]{String.class}, new Object[]{str});
     }
@@ -438,8 +443,9 @@ public class StringUtil extends StringUtils {
             return true;
 
         if (value instanceof String) {
-            if (StringUtil.isBlank((String) value))
+            if (StringUtil.isBlank((String) value)) {
                 return true;
+            }
         }
 
         return false;
@@ -457,8 +463,9 @@ public class StringUtil extends StringUtils {
      * @description :replace Regex
      */
     public static String replaceRegex(String regex, String orgi, int pos) {
-        if (isBlank(orgi) || isBlank(regex))
+        if (isBlank(orgi) || isBlank(regex)) {
             return orgi;
+        }
 
         Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
         Matcher m = p.matcher(orgi);
@@ -472,8 +479,9 @@ public class StringUtil extends StringUtils {
     }
 
     public static String get(String regex, String orgi, int pos) {
-        if (isBlank(orgi) || isBlank(regex))
+        if (isBlank(orgi) || isBlank(regex)) {
             return null;
+        }
 
         Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
         Matcher m = p.matcher(orgi);
@@ -511,16 +519,19 @@ public class StringUtil extends StringUtils {
     }
 
     public static boolean in(String[] targets, String value, boolean ignoreCase) {
-        if (targets == null)
+        if (targets == null) {
             return false;
+        }
 
         for (String target : targets) {
             if (ignoreCase) {
-                if (value.equalsIgnoreCase(target))
+                if (value.equalsIgnoreCase(target)) {
                     return true;
+                }
             } else {
-                if (value.equals(target))
+                if (value.equals(target)) {
                     return true;
+                }
             }
         }
 
@@ -533,8 +544,9 @@ public class StringUtil extends StringUtils {
      * @description :compress
      */
     public static String compress(String value) {
-        if (isBlank(value))
+        if (isBlank(value)) {
             return value;
+        }
 
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -555,8 +567,9 @@ public class StringUtil extends StringUtils {
      * @description : unCompress
      */
     public static String unCompress(String value) {
-        if (isBlank(value))
+        if (isBlank(value)) {
             return value;
+        }
 
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -586,8 +599,9 @@ public class StringUtil extends StringUtils {
      */
     public static String nullToEmpty(Object input) {
         String output;
-        if (input == null)
+        if (input == null) {
             return "";
+        }
         try {
             output = input.toString();
         } catch (Exception e) {
@@ -617,8 +631,8 @@ public class StringUtil extends StringUtils {
      * <p>
      * </code>
      *
-     * @param map
-     * @param key
+     * @param paraMap
+     * @param destStr
      * @return
      * @author songlin.li
      * @see {@link StringParserUtil#simpleParse(String, Object)}
@@ -656,6 +670,8 @@ public class StringUtil extends StringUtils {
         return destStr;
     }
 
+    final static Pattern templateKeyPattern = Pattern.compile("\\$+[{]+[\\w\\.]+[}]");
+
     /**
      * @param str
      * @return
@@ -663,8 +679,10 @@ public class StringUtil extends StringUtils {
      * @author songlin.li
      */
     public static String[] getTemplateKey(String str) {
-        Pattern p = Pattern.compile("\\$+[{]+[\\w\\.]+[}]");
-        Matcher m = p.matcher(str);
+        if (StringUtil.isBlank(str)) {
+            return new String[]{};
+        }
+        Matcher m = templateKeyPattern.matcher(str);
 
         List<String> value = new ArrayList<String>();
         while (m.find()) {

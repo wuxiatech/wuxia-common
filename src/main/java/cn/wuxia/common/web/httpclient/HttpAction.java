@@ -12,23 +12,16 @@ public class HttpAction {
 
     HttpClientMethod method;
 
-    @Deprecated
-    public static HttpAction Action(String url, HttpClientMethod method) {
-        return new HttpAction(url, method);
-    }
-
-    @Deprecated
-    public static HttpAction Action(String url) {
-        return new HttpAction(url, HttpClientMethod.GET);
-    }
-
     public static HttpAction action(String url, HttpClientMethod method) {
         return new HttpAction(url, method);
     }
 
-    public static HttpAction action(String url) {
+    public static HttpAction get(String url) {
         return new HttpAction(url, HttpClientMethod.GET);
     }
 
+    public static HttpAction post(String url) {
+        return new HttpAction(url, HttpClientMethod.POST);
+    }
 
 }

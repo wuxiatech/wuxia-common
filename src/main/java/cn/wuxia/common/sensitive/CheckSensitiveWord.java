@@ -16,9 +16,9 @@ import java.lang.annotation.Target;
  * @author 金
  * @ Version : V<Ver.No> <2014-12-25>
  */
-@Target({ ElementType.METHOD })
+@Target({ ElementType.METHOD, ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface CheckSensitiveWord {
-
+   String massage();
 }

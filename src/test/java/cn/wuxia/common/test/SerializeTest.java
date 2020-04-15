@@ -2,6 +2,7 @@ package cn.wuxia.common.test;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
@@ -20,9 +21,9 @@ import io.protostuff.runtime.DefaultIdStrategy;
 import io.protostuff.runtime.Delegate;
 import io.protostuff.runtime.RuntimeEnv;
 import io.protostuff.runtime.RuntimeSchema;
+import org.junit.Test;
 
 public class SerializeTest {
-
 
 
     public static void main(String[] args) {
@@ -32,7 +33,7 @@ public class SerializeTest {
         testSerialize.setTestEnum(TestSerializeBean.TestEnum.a);
         testSerialize.setTimestamp(DateUtil.newInstanceDate());
         Map<String, Object> m = Maps.newHashMap();
-        m.put("saldfkj",23423);
+        m.put("saldfkj", 23423);
         testSerialize.setList(Lists.newArrayList(m));
         Pages pages = new Pages();
         pages.setResult(Lists.newArrayList(testSerialize));
@@ -58,6 +59,13 @@ public class SerializeTest {
 
     }
 
+    @Test
+    public void testDate() {
+        System.out.println(DateUtil.firstDayOfWeek());
 
+        System.out.println(DateUtil.lastDayOfWeek());
+
+
+    }
 
 }

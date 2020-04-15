@@ -46,6 +46,11 @@ public class HttpClientRequest {
     private int connectionTimeout = 10000;
 
     /**
+     * 重连次数
+     */
+    private int retryRequestTime = 1;
+
+    /**
      * Post 类型包括为 File, InputStream, byte[]， String时的参数
      */
     private ContentBody content;
@@ -144,6 +149,7 @@ public class HttpClientRequest {
         this.socketTimeout = socketTimeout;
         return this;
     }
+
 
     /**
      * @return Returns the charset.
@@ -328,6 +334,19 @@ public class HttpClientRequest {
     }
 
 
+    public int getRetryRequestTime() {
+        return retryRequestTime;
+    }
+
+    public void setRetryRequestTime(int retryRequestTime) {
+        this.retryRequestTime = retryRequestTime;
+    }
+
+    public HttpClientRequest retryRequestTime(int retryRequestTime) {
+        this.retryRequestTime = retryRequestTime;
+        return this;
+    }
+
     /**
      * Post 请求参数
      *
@@ -402,4 +421,5 @@ public class HttpClientRequest {
     public HttpClientResponse execute() throws HttpClientException {
         return HttpClientUtil.execute(this);
     }
+
 }
