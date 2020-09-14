@@ -289,4 +289,12 @@ public class Conditions implements Serializable {
     public static Conditions gt(String name, Object value) {
         return new Conditions(name, MatchType.GT, value);
     }
+
+    public static Conditions isTrue(String name) {
+        return new Conditions(name, MatchType.EQ, true);
+    }
+
+    public static Conditions isFalse(String name) {
+        return new Conditions(name, MatchType.EQ, false);
+    }
 }

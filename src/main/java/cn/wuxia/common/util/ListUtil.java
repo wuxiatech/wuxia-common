@@ -1,5 +1,6 @@
 package cn.wuxia.common.util;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import com.google.common.collect.Maps;
@@ -135,7 +136,12 @@ public class ListUtil extends CollectionUtils {
                 List<T> list = Lists.newArrayList();
                 for (E e : sourceList) {
                     if (e.getClass().equals(t)) {
-                        return Lists.newArrayList((List<T>) sourceList);
+                        try {
+                            list.add((T) BeanUtil.cloneBean(e));
+                        } catch (InvocationTargetException | NoSuchMethodException ex) {
+                            ex.printStackTrace();
+                        }
+                        continue;
                     }
                     T newT = t.newInstance();
                     /**
