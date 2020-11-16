@@ -343,7 +343,7 @@ public class BeanUtil extends BeanUtils {
                     }
                     try {
                         Class fieldType = field.getType();
-                        if (fieldType.isAssignableFrom(Boolean.class) && value == null) {
+                        if (Boolean.class.isAssignableFrom(fieldType) && value == null) {
                             String getterMethodName = "is" + StringUtils.capitalize(field.getName());
                             value = ReflectionUtil.invokeMethod(bean, getterMethodName, new Class[]{}, new Object[]{});
                         }
@@ -496,6 +496,7 @@ public class BeanUtil extends BeanUtils {
 //        System.out.println(List.class.isAssignableFrom(l.getClass()));
 //        System.out.println(List.class.isAssignableFrom(List.class));
 
+        System.out.println(Boolean.class.isAssignableFrom(Boolean.class));
     }
 }
 
